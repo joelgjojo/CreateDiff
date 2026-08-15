@@ -18,53 +18,47 @@ class CDQuickActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.darkCardSurface : AppColors.cardSurface;
-    final border = isDark ? AppColors.darkGlassBorder : AppColors.glassBorder;
+    final cardBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
+    final border = isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.rLarge,
+        onTap: () {
+          AppHaptics.selection();
+          onTap();
+        },
+        borderRadius: AppRadius.rMedium,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           decoration: BoxDecoration(
             color: cardBg,
-            borderRadius: AppRadius.rLarge,
+            borderRadius: AppRadius.rMedium,
             border: Border.all(color: border, width: 1.0),
-            boxShadow: [
-              BoxShadow(
-                color: isDark ? Colors.black.withOpacity(0.18) : Colors.black.withOpacity(0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
-          child: Column(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: 26,
+                height: 26,
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.12),
-                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.rSmall,
                 ),
                 child: Icon(
                   icon,
-                  size: 22,
+                  size: 14,
                   color: accentColor,
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(width: 7),
               Text(
                 label,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                      fontSize: 12,
+                      color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                     ),
               ),
             ],

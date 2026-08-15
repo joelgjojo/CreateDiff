@@ -20,42 +20,34 @@ class CDContentTypeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-    final cardBg = isDark ? AppColors.darkCardSurface : AppColors.cardSurface;
-    final selectedBg = isDark ? AppColors.darkAccent1 : AppColors.accent1;
-    final defaultBorder = isDark ? AppColors.darkGlassBorder : AppColors.glassBorder;
+    final primaryColor = AppColors.primary;
+    final cardBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
+    final selectedBg = isDark
+        ? AppColors.primary.withValues(alpha: 0.12)
+        : AppColors.primary.withValues(alpha: 0.08);
+    final border = isSelected
+        ? primaryColor
+        : (isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          AppHaptics.selection();
+          onTap();
+        },
         borderRadius: AppRadius.rLarge,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: const Duration(milliseconds: 160),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: isSelected ? selectedBg : cardBg,
             borderRadius: AppRadius.rLarge,
             border: Border.all(
-              color: isSelected ? primaryColor : defaultBorder,
-              width: isSelected ? 1.8 : 1.0,
+              color: border,
+              width: isSelected ? 1.6 : 1.0,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: primaryColor.withOpacity(0.18),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: isDark ? Colors.black.withOpacity(0.15) : Colors.black.withOpacity(0.02),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,30 +57,30 @@ class CDContentTypeCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? primaryColor.withOpacity(0.16)
-                          : (isDark ? AppColors.darkAccent3 : AppColors.accent3),
+                          ? primaryColor.withValues(alpha: 0.15)
+                          : (isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface),
                       borderRadius: AppRadius.rMedium,
                     ),
                     child: Icon(
                       icon,
-                      size: 22,
+                      size: 18,
                       color: isSelected
                           ? primaryColor
-                          : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                          : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                     ),
                   ),
                   if (isSelected)
-                    Icon(
+                    const Icon(
                       Icons.check_circle_rounded,
-                      size: 18,
-                      color: primaryColor,
+                      size: 16,
+                      color: AppColors.primary,
                     ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.sm),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -96,19 +88,20 @@ class CDContentTypeCard extends StatelessWidget {
                     label,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
+                          fontSize: 13,
                           color: isSelected
                               ? primaryColor
-                              : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                              : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                         ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                   Text(
                     description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 11,
-                          height: 1.3,
+                          height: 1.25,
                         ),
                   ),
                 ],

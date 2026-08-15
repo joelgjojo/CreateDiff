@@ -170,9 +170,10 @@ class AppState extends ChangeNotifier {
   Future<void> regenerateHooks() async {
     if (_currentProject == null || _currentGeneratedContent == null) return;
     _isGenerating = true;
+    _generationStep = 'Crafting fresh hooks...';
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 1200));
+    await Future.delayed(const Duration(milliseconds: 1000));
 
     final newContent = await AIService.generateContent(
       platform: _currentProject!.platform,
@@ -198,6 +199,28 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> deleteProject(String projectId) async {
+    await StorageService.removeProjectFromHistory(projectId);
+    _contentHistory = StorageService.getContentHistory();
+    if (_currentProject?.id == projectId) {
+      _currentProject = null;
+      _currentGeneratedContent = null;
+    }
+    notifyListeners();
+  }
+
+  Future<ContentProject> duplicateProject(ContentProject project) async {
+    final duplicated = project.copyWith(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      createdAt: DateTime.now(),
+      status: 'generated',
+    );
+    await StorageService.addProjectToHistory(duplicated);
+    _contentHistory = StorageService.getContentHistory();
+    notifyListeners();
+    return duplicated;
+  }
+
   // --- Reset All Data ---
   Future<void> resetAll() async {
     await StorageService.clearAll();
@@ -213,13 +236,13 @@ class AppState extends ChangeNotifier {
   Timer _startLoadingStepTimer(String platform) {
     final steps = [
       'Understanding your idea...',
-      'Applying your brand voice & tone...',
-      'Optimizing structure for $platform...',
-      'Writing high-converting hooks & caption...',
-      'Formatting ready-to-post content pack...',
+      'Adapting to your audience...',
+      'Writing the hooks...',
+      'Formatting for $platform...',
+      'Applying your brand voice...',
     ];
     int stepIdx = 0;
-    return Timer.periodic(const Duration(milliseconds: 700), (t) {
+    return Timer.periodic(const Duration(milliseconds: 650), (t) {
       stepIdx = (stepIdx + 1) % steps.length;
       _generationStep = steps[stepIdx];
       notifyListeners();

@@ -16,10 +16,10 @@ class CDSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final primaryColor = AppColors.primary;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm, top: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -27,16 +27,19 @@ class CDSectionHeader extends StatelessWidget {
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
-                  fontSize: 17,
+                  fontSize: 15,
                   letterSpacing: -0.2,
-                  color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                  color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                 ),
           ),
           if (actionLabel != null && onAction != null)
             Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: onAction,
+                onTap: () {
+                  AppHaptics.selection();
+                  onAction!();
+                },
                 borderRadius: AppRadius.rSmall,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),

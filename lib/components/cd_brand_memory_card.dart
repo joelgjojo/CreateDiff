@@ -16,12 +16,12 @@ class CDBrandMemoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-    final cardBg = isDark ? AppColors.darkCardSurface : AppColors.cardSurface;
-    final border = isDark ? AppColors.darkGlassBorder : AppColors.glassBorder;
+    final primaryColor = AppColors.primary;
+    final cardBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
+    final border = isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle;
 
-    final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Set up your profile';
-    final niche = profile.niche.isNotEmpty ? profile.niche : 'Personal Brand';
+    final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Your Creator Identity';
+    final niche = profile.niche.isNotEmpty ? profile.niche : 'General';
     final tone = profile.tone.isNotEmpty ? profile.tone : 'Educational';
     final language = profile.primaryLanguage.isNotEmpty ? profile.primaryLanguage : 'English';
 
@@ -30,7 +30,10 @@ class CDBrandMemoryCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          AppHaptics.selection();
+          onTap();
+        },
         borderRadius: AppRadius.rLarge,
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -38,29 +41,22 @@ class CDBrandMemoryCard extends StatelessWidget {
             color: cardBg,
             borderRadius: AppRadius.rLarge,
             border: Border.all(color: border, width: 1.0),
-            boxShadow: [
-              BoxShadow(
-                color: isDark ? Colors.black.withOpacity(0.18) : Colors.black.withOpacity(0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: profile.primaryColor.withOpacity(0.16),
+                  color: profile.primaryColor.withValues(alpha: 0.16),
                   shape: BoxShape.circle,
-                  border: Border.all(color: profile.primaryColor.withOpacity(0.35), width: 1.5),
+                  border: Border.all(color: profile.primaryColor.withValues(alpha: 0.4), width: 1.2),
                 ),
                 child: Center(
                   child: Text(
                     initials,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: profile.primaryColor,
                     ),
@@ -78,13 +74,14 @@ class CDBrandMemoryCard extends StatelessWidget {
                           creatorName,
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                                fontSize: 14,
+                                color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                               ),
                         ),
                         const SizedBox(width: 6),
                         Container(
-                          width: 8,
-                          height: 8,
+                          width: 6,
+                          height: 6,
                           decoration: BoxDecoration(
                             color: profile.primaryColor,
                             shape: BoxShape.circle,
@@ -92,20 +89,21 @@ class CDBrandMemoryCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 2),
                     Text(
                       '$niche • $tone • $language',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontSize: 11,
+                            color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                           ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkAccent2 : AppColors.accent2,
+                  color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                   borderRadius: AppRadius.rPill,
                 ),
                 child: Text(

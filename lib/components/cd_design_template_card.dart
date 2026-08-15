@@ -22,39 +22,38 @@ class CDDesignTemplateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-    final border = isSelected ? primaryColor : (isDark ? AppColors.darkGlassBorder : AppColors.glassBorder);
+    final primaryColor = AppColors.primary;
+    final border = isSelected
+        ? primaryColor
+        : (isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle);
 
     final displayTitle = coverText.isNotEmpty ? coverText : 'READY TO PUBLISH';
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onSelect,
+        onTap: () {
+          AppHaptics.selection();
+          onSelect();
+        },
         borderRadius: AppRadius.rLarge,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: const Duration(milliseconds: 160),
           decoration: BoxDecoration(
             borderRadius: AppRadius.rLarge,
             border: Border.all(
               color: border,
-              width: isSelected ? 2.2 : 1.0,
+              width: isSelected ? 2.0 : 1.0,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: primaryColor.withOpacity(0.24),
-                      blurRadius: 14,
+                      color: primaryColor.withValues(alpha: 0.22),
+                      blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
                   ]
-                : [
-                    BoxShadow(
-                      color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.04),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                : null,
           ),
           child: ClipRRect(
             borderRadius: AppRadius.rLarge,
@@ -72,7 +71,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                 // Bottom Metadata Info Bar
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  color: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
+                  color: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -84,7 +83,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                              color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                             ),
                           ),
                           Text(
@@ -92,7 +91,9 @@ class CDDesignTemplateCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
-                              color: isSelected ? primaryColor : (isDark ? AppColors.darkSecondaryText : AppColors.secondaryText),
+                              color: isSelected
+                                  ? primaryColor
+                                  : (isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText),
                               letterSpacing: 0.4,
                             ),
                           ),
@@ -101,8 +102,8 @@ class CDDesignTemplateCard extends StatelessWidget {
                       if (isSelected)
                         Container(
                           padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            color: primaryColor,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.check, size: 12, color: Colors.white),
@@ -120,36 +121,44 @@ class CDDesignTemplateCard extends StatelessWidget {
 
   BoxDecoration _buildTemplateDecoration(String id, CreatorProfile profile, bool isDark) {
     switch (id) {
-      case 'bold_statement':
+      case 'bold_typography':
         return BoxDecoration(
           color: profile.primaryColor,
         );
-      case 'impact':
-        return const BoxDecoration(
-          color: Color(0xFF0F0F14),
-        );
-      case 'editorial':
+      case 'swiss_grid':
         return BoxDecoration(
-          color: isDark ? const Color(0xFF1F1E24) : const Color(0xFFF7F5F0),
+          color: isDark ? const Color(0xFF14141A) : const Color(0xFFF9F9FA),
         );
-      case 'gradient_type':
+      case 'creator_minimal':
+        return BoxDecoration(
+          color: isDark ? const Color(0xFF16161D) : const Color(0xFFF6F5F2),
+        );
+      case 'dark_impact':
+        return const BoxDecoration(
+          color: Color(0xFF0C0C10),
+        );
+      case 'luxury_editorial':
+        return BoxDecoration(
+          color: isDark ? const Color(0xFF1A1922) : const Color(0xFF22202A),
+        );
+      case 'soft_modern':
         return BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? [const Color(0xFF1E1B38), const Color(0xFF13131A)]
-                : [const Color(0xFFECE9FF), const Color(0xFFFDFDFD)],
+                ? [const Color(0xFF1E1B32), const Color(0xFF121218)]
+                : [const Color(0xFFEBE9F5), const Color(0xFFFFFFFF)],
           ),
         );
-      case 'luxe':
-        return BoxDecoration(
-          color: isDark ? const Color(0xFF16151D) : const Color(0xFF22202A),
+      case 'high_contrast':
+        return const BoxDecoration(
+          color: Color(0xFF000000),
         );
-      case 'clean_type':
+      case 'clean_editorial':
       default:
         return BoxDecoration(
-          color: isDark ? const Color(0xFF1C1C26) : const Color(0xFFFFFFFF),
+          color: isDark ? const Color(0xFF181820) : const Color(0xFFFFFFFF),
         );
     }
   }
@@ -159,7 +168,7 @@ class CDDesignTemplateCard extends StatelessWidget {
     final accent = profile.primaryColor;
 
     switch (id) {
-      case 'bold_statement':
+      case 'bold_typography':
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +176,7 @@ class CDDesignTemplateCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.22),
                 borderRadius: AppRadius.rSmall,
               ),
               child: Text(
@@ -180,10 +189,10 @@ class CDDesignTemplateCard extends StatelessWidget {
                 text,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.4,
                   height: 1.15,
                 ),
               ),
@@ -195,7 +204,82 @@ class CDDesignTemplateCard extends StatelessWidget {
           ],
         );
 
-      case 'impact':
+      case 'swiss_grid':
+        final textColor = isDark ? Colors.white : const Color(0xFF17171B);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'N° 01',
+                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: accent),
+                ),
+                Text(
+                  brandName.toUpperCase(),
+                  style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColor.withValues(alpha: 0.5)),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: textColor.withValues(alpha: 0.15), width: 1),
+                  bottom: BorderSide(color: textColor.withValues(alpha: 0.15), width: 1),
+                ),
+              ),
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                  height: 1.15,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ),
+            Text(
+              'SWIPE →',
+              style: TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: textColor.withValues(alpha: 0.5)),
+            ),
+          ],
+        );
+
+      case 'creator_minimal':
+        final textColor = isDark ? Colors.white : const Color(0xFF2C2A29);
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '✦',
+                style: TextStyle(fontSize: 11, color: accent),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                  height: 1.25,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                brandName,
+                style: TextStyle(fontSize: 8, color: textColor.withValues(alpha: 0.6), fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        );
+
+      case 'dark_impact':
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -215,103 +299,31 @@ class CDDesignTemplateCard extends StatelessWidget {
               text,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
                 letterSpacing: 0.2,
                 shadows: [
-                  Shadow(color: accent.withOpacity(0.6), blurRadius: 8),
+                  Shadow(color: accent.withValues(alpha: 0.5), blurRadius: 6),
                 ],
               ),
             ),
             Container(
               height: 2,
-              width: 32,
+              width: 28,
               color: accent,
             ),
           ],
         );
 
-      case 'editorial':
-        final textColor = isDark ? Colors.white : const Color(0xFF2C2A29);
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'VOL. 01',
-                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: textColor.withOpacity(0.5)),
-                ),
-                Text(
-                  brandName,
-                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: textColor.withOpacity(0.7)),
-                ),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.only(left: 6),
-              decoration: BoxDecoration(
-                border: Border(left: BorderSide(color: accent, width: 2)),
-              ),
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                  height: 1.25,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
-            Text(
-              'SWIPE FOR MORE →',
-              style: TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: textColor.withOpacity(0.5), letterSpacing: 0.5),
-            ),
-          ],
-        );
-
-      case 'gradient_type':
-        final textColor = isDark ? Colors.white : const Color(0xFF1E1B38);
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '✦',
-                style: TextStyle(fontSize: 12, color: accent),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                brandName,
-                style: TextStyle(fontSize: 8, color: textColor.withOpacity(0.6), fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-        );
-
-      case 'luxe':
+      case 'luxury_editorial':
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.amber.withOpacity(0.4), width: 0.8),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.4), width: 0.8),
                 borderRadius: AppRadius.rSmall,
               ),
               child: Text(
@@ -323,22 +335,86 @@ class CDDesignTemplateCard extends StatelessWidget {
               text,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFFF3F1E7),
-                letterSpacing: 0.5,
+                letterSpacing: 0.4,
+                height: 1.2,
               ),
             ),
             Text(
               brandName.toUpperCase(),
-              style: TextStyle(fontSize: 7, color: Colors.white.withOpacity(0.5), letterSpacing: 1.2),
+              style: TextStyle(fontSize: 7, color: Colors.white.withValues(alpha: 0.5), letterSpacing: 1.0),
             ),
           ],
         );
 
-      case 'clean_type':
+      case 'soft_modern':
+        final textColor = isDark ? Colors.white : const Color(0xFF1E1B32);
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'GUIDE',
+                  style: TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: accent),
+                ),
+                Text(
+                  brandName,
+                  style: TextStyle(fontSize: 7, color: textColor.withValues(alpha: 0.5)),
+                ),
+              ],
+            ),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: textColor,
+                height: 1.18,
+                letterSpacing: -0.2,
+              ),
+            ),
+            Container(
+              height: 3,
+              width: 18,
+              decoration: BoxDecoration(color: accent, borderRadius: AppRadius.rPill),
+            ),
+          ],
+        );
+
+      case 'high_contrast':
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'ISSUE // 2026',
+              style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: Colors.white54, letterSpacing: 0.5),
+            ),
+            Text(
+              text.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                height: 1.1,
+                letterSpacing: -0.3,
+              ),
+            ),
+            Text(
+              brandName.toUpperCase(),
+              style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.8),
+            ),
+          ],
+        );
+
+      case 'clean_editorial':
       default:
-        final textColor = isDark ? Colors.white : const Color(0xFF1A1A1E);
+        final textColor = isDark ? Colors.white : const Color(0xFF17171B);
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,20 +426,20 @@ class CDDesignTemplateCard extends StatelessWidget {
             Text(
               text,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: textColor,
-                height: 1.18,
-                letterSpacing: -0.3,
+                height: 1.2,
+                letterSpacing: -0.2,
               ),
             ),
             Row(
               children: [
-                Container(width: 14, height: 1.5, color: accent),
+                Container(width: 12, height: 1.5, color: accent),
                 const SizedBox(width: 4),
                 Text(
                   'READ MORE',
-                  style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColor.withOpacity(0.5)),
+                  style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColor.withValues(alpha: 0.5)),
                 ),
               ],
             ),

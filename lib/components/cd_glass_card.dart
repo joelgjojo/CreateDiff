@@ -11,6 +11,7 @@ class CDGlassCard extends StatelessWidget {
   final Color? borderColor;
   final VoidCallback? onTap;
   final bool elevated;
+  final bool useBlur;
 
   const CDGlassCard({
     super.key,
@@ -22,6 +23,7 @@ class CDGlassCard extends StatelessWidget {
     this.borderColor,
     this.onTap,
     this.elevated = false,
+    this.useBlur = false,
   });
 
   @override
@@ -30,10 +32,27 @@ class CDGlassCard extends StatelessWidget {
     final r = borderRadius ?? AppRadius.large;
 
     final defaultBg = isDark
-        ? (elevated ? AppColors.darkSurfaceElevated : AppColors.darkCardSurface)
-        : (elevated ? AppColors.surfaceElevated : AppColors.cardSurface);
+        ? (elevated ? AppColors.darkSurface2 : AppColors.darkSurface1)
+        : (elevated ? AppColors.lightSurface : AppColors.lightSurface);
 
-    final defaultBorder = isDark ? AppColors.darkGlassBorder : AppColors.glassBorder;
+    final defaultBorder = isDark
+        ? (elevated ? AppColors.darkBorder : AppColors.darkBorderSubtle)
+        : (elevated ? AppColors.lightBorder : AppColors.lightBorderSubtle);
+
+    Widget cardContent = Padding(
+      padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
+      child: child,
+    );
+
+    if (useBlur) {
+      cardContent = ClipRRect(
+        borderRadius: BorderRadius.circular(r),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: cardContent,
+        ),
+      );
+    }
 
     final card = Container(
       margin: margin,
@@ -47,36 +66,26 @@ class CDGlassCard extends StatelessWidget {
         boxShadow: elevated
             ? [
                 BoxShadow(
-                  color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
                 ),
               ]
-            : [
-                BoxShadow(
-                  color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.02),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+            : null,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(r),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
-            child: child,
-          ),
-        ),
-      ),
+      child: cardContent,
     );
 
     if (onTap != null) {
       return Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            AppHaptics.selection();
+            onTap!();
+          },
           borderRadius: BorderRadius.circular(r),
           child: card,
         ),

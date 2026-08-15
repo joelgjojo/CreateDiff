@@ -32,6 +32,7 @@ class CDExportShareSheet extends StatelessWidget {
   }
 
   void _copyAllContent(BuildContext context) {
+    AppHaptics.light();
     final c = project.generatedContent;
     if (c == null) return;
 
@@ -52,14 +53,15 @@ class CDExportShareSheet extends StatelessWidget {
     buffer.writeln('');
 
     buffer.writeln('─── CALL TO ACTION ───');
-    for (final cta in ctasList(c)) {
+    for (final cta in c.ctas) {
       buffer.writeln('• $cta');
     }
     buffer.writeln('');
 
     buffer.writeln('─── HASHTAGS ───');
-    final allTags = [...c.hashtagsHighReach, ...c.hashtagsMediumReach, ...c.hashtagsNiche];
-    buffer.writeln(allTags.join(' '));
+    buffer.writeln('Reach: ${c.hashtagsHighReach.join(' ')}');
+    buffer.writeln('Regional: ${c.hashtagsMediumReach.join(' ')}');
+    buffer.writeln('Niche: ${c.hashtagsNiche.join(' ')}');
     buffer.writeln('');
 
     if (c.coverText.isNotEmpty) {
@@ -72,7 +74,7 @@ class CDExportShareSheet extends StatelessWidget {
       const SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+            Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
             SizedBox(width: AppSpacing.sm),
             Text('Complete content pack copied to clipboard!'),
           ],
@@ -84,12 +86,8 @@ class CDExportShareSheet extends StatelessWidget {
     );
   }
 
-  List<String> ctasList(dynamic c) {
-    if (c.ctas is List<String>) return c.ctas;
-    return [];
-  }
-
   void _shareViaNative(BuildContext context) {
+    AppHaptics.light();
     final c = project.generatedContent;
     if (c == null) return;
 
@@ -105,8 +103,8 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkSecondaryBackground : AppColors.secondaryBackground;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final bg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
+    final primaryColor = AppColors.primary;
 
     final truncatedIdea = project.idea.length > 38
         ? '${project.idea.substring(0, 38)}...'
@@ -136,35 +134,37 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
               const SizedBox(height: AppSpacing.lg),
               // Success Icon Badge
               Container(
-                width: 56,
-                height: 56,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: (isDark ? AppColors.darkSuccess : AppColors.success).withOpacity(0.14),
+                  color: AppColors.success.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.check_rounded,
-                  color: isDark ? AppColors.darkSuccess : AppColors.success,
-                  size: 32,
+                  color: AppColors.success,
+                  size: 26,
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 'Ready to Publish',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                      fontSize: 18,
+                      color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                     ),
               ),
-              const SizedBox(height: AppSpacing.xs),
+              const SizedBox(height: 2),
               Text(
                 '${project.platform} ${project.contentType} • $truncatedIdea',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontSize: 12,
+                      color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                     ),
               ),
-              const SizedBox(height: AppSpacing.xl2),
+              const SizedBox(height: AppSpacing.xl),
               // Action List
               _buildActionTile(
                 context,
@@ -195,8 +195,8 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Design layout saved with this content pack!'),
-                        duration: Duration(milliseconds: 1500),
+                        content: Text('Design layout saved with this content pack'),
+                        duration: Duration(milliseconds: 1400),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -205,7 +205,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                   primaryColor: primaryColor,
                 ),
               ],
-              const SizedBox(height: AppSpacing.xl2),
+              const SizedBox(height: AppSpacing.xl),
               CDPrimaryButton(
                 label: 'Done & Return to Studio',
                 isFullWidth: true,
@@ -234,20 +234,23 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          AppHaptics.selection();
+          onTap();
+        },
         borderRadius: AppRadius.rMedium,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: AppSpacing.xs),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkAccent2 : AppColors.accent2,
+                  color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                   borderRadius: AppRadius.rMedium,
                 ),
-                child: Icon(icon, size: 20, color: primaryColor),
+                child: Icon(icon, size: 18, color: primaryColor),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -258,7 +261,8 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                       title,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                            fontSize: 13,
+                            color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                           ),
                     ),
                     const SizedBox(height: 2),
@@ -266,6 +270,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                       subtitle,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontSize: 11,
+                            color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                           ),
                     ),
                   ],
@@ -273,8 +278,8 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                size: 18,
-                color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
+                size: 16,
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
               ),
             ],
           ),

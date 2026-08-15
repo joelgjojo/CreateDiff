@@ -69,9 +69,14 @@ class StorageService {
 
   static Future<void> addProjectToHistory(ContentProject project) async {
     final current = getContentHistory();
-    // Remove if exists with same ID to update, then insert at top
     current.removeWhere((item) => item.id == project.id);
     current.insert(0, project);
+    await saveContentHistory(current);
+  }
+
+  static Future<void> removeProjectFromHistory(String id) async {
+    final current = getContentHistory();
+    current.removeWhere((item) => item.id == id);
     await saveContentHistory(current);
   }
 

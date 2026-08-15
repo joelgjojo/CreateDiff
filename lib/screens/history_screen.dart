@@ -1,112 +1,194 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../models/content_project.dart';
 import '../services/app_state.dart';
-import '../components/cd_platform_selector.dart';
 import '../components/cd_recent_content_card.dart';
 import '../components/cd_empty_state.dart';
 import 'content_result_screen.dart';
+import 'create_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
-  final VoidCallback? onOpenCreate;
-
-  const HistoryScreen({
-    super.key,
-    this.onOpenCreate,
-  });
+  const HistoryScreen({super.key});
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  String _selectedPlatform = 'All';
-  final List<String> _platforms = ['All', 'Instagram', 'YouTube', 'LinkedIn'];
+  String _selectedPlatformFilter = 'All';
+  final List<String> _filters = ['All', 'Instagram', 'YouTube', 'LinkedIn'];
+
+  List<ContentProject> _getFilteredHistory(List<ContentProject> all) {
+    if (_selectedPlatformFilter == 'All') return all;
+    return all
+        .where((p) => p.platform.toLowerCase() == _selectedPlatformFilter.toLowerCase())
+        .toList();
+  }
+
+  void _openProject(ContentProject project) {
+    AppState.instance.setCurrentProject(project);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ContentResultScreen(project: project),
+      ),
+    );
+  }
+
+  Future<void> _duplicateProject(ContentProject project) async {
+    AppHaptics.light();
+    final dup = await AppState.instance.duplicateProject(project);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Content pack duplicated!'),
+          duration: const Duration(milliseconds: 1400),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Open',
+            onPressed: () => _openProject(dup),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteProject(ContentProject project) async {
+    AppHaptics.light();
+    await AppState.instance.deleteProject(project.id);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Content pack deleted'),
+          duration: Duration(milliseconds: 1400),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = AppColors.primary;
     final appState = AppState.instance;
 
     return ListenableBuilder(
       listenable: appState,
       builder: (context, _) {
-        final allProjects = appState.contentHistory;
-        final filteredProjects = _selectedPlatform == 'All'
-            ? allProjects
-            : allProjects
-                .where((p) => p.platform.toLowerCase() == _selectedPlatform.toLowerCase())
-                .toList();
+        final allHistory = appState.contentHistory;
+        final filtered = _getFilteredHistory(allHistory);
 
         return Scaffold(
-          body: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.xl,
-                right: AppSpacing.xl,
-                top: AppSpacing.lg,
-                bottom: 100, // Clearance for bottom nav
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Content History',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                          color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
-                        ),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              'Content History',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'All your generated content packs & visual templates.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
-                        ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  // Platform Filter
-                  CDPlatformSelector(
-                    platforms: _platforms,
-                    selectedPlatform: _selectedPlatform,
-                    onPlatformSelected: (p) => setState(() => _selectedPlatform = p),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  // History Project List
-                  Expanded(
-                    child: filteredProjects.isEmpty
-                        ? CDEmptyState(
-                            icon: Icons.history_rounded,
-                            title: 'No saved content yet',
-                            message: _selectedPlatform == 'All'
-                                ? 'Your generated content packs will be archived here automatically.'
-                                : 'No content packs found for $_selectedPlatform.',
-                            actionLabel: 'Create New Content ✦',
-                            onAction: widget.onOpenCreate,
-                          )
-                        : ListView.separated(
-                            itemCount: filteredProjects.length,
-                            separatorBuilder: (ctx, idx) => const SizedBox(height: AppSpacing.sm),
-                            itemBuilder: (context, index) {
-                              final project = filteredProjects[index];
-                              return CDRecentContentCard(
-                                project: project,
-                                onTap: () {
-                                  appState.setCurrentProject(project);
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => ContentResultScreen(project: project),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
             ),
+            actions: [
+              if (allHistory.isNotEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.lg),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
+                        borderRadius: AppRadius.rPill,
+                      ),
+                      child: Text(
+                        '${allHistory.length} creations',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Filter Chips
+              if (allHistory.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xs),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _filters.map((f) {
+                        final isSelected = _selectedPlatformFilter == f;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: AppSpacing.sm),
+                          child: ChoiceChip(
+                            label: Text(f),
+                            selected: isSelected,
+                            onSelected: (_) {
+                              AppHaptics.selection();
+                              setState(() => _selectedPlatformFilter = f);
+                            },
+                            selectedColor: primaryColor,
+                            labelStyle: TextStyle(
+                              color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            ),
+                            backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
+                            shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: filtered.isEmpty
+                    ? CDEmptyState(
+                        icon: Icons.history_rounded,
+                        title: _selectedPlatformFilter == 'All'
+                            ? 'No creations yet'
+                            : 'No $_selectedPlatformFilter creations',
+                        message: 'Start with an idea and CreateDiff will build and store your personalized content packs here.',
+                        actionLabel: 'Create a pack ✦',
+                        onAction: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const CreateScreen(),
+                            ),
+                          );
+                        },
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(
+                          left: AppSpacing.xl,
+                          right: AppSpacing.xl,
+                          top: AppSpacing.md,
+                          bottom: 96,
+                        ),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final project = filtered[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            child: CDRecentContentCard(
+                              project: project,
+                              onTap: () => _openProject(project),
+                              onDuplicate: () => _duplicateProject(project),
+                              onDelete: () => _deleteProject(project),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           ),
         );
       },

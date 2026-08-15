@@ -44,9 +44,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   void _onNext() {
+    AppHaptics.light();
     if (_currentIndex < _slides.length - 1) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 320),
+        duration: const Duration(milliseconds: 280),
         curve: Curves.easeInOutCubic,
       );
     } else {
@@ -55,6 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _finishOnboarding() async {
+    AppHaptics.success();
     await AppState.instance.completeOnboarding();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
@@ -77,25 +79,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final primaryColor = AppColors.primary;
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar with Skip
+            // Top Bar with Brand & Skip
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'CreateDiff',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'CreateDiff',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
                   ),
                   if (_currentIndex < _slides.length - 1)
                     TextButton(
@@ -103,7 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Text(
                         'Skip',
                         style: TextStyle(
-                          color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
+                          color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -142,12 +158,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 220),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: isActive ? 24 : 8,
-                        height: 8,
+                        width: isActive ? 24 : 7,
+                        height: 7,
                         decoration: BoxDecoration(
                           color: isActive
                               ? primaryColor
-                              : (isDark ? AppColors.darkAccent3 : AppColors.accent3),
+                              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                           borderRadius: AppRadius.rPill,
                         ),
                       );

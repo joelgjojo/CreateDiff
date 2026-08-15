@@ -23,14 +23,14 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 900),
     );
 
     _fadeAnimation = CurvedAnimation(
       parent: _animController,
       curve: Curves.easeOutCubic,
     );
-    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.94, end: 1.0).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
 
@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _routeAfterDelay() async {
-    await Future.delayed(const Duration(milliseconds: 1900));
+    await Future.delayed(const Duration(milliseconds: 1600));
     if (!mounted) return;
 
     final appState = AppState.instance;
@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final primaryColor = AppColors.primary;
 
     return Scaffold(
       body: Center(
@@ -84,15 +84,14 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Minimalist typographic wordmark icon
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: 68,
+                  height: 68,
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkAccent1 : AppColors.accent1,
+                    color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                     borderRadius: AppRadius.rXl,
                     border: Border.all(
-                      color: primaryColor.withValues(alpha: 0.35),
+                      color: primaryColor.withValues(alpha: 0.4),
                       width: 1.5,
                     ),
                   ),
@@ -100,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Text(
                       'CD',
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: 24,
                         fontWeight: FontWeight.w900,
                         color: primaryColor,
                         letterSpacing: -1.0,
@@ -114,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen>
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.8,
-                        color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                        color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                       ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -124,7 +123,7 @@ class _SplashScreenState extends State<SplashScreen>
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.5,
-                    color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
+                    color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                   ),
                 ),
               ],

@@ -15,27 +15,29 @@ class CDBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-    final glassBg = isDark ? AppColors.darkSurfaceElevated : AppColors.surfaceElevated;
-    final glassBorder = isDark ? AppColors.darkGlassBorder : AppColors.glassBorder;
-    final inactiveColor = isDark ? AppColors.darkSecondaryText : AppColors.secondaryText;
+    final primaryColor = AppColors.primary;
+    final glassBg = isDark ? AppColors.glassDarkBg : AppColors.glassLightBg;
+    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final inactiveColor = isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
 
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.only(
-          left: AppSpacing.xl,
-          right: AppSpacing.xl,
-          bottom: AppSpacing.sm,
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          bottom: AppSpacing.xs,
         ),
         child: Container(
-          height: 64,
+          height: 58,
           decoration: BoxDecoration(
-            color: glassBg.withOpacity(isDark ? 0.88 : 0.92),
+            color: glassBg,
             borderRadius: AppRadius.rXl,
-            border: Border.all(color: glassBorder, width: 1.0),
+            border: Border.all(color: border, width: 1.0),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withOpacity(0.35) : Colors.black.withOpacity(0.06),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.05),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               ),
@@ -44,13 +46,14 @@ class CDBottomNavBar extends StatelessWidget {
           child: ClipRRect(
             borderRadius: AppRadius.rXl,
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildTab(
                     index: 0,
-                    icon: Icons.home_rounded,
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home_rounded,
                     label: 'Home',
                     activeColor: primaryColor,
                     inactiveColor: inactiveColor,
@@ -69,6 +72,7 @@ class CDBottomNavBar extends StatelessWidget {
                   _buildTab(
                     index: 3,
                     icon: Icons.history_rounded,
+                    activeIcon: Icons.history_rounded,
                     label: 'History',
                     activeColor: primaryColor,
                     inactiveColor: inactiveColor,
@@ -100,32 +104,34 @@ class CDBottomNavBar extends StatelessWidget {
   }) {
     final isSelected = selectedIndex == index;
     return Expanded(
-      child: InkWell(
-        onTap: () => onTabChanged(index),
-        borderRadius: AppRadius.rLarge,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedScale(
-              scale: isSelected ? 1.08 : 1.0,
-              duration: const Duration(milliseconds: 150),
-              child: Icon(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            AppHaptics.selection();
+            onTabChanged(index);
+          },
+          borderRadius: AppRadius.rLarge,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
                 isSelected ? (activeIcon ?? icon) : icon,
                 color: isSelected ? activeColor : inactiveColor,
-                size: 22,
+                size: 20,
               ),
-            ),
-            const SizedBox(height: 3),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 150),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? activeColor : inactiveColor,
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? activeColor : inactiveColor,
+                  letterSpacing: -0.1,
+                ),
               ),
-              child: Text(label),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -134,34 +140,45 @@ class CDBottomNavBar extends StatelessWidget {
   Widget _buildCreateTab({required Color activeColor}) {
     final isSelected = selectedIndex == 1;
     return Expanded(
-      child: InkWell(
-        onTap: () => onTabChanged(1),
-        borderRadius: AppRadius.rLarge,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: isSelected ? activeColor : activeColor.withOpacity(0.14),
-                shape: BoxShape.circle,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            AppHaptics.light();
+            onTabChanged(1);
+          },
+          borderRadius: AppRadius.rLarge,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isSelected ? activeColor : activeColor.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.rPill,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.add_rounded,
+                      color: isSelected ? Colors.white : activeColor,
+                      size: 15,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      'Create',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isSelected ? Colors.white : activeColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Icon(
-                Icons.add_rounded,
-                color: isSelected ? Colors.white : activeColor,
-                size: 20,
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              'Create',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: activeColor,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

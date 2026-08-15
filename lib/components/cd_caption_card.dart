@@ -45,23 +45,24 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
   }
 
   void _copyCaption() {
+    AppHaptics.light();
     Clipboard.setData(ClipboardData(text: _controller.text));
     setState(() => _copied = true);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+            Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
             SizedBox(width: AppSpacing.sm),
             Text('Caption copied to clipboard'),
           ],
         ),
-        duration: Duration(milliseconds: 1600),
+        duration: Duration(milliseconds: 1500),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.tertiary,
+        backgroundColor: Color(0xFF282831),
       ),
     );
-    Future.delayed(const Duration(milliseconds: 1800), () {
+    Future.delayed(const Duration(milliseconds: 1600), () {
       if (mounted) setState(() => _copied = false);
     });
   }
@@ -69,11 +70,10 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final primaryColor = AppColors.primary;
     final wordCount = _controller.text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
 
     return CDGlassCard(
-      elevated: true,
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,9 +84,9 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkAccent2 : AppColors.accent2,
+                      color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                       borderRadius: AppRadius.rPill,
                     ),
                     child: Text(
@@ -94,7 +94,7 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: primaryColor,
+                        color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -104,6 +104,7 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
                     '$wordCount words',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 11,
+                          color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                         ),
                   ),
                 ],
@@ -112,6 +113,7 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
                 children: [
                   TextButton.icon(
                     onPressed: () {
+                      AppHaptics.selection();
                       setState(() {
                         if (_isEditing) {
                           widget.onCaptionChanged?.call(_controller.text);
@@ -121,11 +123,11 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
                     },
                     icon: Icon(
                       _isEditing ? Icons.check_rounded : Icons.edit_outlined,
-                      size: 15,
+                      size: 14,
                       color: primaryColor,
                     ),
                     label: Text(
-                      _isEditing ? 'Save' : 'Edit',
+                      _isEditing ? 'Done' : 'Edit',
                       style: TextStyle(fontSize: 12, color: primaryColor, fontWeight: FontWeight.w600),
                     ),
                     style: TextButton.styleFrom(
@@ -134,19 +136,21 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
+                  const SizedBox(width: AppSpacing.xs),
                   IconButton(
                     icon: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
+                      duration: const Duration(milliseconds: 180),
                       child: Icon(
                         _copied ? Icons.check_rounded : Icons.content_copy_rounded,
                         key: ValueKey(_copied),
-                        size: 16,
-                        color: _copied ? AppColors.success : (isDark ? AppColors.darkSecondaryText : AppColors.secondaryText),
+                        size: 15,
+                        color: _copied
+                            ? AppColors.success
+                            : (isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText),
                       ),
                     ),
                     tooltip: 'Copy Caption',
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                     padding: EdgeInsets.zero,
                     onPressed: _copyCaption,
                   ),
@@ -160,12 +164,12 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
               controller: _controller,
               maxLines: null,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.6,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                    height: 1.55,
+                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                   ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: isDark ? AppColors.darkAccent3 : AppColors.accent3,
+                fillColor: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                 border: OutlineInputBorder(
                   borderRadius: AppRadius.rMedium,
                   borderSide: BorderSide(color: primaryColor),
@@ -177,8 +181,8 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
             SelectableText(
               _controller.text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.6,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                    height: 1.55,
+                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                   ),
             ),
         ],

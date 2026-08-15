@@ -22,43 +22,45 @@ class CDErrorState extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl3),
+        padding: const EdgeInsets.all(AppSpacing.xl2),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: (isDark ? AppColors.darkError : AppColors.error).withOpacity(0.12),
+                color: AppColors.error.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.error_outline_rounded,
-                size: 40,
-                color: isDark ? AppColors.darkError : AppColors.error,
+                size: 28,
+                color: AppColors.error,
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.md),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                    fontSize: 16,
+                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                   ),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: 4),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                   ),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: AppSpacing.xl2),
+              const SizedBox(height: AppSpacing.xl),
               CDPrimaryButton(
                 label: retryLabel ?? 'Try Again',
+                height: 44,
                 onPressed: onRetry,
               ),
             ],

@@ -32,9 +32,8 @@ class CDTextInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-    final fillBg = isDark ? AppColors.darkCardSurface : AppColors.cardSurface;
-    final border = isDark ? AppColors.darkGlassBorder : AppColors.glassBorder;
+    final fillBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
+    final border = isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,20 +45,21 @@ class CDTextInput extends StatelessWidget {
                 label!,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                      fontSize: 13,
+                      color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                     ),
               ),
               if (isRequired)
-                Text(
+                const Text(
                   ' *',
                   style: TextStyle(
-                    color: isDark ? AppColors.darkError : AppColors.error,
+                    color: AppColors.error,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: 6),
         ],
         Container(
           decoration: BoxDecoration(
@@ -75,23 +75,25 @@ class CDTextInput extends StatelessWidget {
             minLines: minLines,
             keyboardType: keyboardType,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                  color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                   fontWeight: FontWeight.w400,
                 ),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isDark ? AppColors.darkSecondaryText.withOpacity(0.7) : AppColors.secondaryText.withOpacity(0.7),
+                    color: isDark
+                        ? AppColors.darkSecondaryText.withValues(alpha: 0.7)
+                        : AppColors.lightSecondaryText.withValues(alpha: 0.7),
                   ),
               prefixIcon: prefixIcon,
               suffixIcon: suffixIcon,
               border: InputBorder.none,
               focusedBorder: OutlineInputBorder(
                 borderRadius: AppRadius.rMedium,
-                borderSide: BorderSide(color: primaryColor, width: 1.6),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
               ),
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
+                horizontal: AppSpacing.md,
                 vertical: AppSpacing.md,
               ),
             ),

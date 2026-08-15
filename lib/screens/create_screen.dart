@@ -11,11 +11,13 @@ import 'content_result_screen.dart';
 class CreateScreen extends StatefulWidget {
   final String? initialPlatform;
   final String? initialContentType;
+  final String? initialIdea;
 
   const CreateScreen({
     super.key,
     this.initialPlatform,
     this.initialContentType,
+    this.initialIdea,
   });
 
   @override
@@ -26,12 +28,13 @@ class _CreateScreenState extends State<CreateScreen> {
   int _currentStep = 0;
   late String _selectedPlatform;
   String _selectedContentType = 'Reel';
-  final TextEditingController _ideaController = TextEditingController();
+  late TextEditingController _ideaController;
 
   bool _showFineTune = false;
   late String _selectedLanguage;
   late String _selectedTone;
-  String _selectedLength = 'Medium';
+  late String _selectedCTAStyle;
+  late String _selectedEmojiUsage;
 
   final List<String> _platforms = ['Instagram', 'YouTube', 'LinkedIn'];
 
@@ -54,7 +57,28 @@ class _CreateScreenState extends State<CreateScreen> {
     'Telugu',
   ];
 
-  final List<String> _lengths = ['Short', 'Medium', 'Long'];
+  final List<String> _ctaStyles = [
+    'Direct',
+    'Question',
+    'Urgency',
+    'Subtle',
+  ];
+
+  final List<String> _emojiLevels = [
+    'none',
+    'minimal',
+    'moderate',
+    'heavy',
+  ];
+
+  final List<String> _suggestionChips = [
+    '5 AI tools students should know',
+    'Launch announcement for our cafe',
+    '3 productivity tips for creators',
+    'Mistakes I made in my 20s',
+    'Step-by-step workflow breakdown',
+    'Behind the scenes of our project',
+  ];
 
   @override
   void initState() {
@@ -62,11 +86,15 @@ class _CreateScreenState extends State<CreateScreen> {
     final profile = AppState.instance.profile;
     _selectedPlatform = widget.initialPlatform ?? 'Instagram';
     _selectedContentType = widget.initialContentType ?? _getDefaultTypeForPlatform(_selectedPlatform);
+    _ideaController = TextEditingController(text: widget.initialIdea ?? '');
+
     _selectedLanguage = profile.primaryLanguage.isNotEmpty ? profile.primaryLanguage : 'English';
     _selectedTone = profile.tone.isNotEmpty ? profile.tone : 'Educational';
+    _selectedCTAStyle = profile.preferredCTAStyle.isNotEmpty ? profile.preferredCTAStyle : 'Direct';
+    _selectedEmojiUsage = profile.emojiUsage.isNotEmpty ? profile.emojiUsage : 'moderate';
 
-    if (widget.initialPlatform != null) {
-      _currentStep = 1; // Jump directly to idea input if platform was preselected from Home quick action
+    if (widget.initialPlatform != null || (widget.initialIdea != null && widget.initialIdea!.isNotEmpty)) {
+      _currentStep = 1;
     }
   }
 
@@ -93,7 +121,7 @@ class _CreateScreenState extends State<CreateScreen> {
     if (idea.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please describe your content idea first'),
+          content: Text('Please describe what you want to create'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -107,7 +135,6 @@ class _CreateScreenState extends State<CreateScreen> {
       idea: idea,
       tone: _selectedTone,
       language: _selectedLanguage,
-      length: _selectedLength,
     );
 
     if (!mounted) return;
@@ -143,7 +170,7 @@ class _CreateScreenState extends State<CreateScreen> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded),
               onPressed: () {
-                if (_currentStep > 0 && widget.initialPlatform == null) {
+                if (_currentStep > 0 && widget.initialPlatform == null && widget.initialIdea == null) {
                   setState(() => _currentStep--);
                 } else {
                   Navigator.of(context).pop();
@@ -151,10 +178,10 @@ class _CreateScreenState extends State<CreateScreen> {
               },
             ),
             title: Text(
-              _currentStep == 0 ? 'Choose Format' : 'Describe Idea',
+              _currentStep == 0 ? 'Choose Platform & Format' : 'What\'s the idea?',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                   ),
             ),
             actions: [
@@ -164,7 +191,7 @@ class _CreateScreenState extends State<CreateScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkAccent3 : AppColors.accent3,
+                      color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                       borderRadius: AppRadius.rPill,
                     ),
                     child: Text(
@@ -172,7 +199,7 @@ class _CreateScreenState extends State<CreateScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
+                        color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                       ),
                     ),
                   ),
@@ -195,12 +222,12 @@ class _CreateScreenState extends State<CreateScreen> {
                   padding: const EdgeInsets.all(AppSpacing.xl),
                   child: _currentStep == 0
                       ? CDPrimaryButton(
-                          label: 'Continue',
+                          label: 'Continue to Idea →',
                           isFullWidth: true,
                           onPressed: () => setState(() => _currentStep = 1),
                         )
                       : CDPrimaryButton(
-                          label: 'Create Content ✦',
+                          label: 'Create Content Pack ✦',
                           isFullWidth: true,
                           onPressed: _handleGenerate,
                         ),
@@ -223,15 +250,20 @@ class _CreateScreenState extends State<CreateScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'What are you publishing?',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          'Select platform & format',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+              ),
         ),
         const SizedBox(height: 4),
         Text(
-          'Select platform and content format to optimize output structure.',
-          style: Theme.of(context).textTheme.bodyMedium,
+          'CreateDiff structures your hook, caption length, and layout specifically for each format.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              ),
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: AppSpacing.xl),
         CDPlatformSelector(
           platforms: _platforms,
           selectedPlatform: _selectedPlatform,
@@ -242,7 +274,7 @@ class _CreateScreenState extends State<CreateScreen> {
             });
           },
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: AppSpacing.xl),
         _buildContentTypeGrid(),
       ],
     );
@@ -256,9 +288,9 @@ class _CreateScreenState extends State<CreateScreen> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.12,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.15,
       ),
       itemCount: types.length,
       itemBuilder: (context, index) {
@@ -281,15 +313,15 @@ class _CreateScreenState extends State<CreateScreen> {
     switch (platform.toLowerCase()) {
       case 'youtube':
         return [
-          {'type': 'video', 'label': 'Video', 'icon': Icons.play_circle_fill_rounded, 'desc': 'Long-form video script & breakdown'},
-          {'type': 'short', 'label': 'Short', 'icon': Icons.short_text_rounded, 'desc': 'High-retention vertical short'},
-          {'type': 'community', 'label': 'Community', 'icon': Icons.forum_rounded, 'desc': 'Engaging poll or text post'},
+          {'type': 'video', 'label': 'Video', 'icon': Icons.play_circle_fill_rounded, 'desc': 'Long-form breakdown & timestamps'},
+          {'type': 'short', 'label': 'Short', 'icon': Icons.short_text_rounded, 'desc': 'Fast vertical short hook & script'},
+          {'type': 'community', 'label': 'Community', 'icon': Icons.forum_rounded, 'desc': 'Engaging subscriber post'},
         ];
       case 'linkedin':
         return [
           {'type': 'post', 'label': 'Post', 'icon': Icons.article_rounded, 'desc': 'Actionable professional framework'},
           {'type': 'story', 'label': 'Story', 'icon': Icons.lightbulb_outline_rounded, 'desc': 'Personal founder lesson & story'},
-          {'type': 'article', 'label': 'Article', 'icon': Icons.description_outlined, 'desc': 'Deep-dive industry analysis'},
+          {'type': 'article', 'label': 'Article', 'icon': Icons.description_outlined, 'desc': 'In-depth industry analysis'},
         ];
       case 'instagram':
       default:
@@ -303,72 +335,141 @@ class _CreateScreenState extends State<CreateScreen> {
   }
 
   Widget _buildStep1IdeaInput(bool isDark) {
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final primaryColor = AppColors.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Platform & Format Summary Tag
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkAccent1 : AppColors.accent1,
-            borderRadius: AppRadius.rPill,
-            border: Border.all(color: primaryColor.withOpacity(0.3), width: 1),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.auto_awesome_rounded, size: 13, color: primaryColor),
-              const SizedBox(width: 5),
-              Text(
-                '$_selectedPlatform $_selectedContentType',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: primaryColor,
-                ),
+        // Target format badge
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
+                borderRadius: AppRadius.rPill,
+                border: Border.all(color: isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle),
               ),
-            ],
-          ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.auto_awesome_rounded, size: 12, color: primaryColor),
+                  const SizedBox(width: 5),
+                  Text(
+                    '$_selectedPlatform $_selectedContentType',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () => setState(() => _currentStep = 0),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text('Change Format', style: TextStyle(fontSize: 12)),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.lg),
         Text(
-          'What\'s your content about?',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          'What do you want to create?',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+              ),
         ),
         const SizedBox(height: 4),
         Text(
-          'Just describe your idea in natural words. CreateDiff handles the prompt and formatting.',
-          style: Theme.of(context).textTheme.bodyMedium,
+          'Describe your idea naturally. CreateDiff turns it into structured, ready-to-post content.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              ),
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: AppSpacing.xl),
         CDTextInput(
-          hint: 'e.g., 5 AI tools every college student should know to save 10 hours a week...',
+          hint: 'e.g. 5 AI tools every college student should know to save 10 hours a week...',
           controller: _ideaController,
-          maxLines: 5,
-          minLines: 4,
+          maxLines: 4,
+          minLines: 3,
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: AppSpacing.md),
+
+        // Idea inspiration chips
+        Text(
+          'Quick idea starters',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              ),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: _suggestionChips.map((chip) {
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  AppHaptics.selection();
+                  setState(() => _ideaController.text = chip);
+                },
+                borderRadius: AppRadius.rPill,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
+                    borderRadius: AppRadius.rPill,
+                    border: Border.all(
+                      color: isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '+ $chip',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: AppSpacing.xl),
 
         // Collapsible Fine-Tune Section
         Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () => setState(() => _showFineTune = !_showFineTune),
+            onTap: () {
+              AppHaptics.selection();
+              setState(() => _showFineTune = !_showFineTune);
+            },
             borderRadius: AppRadius.rMedium,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: 2),
               child: Row(
                 children: [
                   Icon(
-                    _showFineTune ? Icons.tune_rounded : Icons.tune_rounded,
-                    size: 16,
+                    Icons.tune_rounded,
+                    size: 15,
                     color: primaryColor,
                   ),
-                  const SizedBox(width: AppSpacing.sm),
+                  const SizedBox(width: 6),
                   Text(
-                    'Fine-tune controls (optional)',
+                    'Fine-tune parameters (optional)',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -378,7 +479,7 @@ class _CreateScreenState extends State<CreateScreen> {
                   const Spacer(),
                   Icon(
                     _showFineTune ? Icons.expand_less_rounded : Icons.expand_more_rounded,
-                    size: 20,
+                    size: 18,
                     color: primaryColor,
                   ),
                 ],
@@ -390,14 +491,14 @@ class _CreateScreenState extends State<CreateScreen> {
         AnimatedCrossFade(
           firstChild: const SizedBox.shrink(),
           secondChild: Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.md),
+            padding: const EdgeInsets.only(top: AppSpacing.sm),
             child: Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
-                borderRadius: AppRadius.rLarge,
+                color: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
+                borderRadius: AppRadius.rMedium,
                 border: Border.all(
-                  color: isDark ? AppColors.darkGlassBorder : AppColors.glassBorder,
+                  color: isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle,
                   width: 1,
                 ),
               ),
@@ -406,9 +507,9 @@ class _CreateScreenState extends State<CreateScreen> {
                 children: [
                   Text(
                     'Language',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 12),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: 4),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -420,21 +521,21 @@ class _CreateScreenState extends State<CreateScreen> {
                         onSelected: (_) => setState(() => _selectedLanguage = l),
                         selectedColor: primaryColor,
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                          color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                           fontSize: 11,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                         ),
-                        backgroundColor: isDark ? AppColors.darkAccent3 : AppColors.accent3,
+                        backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                         shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
                       );
                     }).toList(),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Tone',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+                    'Tone of voice',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 12),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: 4),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -446,37 +547,63 @@ class _CreateScreenState extends State<CreateScreen> {
                         onSelected: (_) => setState(() => _selectedTone = t),
                         selectedColor: primaryColor,
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                          color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                           fontSize: 11,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                         ),
-                        backgroundColor: isDark ? AppColors.darkAccent3 : AppColors.accent3,
+                        backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                         shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
                       );
                     }).toList(),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Length',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+                    'Call to Action (CTA) Style',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 12),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: 4),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
-                    children: _lengths.map((len) {
-                      final isSelected = _selectedLength == len;
+                    children: _ctaStyles.map((cta) {
+                      final isSelected = _selectedCTAStyle == cta;
                       return ChoiceChip(
-                        label: Text(len),
+                        label: Text(cta),
                         selected: isSelected,
-                        onSelected: (_) => setState(() => _selectedLength = len),
+                        onSelected: (_) => setState(() => _selectedCTAStyle = cta),
                         selectedColor: primaryColor,
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                          color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                           fontSize: 11,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                         ),
-                        backgroundColor: isDark ? AppColors.darkAccent3 : AppColors.accent3,
+                        backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
+                        shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Emoji Density',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _emojiLevels.map((lvl) {
+                      final isSelected = _selectedEmojiUsage == lvl;
+                      return ChoiceChip(
+                        label: Text(lvl.toUpperCase()),
+                        selected: isSelected,
+                        onSelected: (_) => setState(() => _selectedEmojiUsage = lvl),
+                        selectedColor: primaryColor,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                          fontSize: 10,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                        backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                         shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
                       );
                     }).toList(),
@@ -486,7 +613,7 @@ class _CreateScreenState extends State<CreateScreen> {
             ),
           ),
           crossFadeState: _showFineTune ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 220),
+          duration: const Duration(milliseconds: 200),
         ),
       ],
     );

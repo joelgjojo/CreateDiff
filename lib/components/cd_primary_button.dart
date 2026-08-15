@@ -18,7 +18,7 @@ class CDPrimaryButton extends StatefulWidget {
     this.icon,
     this.isLoading = false,
     this.isFullWidth = false,
-    this.height = 48.0,
+    this.height = 52.0,
     this.backgroundColor,
     this.textColor,
   });
@@ -39,7 +39,7 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
       vsync: this,
       duration: const Duration(milliseconds: 90),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
@@ -52,11 +52,8 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
     final isEnabled = widget.onPressed != null && !widget.isLoading;
-
-    final btnColor = widget.backgroundColor ?? primaryColor;
+    final btnColor = widget.backgroundColor ?? AppColors.primary;
     final txtColor = widget.textColor ?? Colors.white;
 
     Widget content = Row(
@@ -82,6 +79,7 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: txtColor,
                   fontWeight: FontWeight.w600,
+                  fontSize: 15,
                   letterSpacing: 0.1,
                 ),
           ),
@@ -101,7 +99,7 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
         child: Container(
           height: widget.height,
           constraints: BoxConstraints(
-            minWidth: widget.isFullWidth ? double.infinity : 100,
+            minWidth: widget.isFullWidth ? double.infinity : 110,
           ),
           decoration: BoxDecoration(
             color: btnColor,
@@ -109,8 +107,8 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
             boxShadow: isEnabled
                 ? [
                     BoxShadow(
-                      color: btnColor.withOpacity(0.24),
-                      blurRadius: 10,
+                      color: btnColor.withValues(alpha: 0.28),
+                      blurRadius: 12,
                       offset: const Offset(0, 3),
                     ),
                   ]
@@ -119,7 +117,12 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: isEnabled ? widget.onPressed : null,
+              onTap: isEnabled
+                  ? () {
+                      AppHaptics.light();
+                      widget.onPressed!();
+                    }
+                  : null,
               onTapDown: (_) {
                 if (isEnabled) _controller.forward();
               },
@@ -131,7 +134,7 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
               },
               borderRadius: AppRadius.rMedium,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                 child: Center(child: content),
               ),
             ),

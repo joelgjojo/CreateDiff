@@ -41,6 +41,8 @@ class CreatorProfile {
     this.youtubeHandle = '',
   });
 
+  String get handle => username.isNotEmpty ? username : '@creator';
+
   CreatorProfile copyWith({
     String? creatorName,
     String? username,

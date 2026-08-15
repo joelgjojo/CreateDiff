@@ -25,44 +25,56 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
 
   final List<DesignTemplate> _templates = const [
     DesignTemplate(
-      id: 'clean_type',
-      name: 'Clean Type',
-      style: 'minimal',
-      description: 'High-contrast typography with spacious margins',
+      id: 'clean_editorial',
+      name: 'Clean Editorial',
+      style: 'editorial',
+      description: 'Generous margins and high-contrast editorial typography',
     ),
     DesignTemplate(
-      id: 'bold_statement',
-      name: 'Bold Statement',
+      id: 'bold_typography',
+      name: 'Bold Typography',
       style: 'bold',
       description: 'Full-bleed brand accent with heavy header weight',
     ),
     DesignTemplate(
-      id: 'editorial',
-      name: 'Editorial',
-      style: 'premium',
-      description: 'Sophisticated publication-style layout with side rules',
-    ),
-    DesignTemplate(
-      id: 'gradient_type',
-      name: 'Gradient Type',
+      id: 'swiss_grid',
+      name: 'Swiss Grid',
       style: 'minimal',
-      description: 'Subtle atmospheric gradient with centered typographic focus',
+      description: 'Structured asymmetric grid with precise rule lines',
     ),
     DesignTemplate(
-      id: 'impact',
-      name: 'Impact Dark',
+      id: 'creator_minimal',
+      name: 'Creator Minimal',
+      style: 'minimal',
+      description: 'Atmospheric neutral background with subtle typography focus',
+    ),
+    DesignTemplate(
+      id: 'dark_impact',
+      name: 'Dark Impact',
       style: 'bold',
-      description: 'Deep graphite background with glowing neon accent rule',
+      description: 'Deep obsidian background with glowing brand accent rule',
     ),
     DesignTemplate(
-      id: 'luxe',
-      name: 'Luxe Minimal',
+      id: 'luxury_editorial',
+      name: 'Luxury Editorial',
       style: 'premium',
       description: 'Refined dark tone with gold/amber framing',
     ),
+    DesignTemplate(
+      id: 'soft_modern',
+      name: 'Soft Modern',
+      style: 'editorial',
+      description: 'Soft gradient tone with structured modern hierarchy',
+    ),
+    DesignTemplate(
+      id: 'high_contrast',
+      name: 'High Contrast',
+      style: 'bold',
+      description: 'Stark black and white punchy typographic poster layout',
+    ),
   ];
 
-  final List<String> _filters = ['All', 'Minimal', 'Bold', 'Premium'];
+  final List<String> _filters = ['All', 'Minimal', 'Bold', 'Editorial', 'Premium'];
 
   List<DesignTemplate> get _filteredTemplates {
     if (_selectedStyleFilter == 'All') return _templates;
@@ -72,6 +84,7 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
   }
 
   void _onUseDesign() {
+    AppHaptics.light();
     final chosen = _templates[_selectedIndex];
     AppState.instance.updateCurrentProjectDesign(
       templateName: chosen.name,
@@ -94,7 +107,7 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final primaryColor = AppColors.primary;
     final appState = AppState.instance;
     final profile = appState.profile;
     final coverText = widget.project.generatedContent?.coverText ?? widget.project.idea;
@@ -113,12 +126,13 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
           'Choose Design Direction',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
               ),
         ),
         actions: [
           TextButton(
             onPressed: () {
+              AppHaptics.selection();
               CDExportShareSheet.show(
                 context,
                 project: widget.project,
@@ -128,7 +142,7 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
             child: Text(
               'Skip',
               style: TextStyle(
-                color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -139,7 +153,7 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
         children: [
           // Filter Chips Row
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xs),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -150,14 +164,17 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
                     child: ChoiceChip(
                       label: Text(filter),
                       selected: isSelected,
-                      onSelected: (_) => setState(() => _selectedStyleFilter = filter),
+                      onSelected: (_) {
+                        AppHaptics.selection();
+                        setState(() => _selectedStyleFilter = filter);
+                      },
                       selectedColor: primaryColor,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                        color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                         fontSize: 12,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                       ),
-                      backgroundColor: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
+                      backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
                       shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
                     ),
                   );
@@ -168,12 +185,12 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
           // 2-Column Template Grid
           Expanded(
             child: GridView.builder(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: 0.72,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.74,
               ),
               itemCount: filtered.length,
               itemBuilder: (context, index) {
@@ -193,12 +210,12 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
           ),
           // Bottom Primary Button
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: 12),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurfaceElevated : AppColors.surfaceElevated,
+              color: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
               border: Border(
                 top: BorderSide(
-                  color: isDark ? AppColors.darkGlassBorder : AppColors.glassBorder,
+                  color: isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle,
                   width: 1.0,
                 ),
               ),
@@ -206,7 +223,8 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
             child: SafeArea(
               top: false,
               child: CDPrimaryButton(
-                label: 'Use ${_templates[_selectedIndex].name} Design ✦',
+                label: 'Use ${_templates[_selectedIndex].name} Layout ✦',
+                height: 48,
                 isFullWidth: true,
                 onPressed: _onUseDesign,
               ),

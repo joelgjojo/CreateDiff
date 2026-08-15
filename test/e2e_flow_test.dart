@@ -1,7 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:creatediff/models/creator_profile.dart';
-import 'package:creatediff/models/content_project.dart';
 import 'package:creatediff/services/ai_service.dart';
 import 'package:creatediff/services/storage_service.dart';
 import 'package:creatediff/services/app_state.dart';
@@ -9,7 +9,7 @@ import 'package:creatediff/services/app_state.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('CreateDiff End-to-End Core Workflow Tests', () {
+  group('CreateDiff V2 End-to-End Core Workflow Tests', () {
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
       await AppState.instance.init();
@@ -59,7 +59,7 @@ void main() {
       expect(content.coverText.isNotEmpty, isTrue);
     });
 
-    test('2. Complete end-to-end flow state transitions', () async {
+    test('2. Complete end-to-end flow state transitions with design, duplicate, delete, and theme', () async {
       final appState = AppState.instance;
 
       // User onboards & sets up profile
@@ -91,17 +91,31 @@ void main() {
 
       // User selects a visual design direction
       await appState.updateCurrentProjectDesign(
-        templateName: 'Bold Statement',
-        style: 'bold',
+        templateName: 'Clean Editorial',
+        style: 'editorial',
       );
 
-      expect(appState.currentProject?.selectedDesignTemplate, equals('Bold Statement'));
-      expect(appState.contentHistory.first.selectedDesignTemplate, equals('Bold Statement'));
+      expect(appState.currentProject?.selectedDesignTemplate, equals('Clean Editorial'));
+      expect(appState.contentHistory.first.selectedDesignTemplate, equals('Clean Editorial'));
+
+      // User duplicates content pack in history
+      final duplicated = await appState.duplicateProject(project!);
+      expect(appState.contentHistory.length, equals(2));
+      expect(duplicated.id, isNot(equals(project.id)));
+
+      // User deletes the duplicated content pack
+      await appState.deleteProject(duplicated.id);
+      expect(appState.contentHistory.length, equals(1));
+
+      // Theme toggle test
+      await appState.setThemeMode(ThemeMode.dark);
+      expect(appState.themeMode, equals(ThemeMode.dark));
+      expect(StorageService.getThemeMode(), equals('dark'));
 
       // User checks history persistence
       final savedHistory = StorageService.getContentHistory();
       expect(savedHistory.length, equals(1));
-      expect(savedHistory.first.id, equals(project!.id));
+      expect(savedHistory.first.id, equals(project.id));
     });
   });
 }

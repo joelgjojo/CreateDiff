@@ -21,7 +21,6 @@ class _MainShellState extends State<MainShell> {
 
   void _onTabSelected(int index) {
     if (index == 1) {
-      // Tap on Create tab opens CreateScreen
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => const CreateScreen(),
@@ -39,7 +38,6 @@ class _MainShellState extends State<MainShell> {
           onNavigateToHistory: () => setState(() => _currentTabIndex = 3),
         );
       case 2:
-        // Design Gallery tab
         final latestProject = appState.currentProject ??
             (appState.contentHistory.isNotEmpty
                 ? appState.contentHistory.first
@@ -56,15 +54,7 @@ class _MainShellState extends State<MainShell> {
                   ));
         return DesignSelectionScreen(project: latestProject);
       case 3:
-        return HistoryScreen(
-          onOpenCreate: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const CreateScreen(),
-              ),
-            );
-          },
-        );
+        return const HistoryScreen();
       case 4:
       default:
         return const ProfileScreen();

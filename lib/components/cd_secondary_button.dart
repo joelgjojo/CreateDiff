@@ -14,20 +14,20 @@ class CDSecondaryButton extends StatelessWidget {
     this.onPressed,
     this.icon,
     this.isFullWidth = false,
-    this.height = 44.0,
+    this.height = 52.0,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-    final bg = isDark ? AppColors.darkAccent2 : AppColors.accent2;
-    final border = isDark ? AppColors.darkPrimary.withOpacity(0.2) : AppColors.primary.withOpacity(0.2);
+    final bg = isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface;
+    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final textColor = isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText;
 
     return Container(
       height: height,
       constraints: BoxConstraints(
-        minWidth: isFullWidth ? double.infinity : 90,
+        minWidth: isFullWidth ? double.infinity : 96,
       ),
       decoration: BoxDecoration(
         color: bg,
@@ -37,10 +37,15 @@ class CDSecondaryButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onPressed,
+          onTap: onPressed != null
+              ? () {
+                  AppHaptics.light();
+                  onPressed!();
+                }
+              : null,
           borderRadius: AppRadius.rMedium,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Row(
               mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -52,8 +57,9 @@ class CDSecondaryButton extends StatelessWidget {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: primaryColor,
+                        color: textColor,
                         fontWeight: FontWeight.w600,
+                        fontSize: 14,
                       ),
                 ),
               ],

@@ -97,7 +97,6 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     const Color(0xFFE84393), // Pink
     const Color(0xFFFDCB6E), // Amber
     const Color(0xFF2D3436), // Graphite
-    const Color(0xFF6C5CE7), // Indigo
   ];
 
   @override
@@ -137,6 +136,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   }
 
   Future<void> _saveAndProceed() async {
+    AppHaptics.light();
     if (_currentStep < 4) {
       setState(() => _currentStep++);
     } else {
@@ -189,7 +189,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final primaryColor = AppColors.primary;
 
     return Scaffold(
       appBar: AppBar(
@@ -198,7 +198,10 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => setState(() => _currentStep--),
+                onPressed: () {
+                  AppHaptics.selection();
+                  setState(() => _currentStep--);
+                },
               )
             : (widget.isInitialSetup
                 ? null
@@ -213,7 +216,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               'Brand Memory',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                   ),
             ),
             Text(
@@ -229,14 +232,14 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               child: Text(
                 'Skip',
                 style: TextStyle(
-                  color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
+                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
+          preferredSize: const Size.fromHeight(3),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
             child: ClipRRect(
@@ -244,7 +247,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               child: LinearProgressIndicator(
                 value: (_currentStep + 1) / 5,
                 minHeight: 3,
-                backgroundColor: isDark ? AppColors.darkAccent3 : AppColors.accent3,
+                backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
                 valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
               ),
             ),
@@ -263,7 +266,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: CDPrimaryButton(
-                label: _currentStep < 4 ? 'Continue' : (widget.isInitialSetup ? 'Complete Setup ✦' : 'Save Brand Changes'),
+                label: _currentStep < 4 ? 'Continue →' : (widget.isInitialSetup ? 'Complete Setup ✦' : 'Save Brand Changes'),
                 isFullWidth: true,
                 onPressed: _saveAndProceed,
               ),
@@ -301,7 +304,9 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         const SizedBox(height: 4),
         Text(
           'CreateDiff will use this identity to tailor all future content packs.',
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              ),
         ),
         const SizedBox(height: AppSpacing.xl2),
         CDTextInput(
@@ -330,14 +335,17 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             return ChoiceChip(
               label: Text(n),
               selected: isSelected,
-              onSelected: (_) => setState(() => _niche = n),
+              onSelected: (_) {
+                AppHaptics.selection();
+                setState(() => _niche = n);
+              },
               selectedColor: primaryColor,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
+              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
             );
           }).toList(),
@@ -357,7 +365,9 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         const SizedBox(height: 4),
         Text(
           'Help CreateDiff match your unique personality and audience expectations.',
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              ),
         ),
         const SizedBox(height: AppSpacing.xl2),
         CDTextInput(
@@ -380,14 +390,17 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             return ChoiceChip(
               label: Text(t),
               selected: isSelected,
-              onSelected: (_) => setState(() => _tone = t),
+              onSelected: (_) {
+                AppHaptics.selection();
+                setState(() => _tone = t);
+              },
               selectedColor: primaryColor,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
+              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
             );
           }).toList(),
@@ -414,7 +427,9 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         const SizedBox(height: 4),
         Text(
           'Support for regional languages and custom emoji density.',
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              ),
         ),
         const SizedBox(height: AppSpacing.xl2),
         Text(
@@ -430,14 +445,17 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             return ChoiceChip(
               label: Text(l),
               selected: isSelected,
-              onSelected: (_) => setState(() => _primaryLang = l),
+              onSelected: (_) {
+                AppHaptics.selection();
+                setState(() => _primaryLang = l);
+              },
               selectedColor: primaryColor,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
+              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
             );
           }).toList(),
@@ -456,14 +474,17 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             return ChoiceChip(
               label: Text(e.toUpperCase()),
               selected: isSelected,
-              onSelected: (_) => setState(() => _emojiUsage = e),
+              onSelected: (_) {
+                AppHaptics.selection();
+                setState(() => _emojiUsage = e);
+              },
               selectedColor: primaryColor,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
+              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
             );
           }).toList(),
@@ -483,7 +504,9 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         const SizedBox(height: 4),
         Text(
           'These colors will be automatically applied to your visual designs.',
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              ),
         ),
         const SizedBox(height: AppSpacing.xl2),
         CDTextInput(
@@ -506,14 +529,17 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             return ChoiceChip(
               label: Text(cta),
               selected: isSelected,
-              onSelected: (_) => setState(() => _ctaStyle = cta),
+              onSelected: (_) {
+                AppHaptics.selection();
+                setState(() => _ctaStyle = cta);
+              },
               selectedColor: primaryColor,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.primaryText),
+                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
+              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
               shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
             );
           }).toList(),
@@ -529,7 +555,10 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
           children: _brandColors.map((color) {
             final isSelected = _primaryColor.toARGB32() == color.toARGB32();
             return GestureDetector(
-              onTap: () => setState(() => _primaryColor = color),
+              onTap: () {
+                AppHaptics.selection();
+                setState(() => _primaryColor = color);
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 width: 36,
@@ -563,7 +592,9 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         const SizedBox(height: 4),
         Text(
           'Add your handles so they can be embedded in descriptions and visuals.',
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              ),
         ),
         const SizedBox(height: AppSpacing.xl2),
         CDTextInput(

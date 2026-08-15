@@ -18,20 +18,20 @@ class CDOnboardingSlide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
+    final primaryColor = AppColors.primary;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl3),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl2),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkAccent1 : AppColors.accent1,
+              color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
               borderRadius: AppRadius.rPill,
               border: Border.all(
-                color: primaryColor.withOpacity(0.3),
+                color: isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle,
                 width: 1,
               ),
             ),
@@ -41,58 +41,62 @@ class CDOnboardingSlide extends StatelessWidget {
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
-                letterSpacing: 1.0,
+                letterSpacing: 0.8,
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.xl3),
-          // Minimal Tactile Visual Element
+          const SizedBox(height: AppSpacing.xl2),
+          // Minimal tactile visual icon box
           Container(
-            width: 120,
-            height: 120,
+            width: 88,
+            height: 88,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkCardSurface : AppColors.cardSurface,
+              color: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
               borderRadius: AppRadius.rXl,
               border: Border.all(
-                color: isDark ? AppColors.darkGlassBorder : AppColors.glassBorder,
-                width: 1.5,
+                color: isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle,
+                width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withOpacity(0.35) : Colors.black.withOpacity(0.04),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Center(
               child: Icon(
                 visualIcon,
-                size: 52,
+                size: 38,
                 color: primaryColor,
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.xl4),
+          const SizedBox(height: AppSpacing.xl3),
           Text(
             headline,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   fontWeight: FontWeight.w700,
-                  height: 1.25,
-                  letterSpacing: -0.4,
-                  color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                  fontSize: 26,
+                  height: 1.22,
+                  letterSpacing: -0.5,
+                  color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                 ),
           ),
           const SizedBox(height: AppSpacing.md),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 320),
+            constraints: const BoxConstraints(maxWidth: 300),
             child: Text(
               description,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
-                    height: 1.5,
+                    color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                    fontSize: 14,
+                    height: 1.45,
                   ),
             ),
           ),

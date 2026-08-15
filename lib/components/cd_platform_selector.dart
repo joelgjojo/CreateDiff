@@ -16,9 +16,9 @@ class CDPlatformSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-    final unselectedBg = isDark ? AppColors.darkAccent3 : AppColors.accent3;
-    final unselectedText = isDark ? AppColors.darkSecondaryText : AppColors.secondaryText;
+    final primaryColor = AppColors.primary;
+    final unselectedBg = isDark ? AppColors.darkSurface1 : AppColors.lightSecondarySurface;
+    final unselectedText = isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -30,13 +30,16 @@ class CDPlatformSelector extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => onPlatformSelected(platform),
+                onTap: () {
+                  AppHaptics.selection();
+                  onPlatformSelected(platform);
+                },
                 borderRadius: AppRadius.rPill,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg,
-                    vertical: AppSpacing.sm,
+                    horizontal: AppSpacing.md,
+                    vertical: 7,
                   ),
                   decoration: BoxDecoration(
                     color: isSelected ? primaryColor : unselectedBg,
@@ -44,28 +47,19 @@ class CDPlatformSelector extends StatelessWidget {
                     border: Border.all(
                       color: isSelected
                           ? primaryColor
-                          : (isDark ? AppColors.darkGlassBorder : AppColors.glassBorder),
+                          : (isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle),
                       width: 1,
                     ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: primaryColor.withOpacity(0.25),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _getPlatformIcon(platform, isSelected ? Colors.white : unselectedText),
-                      const SizedBox(width: AppSpacing.xs),
+                      const SizedBox(width: 5),
                       Text(
                         platform,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                           color: isSelected ? Colors.white : unselectedText,
                         ),
@@ -96,6 +90,6 @@ class CDPlatformSelector extends StatelessWidget {
       default:
         iconData = Icons.auto_awesome_rounded;
     }
-    return Icon(iconData, size: 16, color: color);
+    return Icon(iconData, size: 14, color: color);
   }
 }

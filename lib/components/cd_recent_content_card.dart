@@ -5,18 +5,22 @@ import '../models/content_project.dart';
 class CDRecentContentCard extends StatelessWidget {
   final ContentProject project;
   final VoidCallback onTap;
+  final VoidCallback? onDuplicate;
+  final VoidCallback? onDelete;
 
   const CDRecentContentCard({
     super.key,
     required this.project,
     required this.onTap,
+    this.onDuplicate,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.darkCardSurface : AppColors.cardSurface;
-    final border = isDark ? AppColors.darkGlassBorder : AppColors.glassBorder;
+    final cardBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
+    final border = isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle;
 
     final platformColor = _getPlatformColor(project.platform);
     final relativeTime = _formatRelativeDate(project.createdAt);
@@ -24,35 +28,31 @@ class CDRecentContentCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          AppHaptics.light();
+          onTap();
+        },
         borderRadius: AppRadius.rLarge,
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
           decoration: BoxDecoration(
             color: cardBg,
             borderRadius: AppRadius.rLarge,
             border: Border.all(color: border, width: 1.0),
-            boxShadow: [
-              BoxShadow(
-                color: isDark ? Colors.black.withOpacity(0.18) : Colors.black.withOpacity(0.02),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
-                  color: platformColor.withOpacity(0.12),
+                  color: platformColor.withValues(alpha: 0.12),
                   borderRadius: AppRadius.rMedium,
                 ),
                 child: Icon(
                   _getPlatformIcon(project.platform),
                   color: platformColor,
-                  size: 22,
+                  size: 18,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -62,48 +62,83 @@ class CDRecentContentCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkAccent3 : AppColors.accent3,
-                            borderRadius: AppRadius.rSmall,
-                          ),
-                          child: Text(
-                            project.contentType,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
-                            ),
+                        Text(
+                          project.contentType.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: platformColor,
+                            letterSpacing: 0.4,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          relativeTime,
+                          '• $relativeTime',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 fontSize: 11,
+                                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
                               ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       project.idea.isNotEmpty ? project.idea : 'Untitled Creation',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: isDark ? AppColors.darkPrimaryText : AppColors.primaryText,
+                            fontSize: 14,
+                            color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
                           ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 20,
-                color: isDark ? AppColors.darkSecondaryText : AppColors.secondaryText,
-              ),
+              if (onDelete != null || onDuplicate != null)
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    size: 18,
+                    color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32),
+                  onSelected: (val) {
+                    if (val == 'duplicate') onDuplicate?.call();
+                    if (val == 'delete') onDelete?.call();
+                  },
+                  itemBuilder: (ctx) => [
+                    if (onDuplicate != null)
+                      const PopupMenuItem(
+                        value: 'duplicate',
+                        child: Row(
+                          children: [
+                            Icon(Icons.copy_rounded, size: 16),
+                            SizedBox(width: 8),
+                            Text('Duplicate', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                    if (onDelete != null)
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                            SizedBox(width: 8),
+                            Text('Delete', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                          ],
+                        ),
+                      ),
+                  ],
+                )
+              else
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                ),
             ],
           ),
         ),
