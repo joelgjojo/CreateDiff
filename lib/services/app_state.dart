@@ -1,0 +1,228 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import '../models/creator_profile.dart';
+import '../models/content_project.dart';
+import '../models/generated_content.dart';
+import 'storage_service.dart';
+import 'ai_service.dart';
+
+class AppState extends ChangeNotifier {
+  static final AppState instance = AppState._internal();
+  factory AppState() => instance;
+  AppState._internal();
+
+  CreatorProfile _profile = const CreatorProfile();
+  List<ContentProject> _contentHistory = [];
+  ContentProject? _currentProject;
+  GeneratedContent? _currentGeneratedContent;
+  bool _isGenerating = false;
+  String _generationStep = 'Understanding your idea...';
+  int _selectedNavIndex = 0;
+  ThemeMode _themeMode = ThemeMode.system;
+
+  // Getters
+  CreatorProfile get profile => _profile;
+  List<ContentProject> get contentHistory => _contentHistory;
+  ContentProject? get currentProject => _currentProject;
+  GeneratedContent? get currentGeneratedContent => _currentGeneratedContent;
+  bool get isGenerating => _isGenerating;
+  String get generationStep => _generationStep;
+  int get selectedNavIndex => _selectedNavIndex;
+  ThemeMode get themeMode => _themeMode;
+
+  bool get hasCompletedOnboarding => StorageService.hasCompletedOnboarding;
+  bool get hasCompletedProfileSetup => StorageService.hasCompletedProfileSetup;
+
+  /// Load initial persisted state from SharedPreferences
+  Future<void> init() async {
+    await StorageService.init();
+
+    final savedProfile = StorageService.getCreatorProfile();
+    if (savedProfile != null) {
+      _profile = savedProfile;
+    }
+
+    _contentHistory = StorageService.getContentHistory();
+
+    final savedTheme = StorageService.getThemeMode();
+    if (savedTheme == 'light') {
+      _themeMode = ThemeMode.light;
+    } else if (savedTheme == 'dark') {
+      _themeMode = ThemeMode.dark;
+    } else {
+      _themeMode = ThemeMode.system;
+    }
+
+    notifyListeners();
+  }
+
+  // --- Profile Actions ---
+  Future<void> updateProfile(CreatorProfile newProfile) async {
+    _profile = newProfile;
+    await StorageService.saveCreatorProfile(newProfile);
+    await StorageService.setCompletedProfileSetup(true);
+    notifyListeners();
+  }
+
+  Future<void> completeOnboarding() async {
+    await StorageService.setCompletedOnboarding(true);
+    notifyListeners();
+  }
+
+  // --- Navigation Action ---
+  void setSelectedNavIndex(int index) {
+    if (_selectedNavIndex != index) {
+      _selectedNavIndex = index;
+      notifyListeners();
+    }
+  }
+
+  // --- Theme Mode ---
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    final str = mode == ThemeMode.light
+        ? 'light'
+        : (mode == ThemeMode.dark ? 'dark' : 'system');
+    await StorageService.setThemeMode(str);
+    notifyListeners();
+  }
+
+  // --- Content Generation Workflow ---
+  Future<ContentProject?> generateContentPack({
+    required String platform,
+    required String contentType,
+    required String idea,
+    String? tone,
+    String? language,
+    String? length,
+  }) async {
+    _isGenerating = true;
+    _generationStep = 'Understanding your idea...';
+    notifyListeners();
+
+    try {
+      // Paced progress updates for realistic perception
+      final timer = _startLoadingStepTimer(platform);
+
+      final content = await AIService.generateContent(
+        platform: platform,
+        contentType: contentType,
+        idea: idea,
+        profile: _profile,
+        overrideTone: tone,
+        overrideLanguage: language,
+        overrideLength: length,
+      );
+
+      timer.cancel();
+
+      final newProject = ContentProject(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        platform: platform,
+        contentType: contentType,
+        idea: idea,
+        createdAt: DateTime.now(),
+        status: 'generated',
+        generatedContent: content,
+        language: language ?? _profile.primaryLanguage,
+        tone: tone ?? _profile.tone,
+      );
+
+      _currentProject = newProject;
+      _currentGeneratedContent = content;
+
+      // Persist to history immediately
+      await StorageService.addProjectToHistory(newProject);
+      _contentHistory = StorageService.getContentHistory();
+
+      _isGenerating = false;
+      notifyListeners();
+      return newProject;
+    } catch (e) {
+      _isGenerating = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  void setCurrentProject(ContentProject project) {
+    _currentProject = project;
+    _currentGeneratedContent = project.generatedContent;
+    notifyListeners();
+  }
+
+  Future<void> updateCurrentProjectDesign({
+    required String templateName,
+    required String style,
+  }) async {
+    if (_currentProject == null) return;
+    final updated = _currentProject!.copyWith(
+      selectedDesignTemplate: templateName,
+      selectedDesignStyle: style,
+      status: 'designed',
+    );
+    _currentProject = updated;
+    await StorageService.addProjectToHistory(updated);
+    _contentHistory = StorageService.getContentHistory();
+    notifyListeners();
+  }
+
+  Future<void> regenerateHooks() async {
+    if (_currentProject == null || _currentGeneratedContent == null) return;
+    _isGenerating = true;
+    notifyListeners();
+
+    await Future.delayed(const Duration(milliseconds: 1200));
+
+    final newContent = await AIService.generateContent(
+      platform: _currentProject!.platform,
+      contentType: _currentProject!.contentType,
+      idea: _currentProject!.idea,
+      profile: _profile,
+      overrideTone: _currentProject!.tone,
+      overrideLanguage: _currentProject!.language,
+    );
+
+    _currentGeneratedContent = _currentGeneratedContent!.copyWith(
+      hooks: newContent.hooks,
+    );
+
+    final updatedProj = _currentProject!.copyWith(
+      generatedContent: _currentGeneratedContent,
+    );
+    _currentProject = updatedProj;
+    await StorageService.addProjectToHistory(updatedProj);
+    _contentHistory = StorageService.getContentHistory();
+
+    _isGenerating = false;
+    notifyListeners();
+  }
+
+  // --- Reset All Data ---
+  Future<void> resetAll() async {
+    await StorageService.clearAll();
+    _profile = const CreatorProfile();
+    _contentHistory = [];
+    _currentProject = null;
+    _currentGeneratedContent = null;
+    _selectedNavIndex = 0;
+    _themeMode = ThemeMode.system;
+    notifyListeners();
+  }
+
+  Timer _startLoadingStepTimer(String platform) {
+    final steps = [
+      'Understanding your idea...',
+      'Applying your brand voice & tone...',
+      'Optimizing structure for $platform...',
+      'Writing high-converting hooks & caption...',
+      'Formatting ready-to-post content pack...',
+    ];
+    int stepIdx = 0;
+    return Timer.periodic(const Duration(milliseconds: 700), (t) {
+      stepIdx = (stepIdx + 1) % steps.length;
+      _generationStep = steps[stepIdx];
+      notifyListeners();
+    });
+  }
+}
