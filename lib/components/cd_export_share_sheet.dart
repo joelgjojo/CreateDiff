@@ -105,7 +105,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final primaryColor = CDColors.primary;
+    final primaryColor = CDColors.primaryColor(context);
 
     final truncatedIdea = project.idea.length > 38
         ? '${project.idea.substring(0, 38)}...'
@@ -120,12 +120,12 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: (isDark ? const Color(0xFF10131C) : Colors.white)
-                .withValues(alpha: isDark ? 0.92 : 0.96),
+            color: (isDark ? const Color(0xFF0D1017) : Colors.white)
+                .withValues(alpha: isDark ? 0.94 : 0.96),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border(
               top: BorderSide(
-                color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08),
+                color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
                 width: 1.0,
               ),
             ),
@@ -265,7 +265,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
             color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(CDRadius.medium),
             border: Border.all(
-              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+              color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
               width: 0.8,
             ),
           ),

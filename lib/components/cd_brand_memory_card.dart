@@ -17,28 +17,12 @@ class CDBrandMemoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final primaryColor = CDColors.primary;
-    final border = isDark
-        ? Colors.white.withValues(alpha: 0.10)
-        : Colors.black.withValues(alpha: 0.06);
+    final primaryColor = CDColors.primaryColor(context);
+    final border = isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle;
 
     final glassGradient = isDark
-        ? LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.07),
-              Colors.white.withValues(alpha: 0.02),
-            ],
-          )
-        : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.92),
-              Colors.white.withValues(alpha: 0.72),
-            ],
-          );
+        ? CDColors.darkGlassGradient
+        : CDColors.lightGlassGradient;
 
     final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Creator Identity';
     final niche = profile.niche.isNotEmpty ? profile.niche : 'General';

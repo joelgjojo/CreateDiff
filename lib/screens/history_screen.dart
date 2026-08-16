@@ -148,13 +148,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? Colors.white.withValues(alpha: 0.08)
-                                    : CDColors.primary.withValues(alpha: 0.08),
+                                    ? CDColors.accentSubdued
+                                    : CDColors.lightAccentSubtle,
                                 borderRadius: BorderRadius.circular(CDRadius.pill),
                                 border: Border.all(
                                   color: isDark
-                                      ? Colors.white.withValues(alpha: 0.12)
-                                      : CDColors.primary.withValues(alpha: 0.15),
+                                      ? CDColors.darkBorderSubtle
+                                      : CDColors.lightBorderSubtle,
                                   width: 0.8,
                                 ),
                               ),
@@ -163,7 +163,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
-                                  color: isDark ? CDColors.icyBlue : CDColors.primary,
+                                  color: CDColors.primaryColor(context),
                                 ),
                               ),
                             ),
@@ -190,9 +190,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   AppHaptics.selection();
                                   setState(() => _selectedPlatformFilter = f);
                                 },
-                                selectedColor: CDColors.primary,
+                                selectedColor: CDColors.primaryColor(context),
                                 labelStyle: TextStyle(
-                                  color: isSelected ? Colors.white : CDColors.textPrimary(context),
+                                  color: isSelected
+                                      ? (isDark ? const Color(0xFF080A0F) : Colors.white)
+                                      : CDColors.textPrimary(context),
                                   fontSize: 12,
                                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                                 ),

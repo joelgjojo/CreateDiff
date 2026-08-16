@@ -52,7 +52,6 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
         ),
         duration: const Duration(milliseconds: 1400),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF282831),
       ),
     );
   }
@@ -125,6 +124,8 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = AppState.instance;
+    final isDark = CDColors.isDark(context);
+    final accentColor = CDColors.primaryColor(context);
 
     return ListenableBuilder(
       listenable: appState,
@@ -171,10 +172,10 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                           children: [
                             Text(
                               '${_currentProject.platform} ${_currentProject.contentType}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: CDColors.primary,
+                                color: accentColor,
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -209,7 +210,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // --- Section 1: Hooks ---
-                          _buildHooksSection(generated, appState),
+                          _buildHooksSection(generated, appState, accentColor, isDark),
                           const SizedBox(height: CDSpacing.lg),
 
                           // --- Section 2: Formatted Caption ---
@@ -223,7 +224,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                           const SizedBox(height: CDSpacing.lg),
 
                           // --- Section 3: Call To Actions ---
-                          _buildCTASection(generated),
+                          _buildCTASection(generated, accentColor),
                           const SizedBox(height: CDSpacing.lg),
 
                           // --- Section 4: Segmented Hashtags ---
@@ -232,12 +233,12 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
 
                           // --- Section 5: Graphic Cover Text ---
                           if (generated.coverText.isNotEmpty) ...[
-                            _buildCoverTextSection(generated),
+                            _buildCoverTextSection(generated, accentColor),
                             const SizedBox(height: CDSpacing.xl),
                           ],
 
                           // --- Section 6: Visual Design Bridge Card ---
-                          _buildTurnIntoDesignCard(),
+                          _buildTurnIntoDesignCard(accentColor, isDark),
                           const SizedBox(height: CDSpacing.xl),
                         ],
                       ),
@@ -247,16 +248,16 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg, vertical: 12),
                     decoration: BoxDecoration(
-                      color: CDColors.surface(context),
+                      color: isDark ? const Color(0xFF0D1017) : Colors.white,
                       border: Border(
                         top: BorderSide(
-                          color: CDColors.borderSubtle(context),
+                          color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
                           width: 1.0,
                         ),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
+                          color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
                           blurRadius: 16,
                           offset: const Offset(0, -4),
                         ),
@@ -296,7 +297,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
     );
   }
 
-  Widget _buildHooksSection(GeneratedContent generated, AppState appState) {
+  Widget _buildHooksSection(GeneratedContent generated, AppState appState, Color accentColor, bool isDark) {
     return CDGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,15 +319,15 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: CDColors.primary.withValues(alpha: 0.12),
+                      color: accentColor.withValues(alpha: isDark ? 0.16 : 0.10),
                       borderRadius: BorderRadius.circular(CDRadius.pill),
                     ),
-                    child: const Text(
+                    child: Text(
                       '5 Angles',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: CDColors.primary,
+                        color: accentColor,
                       ),
                     ),
                   ),
@@ -348,12 +349,12 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                   ),
                   const SizedBox(width: 4),
                   _isRegeneratingHooks
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 28,
                           height: 28,
                           child: Padding(
-                            padding: EdgeInsets.all(6.0),
-                            child: CircularProgressIndicator(strokeWidth: 2, color: CDColors.primary),
+                            padding: const EdgeInsets.all(6.0),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: accentColor),
                           ),
                         )
                       : IconButton(
@@ -389,7 +390,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
     );
   }
 
-  Widget _buildCTASection(GeneratedContent generated) {
+  Widget _buildCTASection(GeneratedContent generated, Color accentColor) {
     final ctas = generated.ctas;
     return CDGlassCard(
       child: Column(
@@ -428,8 +429,8 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                     margin: const EdgeInsets.only(top: 6),
                     width: 5,
                     height: 5,
-                    decoration: const BoxDecoration(
-                      color: CDColors.primary,
+                    decoration: BoxDecoration(
+                      color: accentColor,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -491,7 +492,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
     );
   }
 
-  Widget _buildCoverTextSection(GeneratedContent generated) {
+  Widget _buildCoverTextSection(GeneratedContent generated, Color accentColor) {
     return CDGlassCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -513,7 +514,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                   generated.coverText,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: CDColors.primary,
+                        color: accentColor,
                         fontSize: 16,
                         letterSpacing: -0.2,
                       ),
@@ -531,23 +532,21 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
     );
   }
 
-  Widget _buildTurnIntoDesignCard() {
-    final isDark = CDColors.isDark(context);
-
+  Widget _buildTurnIntoDesignCard(Color accentColor, bool isDark) {
     return CDGlassCard(
       elevated: true,
       padding: const EdgeInsets.all(CDSpacing.lg),
-      borderColor: CDColors.primary.withValues(alpha: isDark ? 0.35 : 0.25),
+      borderColor: accentColor.withValues(alpha: isDark ? 0.28 : 0.20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: CDColors.primary.withValues(alpha: isDark ? 0.20 : 0.12),
+              color: accentColor.withValues(alpha: isDark ? 0.16 : 0.10),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.palette_outlined, size: 24, color: CDColors.primaryLight),
+            child: Icon(Icons.palette_outlined, size: 24, color: accentColor),
           ),
           const SizedBox(height: CDSpacing.sm),
           Text(

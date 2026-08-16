@@ -17,7 +17,7 @@ class CDPlatformSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final primaryColor = CDColors.primary;
+    final accentColor = CDColors.primaryColor(context);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -30,35 +30,23 @@ class CDPlatformSelector extends StatelessWidget {
               ? (isDark
                   ? LinearGradient(
                       colors: [
-                        primaryColor.withValues(alpha: 0.22),
-                        primaryColor.withValues(alpha: 0.10),
+                        const Color(0xFFC9D6FF).withValues(alpha: 0.18),
+                        const Color(0xFFA0B9FF).withValues(alpha: 0.08),
                       ],
                     )
                   : LinearGradient(
                       colors: [
-                        CDColors.icyBlue.withValues(alpha: 0.50),
+                        const Color(0xFFC9D6FF).withValues(alpha: 0.40),
                         Colors.white.withValues(alpha: 0.90),
                       ],
                     ))
               : (isDark
-                  ? LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.08),
-                        Colors.white.withValues(alpha: 0.02),
-                      ],
-                    )
-                  : LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.90),
-                        Colors.white.withValues(alpha: 0.70),
-                      ],
-                    ));
+                  ? CDColors.darkGlassGradient
+                  : CDColors.lightGlassGradient);
 
           final borderColor = isSelected
-              ? primaryColor
-              : (isDark
-                  ? Colors.white.withValues(alpha: 0.10)
-                  : Colors.black.withValues(alpha: 0.06));
+              ? accentColor
+              : (isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle);
 
           return Padding(
             padding: const EdgeInsets.only(right: CDSpacing.sm),
@@ -86,7 +74,9 @@ class CDPlatformSelector extends StatelessWidget {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: primaryColor.withValues(alpha: 0.20),
+                              color: isDark
+                                  ? const Color(0xFFC9D6FF).withValues(alpha: 0.18)
+                                  : const Color(0xFF4A69BD).withValues(alpha: 0.15),
                               blurRadius: 10,
                               offset: const Offset(0, 3),
                             ),
@@ -96,14 +86,14 @@ class CDPlatformSelector extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _getPlatformIcon(platform, isSelected ? primaryColor : CDColors.textSecondary(context)),
+                      _getPlatformIcon(platform, isSelected ? accentColor : CDColors.textSecondary(context)),
                       const SizedBox(width: 6),
                       Text(
                         platform,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected ? primaryColor : CDColors.textPrimary(context),
+                          color: isSelected ? accentColor : CDColors.textPrimary(context),
                         ),
                       ),
                     ],

@@ -66,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final appState = AppState.instance;
     final isDark = CDColors.isDark(context);
+    final accentColor = CDColors.primaryColor(context);
 
     return ListenableBuilder(
       listenable: appState,
@@ -104,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.2,
-                              color: isDark ? CDColors.icyBlue : CDColors.primary,
+                              color: accentColor,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -143,8 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: profile.primaryColor.withValues(alpha: 0.25),
-                                  blurRadius: 12,
+                                  color: profile.primaryColor.withValues(alpha: 0.22),
+                                  blurRadius: 10,
                                   offset: const Offset(0, 3),
                                 ),
                               ],
@@ -180,14 +181,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? CDColors.primary.withValues(alpha: 0.20)
-                                    : CDColors.icyBlue.withValues(alpha: 0.50),
+                                    ? const Color(0xFFC9D6FF).withValues(alpha: 0.16)
+                                    : const Color(0xFF4A69BD).withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(CDRadius.small),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.auto_awesome_rounded,
                                 size: 16,
-                                color: CDColors.primaryLight,
+                                color: accentColor,
                               ),
                             ),
                             const SizedBox(width: CDSpacing.sm),
@@ -224,13 +225,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         Container(
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.black.withValues(alpha: 0.35)
+                                ? const Color(0xFF080A0F).withValues(alpha: 0.55)
                                 : Colors.white.withValues(alpha: 0.85),
                             borderRadius: BorderRadius.circular(CDRadius.medium),
                             border: Border.all(
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.12)
-                                  : Colors.black.withValues(alpha: 0.08),
+                              color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
                               width: 1.0,
                             ),
                           ),
@@ -392,22 +391,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDark = CDColors.isDark(context);
 
     final glassGradient = isDark
-        ? LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.08),
-              Colors.white.withValues(alpha: 0.02),
-            ],
-          )
-        : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.92),
-              Colors.white.withValues(alpha: 0.75),
-            ],
-          );
+        ? CDColors.darkGlassGradient
+        : CDColors.lightGlassGradient;
 
     return Padding(
       padding: const EdgeInsets.only(right: CDSpacing.sm),
@@ -425,9 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
               gradient: glassGradient,
               borderRadius: BorderRadius.circular(CDRadius.pill),
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.10)
-                    : Colors.black.withValues(alpha: 0.06),
+                color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
                 width: 1.0,
               ),
               boxShadow: [
@@ -445,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 22,
                   height: 22,
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: isDark ? 0.20 : 0.12),
+                    color: color.withValues(alpha: isDark ? 0.18 : 0.10),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, size: 12, color: color),

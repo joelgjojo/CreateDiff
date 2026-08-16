@@ -98,7 +98,7 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
                     Icon(
                       _copied ? Icons.check_rounded : Icons.content_copy_rounded,
                       size: 13,
-                      color: _copied ? CDColors.success : CDColors.primary,
+                      color: _copied ? CDColors.success : CDColors.primaryColor(context),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -106,7 +106,7 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: _copied ? CDColors.success : CDColors.primary,
+                        color: _copied ? CDColors.success : CDColors.primaryColor(context),
                       ),
                     ),
                   ],

@@ -158,7 +158,7 @@ class _SplashScreenState extends State<SplashScreen>
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.8,
-                      color: isDark ? CDColors.icyBlue : CDColors.primary,
+                      color: isDark ? CDColors.accent : CDColors.lightAccent,
                     ),
                   ),
                 ],

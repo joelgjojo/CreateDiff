@@ -70,6 +70,7 @@ class _CDLoadingStateState extends State<CDLoadingState>
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
     final displayedMessage = widget.currentMessage ?? _rotatingMessages[_messageIndex];
+    final accentColor = CDColors.primaryColor(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -79,7 +80,7 @@ class _CDLoadingStateState extends State<CDLoadingState>
           sigmaY: CDGlass.heavyBlurSigma,
         ),
         child: Container(
-          color: (isDark ? const Color(0xFF090B10) : const Color(0xFFF0F3F9))
+          color: (isDark ? const Color(0xFF080A0F) : const Color(0xFFF1F4F8))
               .withValues(alpha: 0.88),
           width: double.infinity,
           height: double.infinity,
@@ -102,8 +103,8 @@ class _CDLoadingStateState extends State<CDLoadingState>
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              CDColors.primaryLight.withValues(alpha: 0.28 * _glowAnimation.value),
-                              CDColors.icyBlue.withValues(alpha: 0.12 * _glowAnimation.value),
+                              const Color(0xFFC9D6FF).withValues(alpha: 0.22 * _glowAnimation.value),
+                              const Color(0xFFA0B9FF).withValues(alpha: 0.08 * _glowAnimation.value),
                               Colors.transparent,
                             ],
                           ),
@@ -126,7 +127,7 @@ class _CDLoadingStateState extends State<CDLoadingState>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: CDColors.primary.withValues(alpha: 0.25),
+                              color: const Color(0xFFC9D6FF).withValues(alpha: isDark ? 0.22 : 0.12),
                               blurRadius: 20,
                               offset: const Offset(0, 4),
                             ),
@@ -136,7 +137,7 @@ class _CDLoadingStateState extends State<CDLoadingState>
                           child: Icon(
                             Icons.auto_awesome_rounded,
                             size: 26,
-                            color: CDColors.primaryLight,
+                            color: accentColor,
                           ),
                         ),
                       ),
@@ -157,8 +158,6 @@ class _CDLoadingStateState extends State<CDLoadingState>
               const SizedBox(height: CDSpacing.sm),
               AnimatedSwitcher(
                 duration: CDMotion.standard,
-                switchInCurve: CDMotion.enterCurve,
-                switchOutCurve: CDMotion.exitCurve,
                 child: Text(
                   displayedMessage,
                   key: ValueKey(displayedMessage),

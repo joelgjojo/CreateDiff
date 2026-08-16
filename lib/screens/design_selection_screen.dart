@@ -190,9 +190,9 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
                     ),
                     Text(
                       activeProject.platform,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: CDColors.primary,
+                        color: CDColors.primaryColor(context),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -236,9 +236,11 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
                             AppHaptics.selection();
                             setState(() => _selectedStyleFilter = filter);
                           },
-                          selectedColor: CDColors.primary,
+                          selectedColor: CDColors.primaryColor(context),
                           labelStyle: TextStyle(
-                            color: isSelected ? Colors.white : CDColors.textPrimary(context),
+                            color: isSelected
+                                ? (isDark ? const Color(0xFF080A0F) : Colors.white)
+                                : CDColors.textPrimary(context),
                             fontSize: 12,
                             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                           ),

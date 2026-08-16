@@ -21,49 +21,33 @@ class CDContentTypeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final primaryColor = CDColors.primary;
+    final accentColor = CDColors.primaryColor(context);
 
     final unselectedGradient = isDark
-        ? LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.08),
-              Colors.white.withValues(alpha: 0.02),
-            ],
-          )
-        : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.90),
-              Colors.white.withValues(alpha: 0.70),
-            ],
-          );
+        ? CDColors.darkGlassGradient
+        : CDColors.lightGlassGradient;
 
     final selectedGradient = isDark
         ? LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              CDColors.primary.withValues(alpha: 0.18),
-              CDColors.primarySubtle.withValues(alpha: 0.08),
+              const Color(0xFFC9D6FF).withValues(alpha: 0.14),
+              const Color(0xFFA0B9FF).withValues(alpha: 0.04),
             ],
           )
         : LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              CDColors.icyBlue.withValues(alpha: 0.40),
+              const Color(0xFFC9D6FF).withValues(alpha: 0.35),
               Colors.white.withValues(alpha: 0.90),
             ],
           );
 
     final border = isSelected
-        ? primaryColor
-        : (isDark
-            ? Colors.white.withValues(alpha: 0.10)
-            : Colors.black.withValues(alpha: 0.06));
+        ? accentColor
+        : (isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle);
 
     return Material(
       color: Colors.transparent,
@@ -82,12 +66,14 @@ class CDContentTypeCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(CDRadius.large),
             border: Border.all(
               color: border,
-              width: isSelected ? 1.6 : 1.0,
+              width: isSelected ? 1.4 : 0.9,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.20),
+                      color: isDark
+                          ? const Color(0xFFC9D6FF).withValues(alpha: 0.18)
+                          : const Color(0xFF4A69BD).withValues(alpha: 0.15),
                       blurRadius: 14,
                       offset: const Offset(0, 4),
                     ),
@@ -111,7 +97,7 @@ class CDContentTypeCard extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? primaryColor.withValues(alpha: isDark ? 0.25 : 0.15)
+                          ? accentColor.withValues(alpha: isDark ? 0.20 : 0.12)
                           : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.04)),
                       borderRadius: BorderRadius.circular(CDRadius.medium),
                     ),
@@ -119,21 +105,21 @@ class CDContentTypeCard extends StatelessWidget {
                       icon,
                       size: 18,
                       color: isSelected
-                          ? primaryColor
+                          ? accentColor
                           : CDColors.textPrimary(context),
                     ),
                   ),
                   if (isSelected)
                     Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: CDColors.primary,
+                      decoration: BoxDecoration(
+                        color: accentColor,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.check_rounded,
                         size: 12,
-                        color: Colors.white,
+                        color: isDark ? const Color(0xFF080A0F) : Colors.white,
                       ),
                     ),
                 ],
@@ -148,7 +134,7 @@ class CDContentTypeCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                           color: isSelected
-                              ? primaryColor
+                              ? accentColor
                               : CDColors.textPrimary(context),
                         ),
                   ),

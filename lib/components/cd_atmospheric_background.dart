@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// Renders a high-performance atmospheric background with soft environmental
-/// ambient lighting (icy blue + cool lavender + deep violet).
+/// A high-performance environmental background that renders subtle,
+/// non-distracting atmospheric lighting (ice blue + soft blue hush).
 ///
-/// Designed to sit behind screens so translucent frosted glass cards placed
-/// above it exhibit natural refraction and luminous depth.
+/// Designed to shine softly through translucent frosted glass layers
+/// without introducing frame drops or saturated purple gradients.
 class CDAtmosphericBackground extends StatelessWidget {
   final Widget child;
 
@@ -17,104 +17,83 @@ class CDAtmosphericBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final size = MediaQuery.of(context).size;
+
+    if (!isDark) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: CDColors.lightBackground,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFF6F8FB),
+              Color(0xFFEBF0F7),
+            ],
+          ),
+        ),
+        child: child,
+      );
+    }
 
     return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: CDColors.background(context),
+      decoration: const BoxDecoration(
+        color: CDColors.darkBackground,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            CDColors.darkBackground,
+            CDColors.darkSecondaryBackground,
+          ],
+        ),
+      ),
       child: Stack(
-        fit: StackFit.expand,
         children: [
-          // Ambient Orb 1: Top-Right (Icy Blue / Cool Lavender Ambient Glow)
+          // Ambient Orb 1: Top-Right (Soft Ice Blue Ambient #C9D6FF)
           Positioned(
-            top: -size.width * 0.25,
-            right: -size.width * 0.2,
+            top: -60,
+            right: -60,
+            width: 320,
+            height: 320,
             child: IgnorePointer(
-              child: Container(
-                width: size.width * 1.1,
-                height: size.width * 1.1,
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
-                    center: Alignment.center,
-                    radius: 0.55,
-                    colors: isDark
-                        ? [
-                            CDColors.icyBlue.withValues(alpha: 0.12),
-                            CDColors.primaryLight.withValues(alpha: 0.06),
-                            Colors.transparent,
-                          ]
-                        : [
-                            CDColors.icyBlue.withValues(alpha: 0.35),
-                            CDColors.primaryLight.withValues(alpha: 0.15),
-                            Colors.transparent,
-                          ],
+                    colors: [
+                      const Color(0xFFC9D6FF).withValues(alpha: 0.08),
+                      const Color(0xFFA0B9FF).withValues(alpha: 0.03),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.55, 1.0],
                   ),
                 ),
               ),
             ),
           ),
-
-          // Ambient Orb 2: Bottom-Left (Deep Studio Violet / Lavender Halo)
+          // Ambient Orb 2: Bottom-Left (Calm Soft Blue Hush #A0B9FF)
           Positioned(
-            bottom: -size.width * 0.3,
-            left: -size.width * 0.25,
+            bottom: 40,
+            left: -80,
+            width: 340,
+            height: 340,
             child: IgnorePointer(
-              child: Container(
-                width: size.width * 1.2,
-                height: size.width * 1.2,
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
-                    center: Alignment.center,
-                    radius: 0.6,
-                    colors: isDark
-                        ? [
-                            CDColors.primary.withValues(alpha: 0.10),
-                            CDColors.primarySubtle.withValues(alpha: 0.04),
-                            Colors.transparent,
-                          ]
-                        : [
-                            CDColors.lavender.withValues(alpha: 0.25),
-                            CDColors.primaryLight.withValues(alpha: 0.08),
-                            Colors.transparent,
-                          ],
+                    colors: [
+                      const Color(0xFFA0B9FF).withValues(alpha: 0.05),
+                      const Color(0xFFC9D6FF).withValues(alpha: 0.02),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.50, 1.0],
                   ),
                 ),
               ),
             ),
           ),
-
-          // Ambient Orb 3: Center-Right Subtle Shimmer (Center breathing room)
-          Positioned(
-            top: size.height * 0.35,
-            right: -size.width * 0.35,
-            child: IgnorePointer(
-              child: Container(
-                width: size.width * 0.9,
-                height: size.width * 0.9,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    center: Alignment.center,
-                    radius: 0.5,
-                    colors: isDark
-                        ? [
-                            CDColors.lavender.withValues(alpha: 0.04),
-                            Colors.transparent,
-                          ]
-                        : [
-                            CDColors.icyBlue.withValues(alpha: 0.18),
-                            Colors.transparent,
-                          ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Screen Content Layer
+          // Screen Content
           child,
         ],
       ),

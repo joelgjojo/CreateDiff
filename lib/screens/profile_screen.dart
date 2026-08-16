@@ -197,7 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? CDColors.icyBlue : CDColors.primary,
+                      color: CDColors.primaryColor(context),
                       letterSpacing: 0.6,
                     ),
                   ),

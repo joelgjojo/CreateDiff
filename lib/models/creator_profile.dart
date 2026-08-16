@@ -33,8 +33,8 @@ class CreatorProfile {
     this.brandDescription = '',
     this.preferredCTAStyle = 'Direct',
     this.emojiUsage = 'moderate',
-    this.primaryColor = const Color(0xFF6C5CE7),
-    this.secondaryColor = const Color(0xFFA29BFE),
+    this.primaryColor = const Color(0xFFC9D6FF),
+    this.secondaryColor = const Color(0xFFAFC4FF),
     this.logoUrl = '',
     this.websiteUrl = '',
     this.instagramHandle = '',
@@ -124,10 +124,10 @@ class CreatorProfile {
       emojiUsage: json['emojiUsage'] as String? ?? 'moderate',
       primaryColor: json['primaryColor'] != null
           ? Color(json['primaryColor'] as int)
-          : const Color(0xFF6C5CE7),
+          : const Color(0xFFC9D6FF),
       secondaryColor: json['secondaryColor'] != null
           ? Color(json['secondaryColor'] as int)
-          : const Color(0xFFA29BFE),
+          : const Color(0xFFAFC4FF),
       logoUrl: json['logoUrl'] as String? ?? '',
       websiteUrl: json['websiteUrl'] as String? ?? '',
       instagramHandle: json['instagramHandle'] as String? ?? '',

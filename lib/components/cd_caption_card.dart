@@ -83,7 +83,7 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final primaryColor = CDColors.primary;
+    final primaryColor = CDColors.primaryColor(context);
 
     return CDGlassCard(
       padding: const EdgeInsets.all(CDSpacing.lg),
@@ -99,13 +99,13 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : CDColors.primary.withValues(alpha: 0.08),
+                          ? CDColors.accentSubdued
+                          : CDColors.lightAccentSubtle,
                       borderRadius: BorderRadius.circular(CDRadius.pill),
                       border: Border.all(
                         color: isDark
-                            ? Colors.white.withValues(alpha: 0.12)
-                            : CDColors.primary.withValues(alpha: 0.15),
+                            ? CDColors.darkBorderSubtle
+                            : CDColors.lightBorderSubtle,
                         width: 0.8,
                       ),
                     ),

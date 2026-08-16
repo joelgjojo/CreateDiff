@@ -20,27 +20,11 @@ class CDRecentContentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final border = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.05);
+    final border = isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle;
 
     final glassGradient = isDark
-        ? LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.06),
-              Colors.white.withValues(alpha: 0.02),
-            ],
-          )
-        : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.90),
-              Colors.white.withValues(alpha: 0.70),
-            ],
-          );
+        ? CDColors.darkGlassGradient
+        : CDColors.lightGlassGradient;
 
     final platformColor = _getPlatformColor(project.platform);
     final relativeTime = _formatRelativeDate(project.createdAt);
@@ -74,10 +58,10 @@ class CDRecentContentCard extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: platformColor.withValues(alpha: isDark ? 0.14 : 0.10),
+                  color: platformColor.withValues(alpha: isDark ? 0.14 : 0.08),
                   borderRadius: BorderRadius.circular(CDRadius.medium),
                   border: Border.all(
-                    color: platformColor.withValues(alpha: 0.25),
+                    color: platformColor.withValues(alpha: 0.22),
                     width: 0.8,
                   ),
                 ),
@@ -187,7 +171,7 @@ class CDRecentContentCard extends StatelessWidget {
       case 'linkedin':
         return CDColors.linkedin;
       default:
-        return CDColors.primary;
+        return CDColors.accent;
     }
   }
 

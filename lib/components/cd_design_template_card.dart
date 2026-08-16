@@ -23,12 +23,10 @@ class CDDesignTemplateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final primaryColor = CDColors.primary;
+    final accentColor = CDColors.primaryColor(context);
     final border = isSelected
-        ? primaryColor
-        : (isDark
-            ? Colors.white.withValues(alpha: 0.12)
-            : Colors.black.withValues(alpha: 0.08));
+        ? accentColor
+        : (isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle);
 
     final displayTitle = coverText.isNotEmpty ? coverText : 'READY TO PUBLISH';
 
@@ -53,7 +51,9 @@ class CDDesignTemplateCard extends StatelessWidget {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.28),
+                      color: isDark
+                          ? const Color(0xFFC9D6FF).withValues(alpha: 0.22)
+                          : const Color(0xFF4A69BD).withValues(alpha: 0.20),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -83,10 +83,10 @@ class CDDesignTemplateCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF10131A) : Colors.white,
+                    color: isDark ? const Color(0xFF0D1017) : Colors.white,
                     border: Border(
                       top: BorderSide(
-                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                        color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
                         width: 0.8,
                       ),
                     ),
@@ -111,7 +111,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                               fontSize: 9,
                               fontWeight: FontWeight.w800,
                               color: isSelected
-                                  ? primaryColor
+                                  ? accentColor
                                   : CDColors.textSecondary(context),
                               letterSpacing: 0.5,
                             ),
@@ -121,11 +121,15 @@ class CDDesignTemplateCard extends StatelessWidget {
                       if (isSelected)
                         Container(
                           padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: CDColors.primary,
+                          decoration: BoxDecoration(
+                            color: accentColor,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.check_rounded, size: 12, color: Colors.white),
+                          child: Icon(
+                            Icons.check_rounded,
+                            size: 12,
+                            color: isDark ? const Color(0xFF080A0F) : Colors.white,
+                          ),
                         ),
                     ],
                   ),
@@ -145,27 +149,32 @@ class CDDesignTemplateCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              profile.primaryColor,
-              profile.primaryColor.withValues(alpha: 0.85),
-            ],
+            colors: isDark
+                ? [
+                    const Color(0xFF141A28),
+                    const Color(0xFF0D1017),
+                  ]
+                : [
+                    const Color(0xFFC9D6FF),
+                    const Color(0xFFAFC4FF),
+                  ],
           ),
         );
       case 'swiss_grid':
         return BoxDecoration(
-          color: isDark ? const Color(0xFF12141A) : const Color(0xFFF9F9FA),
+          color: isDark ? const Color(0xFF0F131C) : const Color(0xFFF9F9FA),
         );
       case 'creator_minimal':
         return BoxDecoration(
-          color: isDark ? const Color(0xFF141720) : const Color(0xFFF6F5F2),
+          color: isDark ? const Color(0xFF111520) : const Color(0xFFF6F5F2),
         );
       case 'dark_impact':
         return const BoxDecoration(
-          color: Color(0xFF08090D),
+          color: Color(0xFF080A0F),
         );
       case 'luxury_editorial':
         return BoxDecoration(
-          color: isDark ? const Color(0xFF16151E) : const Color(0xFF1F1D26),
+          color: isDark ? const Color(0xFF131722) : const Color(0xFF1F232D),
         );
       case 'soft_modern':
         return BoxDecoration(
@@ -173,8 +182,8 @@ class CDDesignTemplateCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? [const Color(0xFF1C1A2E), const Color(0xFF0F1118)]
-                : [const Color(0xFFE8EAF5), const Color(0xFFFFFFFF)],
+                ? [const Color(0xFF141926), const Color(0xFF0A0D14)]
+                : [const Color(0xFFEBF0FA), const Color(0xFFFFFFFF)],
           ),
         );
       case 'high_contrast':
@@ -184,7 +193,7 @@ class CDDesignTemplateCard extends StatelessWidget {
       case 'clean_editorial':
       default:
         return BoxDecoration(
-          color: isDark ? const Color(0xFF12151E) : const Color(0xFFFFFFFF),
+          color: isDark ? const Color(0xFF10141E) : const Color(0xFFFFFFFF),
         );
     }
   }

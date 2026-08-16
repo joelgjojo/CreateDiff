@@ -1,10 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../screens/create_screen.dart';
 
-/// A floating frosted glass bottom navigation bar with selective blur,
-/// specular rim lighting, and luminous active pill indicators.
+/// A floating frosted glass bottom navigation bar with Snowfall Hush / Ice-Blue styling.
 class CDBottomNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTabChanged;
@@ -18,146 +16,95 @@ class CDBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final primaryColor = CDColors.primary;
-    final inactiveColor = CDColors.textSecondary(context);
+    final activeColor = CDColors.primaryColor(context);
 
-    final glassGradient = isDark
-        ? LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF141824).withValues(alpha: 0.85),
-              const Color(0xFF0C0E14).withValues(alpha: 0.88),
-            ],
-          )
-        : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.92),
-              const Color(0xFFF0F3F9).withValues(alpha: 0.88),
-            ],
-          );
-
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.15)
-        : Colors.black.withValues(alpha: 0.08);
+    final glassBorder = isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle;
+    final glassFill = isDark
+        ? const Color(0xFF0D1017).withValues(alpha: 0.88)
+        : const Color(0xFFF1F4F8).withValues(alpha: 0.90);
 
     return SafeArea(
-      bottom: true,
+      top: false,
+      minimum: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.only(
-          left: CDSpacing.lg,
-          right: CDSpacing.lg,
-          bottom: CDSpacing.xs,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(CDRadius.pill),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: CDGlass.blurSigma,
-              sigmaY: CDGlass.blurSigma,
-            ),
-            child: Container(
-              height: 60,
-              decoration: BoxDecoration(
-                gradient: glassGradient,
-                borderRadius: BorderRadius.circular(CDRadius.pill),
-                border: Border.all(color: borderColor, width: 1.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark
-                        ? Colors.black.withValues(alpha: 0.45)
-                        : Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                  if (isDark)
-                    BoxShadow(
-                      color: CDColors.primary.withValues(alpha: 0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, -2),
-                    ),
-                ],
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(CDRadius.pill),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
-              child: Stack(
-                children: [
-                  // Top specular highlight line
-                  Positioned(
-                    top: 0,
-                    left: 24,
-                    right: 24,
-                    height: 1.0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            isDark
-                                ? Colors.white.withValues(alpha: 0.35)
-                                : Colors.white.withValues(alpha: 0.95),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
+              if (isDark)
+                BoxShadow(
+                  color: const Color(0xFFC9D6FF).withValues(alpha: 0.06),
+                  blurRadius: 16,
+                  offset: const Offset(0, -2),
+                ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(CDRadius.pill),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: CDGlass.blurSigma,
+                sigmaY: CDGlass.blurSigma,
+              ),
+              child: Container(
+                height: 64,
+                decoration: BoxDecoration(
+                  color: glassFill,
+                  borderRadius: BorderRadius.circular(CDRadius.pill),
+                  border: Border.all(color: glassBorder, width: 1.0),
+                ),
+                child: Row(
+                  children: [
+                    _buildNavItem(
+                      context: context,
+                      index: 0,
+                      icon: Icons.home_rounded,
+                      activeIcon: Icons.home_rounded,
+                      label: 'Home',
+                      activeColor: activeColor,
+                      isDark: isDark,
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildTab(
-                        index: 0,
-                        icon: Icons.home_outlined,
-                        activeIcon: Icons.home_rounded,
-                        label: 'Home',
-                        activeColor: primaryColor,
-                        inactiveColor: inactiveColor,
-                        onTabChanged: onTabChanged,
-                        selectedIndex: selectedIndex,
-                        isDark: isDark,
-                      ),
-                      _buildCreateTab(
-                        context: context,
-                        activeColor: primaryColor,
-                        selectedIndex: selectedIndex,
-                        isDark: isDark,
-                      ),
-                      _buildTab(
-                        index: 2,
-                        icon: Icons.palette_outlined,
-                        activeIcon: Icons.palette_rounded,
-                        label: 'Designs',
-                        activeColor: primaryColor,
-                        inactiveColor: inactiveColor,
-                        onTabChanged: onTabChanged,
-                        selectedIndex: selectedIndex,
-                        isDark: isDark,
-                      ),
-                      _buildTab(
-                        index: 3,
-                        icon: Icons.history_rounded,
-                        activeIcon: Icons.history_rounded,
-                        label: 'History',
-                        activeColor: primaryColor,
-                        inactiveColor: inactiveColor,
-                        onTabChanged: onTabChanged,
-                        selectedIndex: selectedIndex,
-                        isDark: isDark,
-                      ),
-                      _buildTab(
-                        index: 4,
-                        icon: Icons.person_outline_rounded,
-                        activeIcon: Icons.person_rounded,
-                        label: 'Profile',
-                        activeColor: primaryColor,
-                        inactiveColor: inactiveColor,
-                        onTabChanged: onTabChanged,
-                        selectedIndex: selectedIndex,
-                        isDark: isDark,
-                      ),
-                    ],
-                  ),
-                ],
+                    _buildCreateTab(
+                      context: context,
+                      activeColor: activeColor,
+                      selectedIndex: selectedIndex,
+                      isDark: isDark,
+                    ),
+                    _buildNavItem(
+                      context: context,
+                      index: 2,
+                      icon: Icons.palette_outlined,
+                      activeIcon: Icons.palette_rounded,
+                      label: 'Studio',
+                      activeColor: activeColor,
+                      isDark: isDark,
+                    ),
+                    _buildNavItem(
+                      context: context,
+                      index: 3,
+                      icon: Icons.history_rounded,
+                      activeIcon: Icons.history_rounded,
+                      label: 'Archive',
+                      activeColor: activeColor,
+                      isDark: isDark,
+                    ),
+                    _buildNavItem(
+                      context: context,
+                      index: 4,
+                      icon: Icons.person_outline_rounded,
+                      activeIcon: Icons.person_rounded,
+                      label: 'Profile',
+                      activeColor: activeColor,
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -166,18 +113,18 @@ class CDBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildTab({
+  Widget _buildNavItem({
+    required BuildContext context,
     required int index,
     required IconData icon,
-    IconData? activeIcon,
+    required IconData activeIcon,
     required String label,
     required Color activeColor,
-    required Color inactiveColor,
-    required ValueChanged<int> onTabChanged,
-    required int selectedIndex,
     required bool isDark,
   }) {
     final isSelected = selectedIndex == index;
+    final inactiveColor = CDColors.textMuted(context);
+
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -193,19 +140,27 @@ class CDBottomNavBar extends StatelessWidget {
               AnimatedContainer(
                 duration: CDMotion.standard,
                 curve: CDMotion.defaultCurve,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? (isDark
-                          ? CDColors.primary.withValues(alpha: 0.16)
-                          : CDColors.primary.withValues(alpha: 0.10))
+                          ? const Color(0xFFC9D6FF).withValues(alpha: 0.14)
+                          : const Color(0xFF4A69BD).withValues(alpha: 0.12))
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(CDRadius.pill),
+                  border: isSelected
+                      ? Border.all(
+                          color: isDark
+                              ? const Color(0xFFC9D6FF).withValues(alpha: 0.28)
+                              : const Color(0xFF4A69BD).withValues(alpha: 0.20),
+                          width: 0.8,
+                        )
+                      : null,
                 ),
                 child: Icon(
-                  isSelected ? (activeIcon ?? icon) : icon,
-                  color: isSelected ? activeColor : inactiveColor,
+                  isSelected ? activeIcon : icon,
                   size: 20,
+                  color: isSelected ? activeColor : inactiveColor,
                 ),
               ),
               const SizedBox(height: 2),
@@ -237,57 +192,52 @@ class CDBottomNavBar extends StatelessWidget {
         child: InkWell(
           onTap: () {
             AppHaptics.light();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CreateScreen()),
-            );
+            onTabChanged(1);
           },
           borderRadius: BorderRadius.circular(CDRadius.pill),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF8C7DFF),
-                      Color(0xFF6C5CE7),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(CDRadius.pill),
-                  boxShadow: [
-                    BoxShadow(
-                      color: CDColors.primary.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 15,
-                    ),
-                    SizedBox(width: 3),
-                    Text(
-                      'Create',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: 0.2,
+          child: Center(
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: isDark
+                    ? const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFFDCE5FF),
+                          Color(0xFFC9D6FF),
+                        ],
+                      )
+                    : const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF5A7BC7),
+                          Color(0xFF4A69BD),
+                        ],
                       ),
-                    ),
-                  ],
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark ? Colors.white.withValues(alpha: 0.40) : Colors.white.withValues(alpha: 0.20),
+                  width: 1.0,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? const Color(0xFFC9D6FF).withValues(alpha: 0.25)
+                        : const Color(0xFF4A69BD).withValues(alpha: 0.20),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-            ],
+              child: Icon(
+                Icons.add_rounded,
+                size: 24,
+                color: isDark ? const Color(0xFF080A0F) : Colors.white,
+              ),
+            ),
           ),
         ),
       ),

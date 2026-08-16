@@ -41,7 +41,6 @@ class _CDHookCardState extends State<CDHookCard> {
         ),
         duration: const Duration(milliseconds: 1400),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF282831),
       ),
     );
     Future.delayed(const Duration(milliseconds: 1600), () {
@@ -52,7 +51,7 @@ class _CDHookCardState extends State<CDHookCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final primaryColor = CDColors.primary;
+    final accentColor = CDColors.primaryColor(context);
     final textColor = CDColors.textPrimary(context);
 
     if (widget.isPrimary) {
@@ -61,16 +60,18 @@ class _CDHookCardState extends State<CDHookCard> {
         padding: const EdgeInsets.all(CDSpacing.md),
         decoration: BoxDecoration(
           color: isDark
-              ? primaryColor.withValues(alpha: 0.12)
-              : CDColors.icyBlue.withValues(alpha: 0.35),
+              ? accentColor.withValues(alpha: 0.12)
+              : CDColors.lightAccentSubtle,
           borderRadius: BorderRadius.circular(CDRadius.medium),
           border: Border.all(
-            color: primaryColor.withValues(alpha: isDark ? 0.35 : 0.45),
+            color: accentColor.withValues(alpha: isDark ? 0.35 : 0.30),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: primaryColor.withValues(alpha: 0.10),
+              color: isDark
+                  ? const Color(0xFFC9D6FF).withValues(alpha: 0.08)
+                  : const Color(0xFF4A69BD).withValues(alpha: 0.06),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -85,15 +86,15 @@ class _CDHookCardState extends State<CDHookCard> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: primaryColor,
+                    color: accentColor,
                     borderRadius: BorderRadius.circular(CDRadius.small),
                   ),
-                  child: const Text(
+                  child: Text(
                     'PRIMARY HOOK',
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF080A0F) : Colors.white,
                       letterSpacing: 0.6,
                     ),
                   ),
