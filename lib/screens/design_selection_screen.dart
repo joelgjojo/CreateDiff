@@ -115,39 +115,34 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
     if (activeProject == null) {
       return Scaffold(
         backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            'Design Studio',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 17,
+                  color: CDColors.textPrimary(context),
+                ),
+          ),
+        ),
         body: CDAtmosphericBackground(
           child: SafeArea(
-            child: Column(
-              children: [
-                AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  title: Text(
-                    'Design Studio',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17,
-                          color: CDColors.textPrimary(context),
-                        ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: CDSpacing.navBarClearance),
-                    child: CDEmptyState(
-                      icon: Icons.palette_outlined,
-                      title: 'No Active Content Project',
-                      message: 'Create or select a content project first to explore design templates.',
-                      actionLabel: 'Go Back',
-                      onAction: () {
-                        if (Navigator.of(context).canPop()) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ],
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: CDSpacing.navBarClearance),
+              child: CDEmptyState(
+                icon: Icons.palette_outlined,
+                title: 'No Active Content Project',
+                message: 'Create or select a content project first to explore design templates.',
+                actionLabel: 'Go Back',
+                onAction: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
             ),
           ),
         ),
@@ -162,62 +157,62 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: isModal
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Choose Design Direction',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    color: CDColors.textPrimary(context),
+                  ),
+            ),
+            Text(
+              activeProject.platform,
+              style: TextStyle(
+                fontSize: 12,
+                color: CDColors.primaryColor(context),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              AppHaptics.selection();
+              CDExportShareSheet.show(
+                context,
+                project: activeProject,
+                onDone: () => Navigator.of(context).popUntil((route) => route.isFirst),
+              );
+            },
+            child: Text(
+              'Skip',
+              style: TextStyle(
+                color: CDColors.textSecondary(context),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
       body: CDAtmosphericBackground(
         child: SafeArea(
+          top: false,
           bottom: false,
           child: Column(
             children: [
-              // Header
-              AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                leading: isModal
-                    ? IconButton(
-                        icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
-                        onPressed: () => Navigator.of(context).pop(),
-                      )
-                    : null,
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Choose Design Direction',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 17,
-                            color: CDColors.textPrimary(context),
-                          ),
-                    ),
-                    Text(
-                      activeProject.platform,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: CDColors.primaryColor(context),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      AppHaptics.selection();
-                      CDExportShareSheet.show(
-                        context,
-                        project: activeProject,
-                        onDone: () => Navigator.of(context).popUntil((route) => route.isFirst),
-                      );
-                    },
-                    child: Text(
-                      'Skip',
-                      style: TextStyle(
-                        color: CDColors.textSecondary(context),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               // Filter Chips Row
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg, vertical: CDSpacing.xs),

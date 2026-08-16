@@ -33,46 +33,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         return Scaffold(
           backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              'Profile & Studio',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 22,
+                    letterSpacing: -0.5,
+                    color: CDColors.textPrimary(context),
+                  ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.bug_report_outlined, size: 20),
+                tooltip: 'Developer Debug Panel',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
           body: CDAtmosphericBackground(
             child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    title: Text(
-                      'Profile & Studio',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 22,
-                            letterSpacing: -0.5,
-                            color: CDColors.textPrimary(context),
-                          ),
-                    ),
-                    actions: [
-                      IconButton(
-                        icon: const Icon(Icons.bug_report_outlined, size: 20),
-                        tooltip: 'Developer Debug Panel',
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(
-                        left: CDSpacing.lg,
-                        right: CDSpacing.lg,
-                        top: CDSpacing.xs,
-                        bottom: CDSpacing.navBarClearance,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+              top: false,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  left: CDSpacing.lg,
+                  right: CDSpacing.lg,
+                  top: CDSpacing.xs,
+                  bottom: CDSpacing.navBarClearance,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                           // --- Brand Memory Highlight Card with Lockup ---
                           _buildBrandMemorySection(context, profile),
                           const SizedBox(height: CDSpacing.xl),
@@ -92,14 +89,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+                ),
+              );
+            },
+          );
+        }
 
   Widget _buildBrandMemorySection(BuildContext context, CreatorProfile profile) {
     final isDark = CDColors.isDark(context);

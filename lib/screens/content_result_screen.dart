@@ -144,60 +144,60 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
 
         return Scaffold(
           backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Content Workspace',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                        color: CDColors.textPrimary(context),
+                      ),
+                ),
+                Row(
+                  children: [
+                    Text(
+                      '${_currentProject.platform} ${_currentProject.contentType}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: accentColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '• Tailored for $creatorName',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 11,
+                            color: CDColors.textSecondary(context),
+                          ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.share_outlined, size: 20, color: CDColors.textPrimary(context)),
+                tooltip: 'Export & Share',
+                onPressed: _openExportShare,
+              ),
+            ],
+          ),
           body: CDAtmosphericBackground(
             child: SafeArea(
+              top: false,
               bottom: false,
               child: Column(
                 children: [
-                  // App Bar
-                  AppBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    leading: IconButton(
-                      icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    title: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Content Workspace',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 17,
-                                color: CDColors.textPrimary(context),
-                              ),
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              '${_currentProject.platform} ${_currentProject.contentType}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: accentColor,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '• Tailored for $creatorName',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontSize: 11,
-                                    color: CDColors.textSecondary(context),
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      IconButton(
-                        icon: Icon(Icons.share_outlined, size: 20, color: CDColors.textPrimary(context)),
-                        tooltip: 'Export & Share',
-                        onPressed: _openExportShare,
-                      ),
-                    ],
-                  ),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.only(

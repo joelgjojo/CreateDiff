@@ -194,76 +194,77 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: CDAtmosphericBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                leading: _currentStep > 0
-                    ? IconButton(
-                        icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
-                        onPressed: () {
-                          AppHaptics.selection();
-                          setState(() => _currentStep--);
-                        },
-                      )
-                    : (widget.isInitialSetup
-                        ? null
-                        : IconButton(
-                            icon: Icon(Icons.close_rounded, color: CDColors.textPrimary(context)),
-                            onPressed: () => Navigator.of(context).pop(),
-                          )),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Brand Memory Studio',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 17,
-                            color: CDColors.textPrimary(context),
-                          ),
-                    ),
-                    Text(
-                      'Step ${_currentStep + 1} of 5',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontSize: 11,
-                            color: CDColors.textSecondary(context),
-                          ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  if (widget.isInitialSetup && _currentStep == 4)
-                    TextButton(
-                      onPressed: _saveAndProceed,
-                      child: Text(
-                        'Skip',
-                        style: TextStyle(
-                          color: CDColors.textSecondary(context),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                ],
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(3),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(CDRadius.pill),
-                      child: LinearProgressIndicator(
-                        value: (_currentStep + 1) / 5,
-                        minHeight: 3,
-                        backgroundColor: CDColors.borderSubtle(context),
-                        valueColor: const AlwaysStoppedAnimation<Color>(CDColors.primary),
-                      ),
-                    ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: _currentStep > 0
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
+                onPressed: () {
+                  AppHaptics.selection();
+                  setState(() => _currentStep--);
+                },
+              )
+            : (widget.isInitialSetup
+                ? null
+                : IconButton(
+                    icon: Icon(Icons.close_rounded, color: CDColors.textPrimary(context)),
+                    onPressed: () => Navigator.of(context).pop(),
+                  )),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Brand Memory Studio',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    color: CDColors.textPrimary(context),
                   ),
+            ),
+            Text(
+              'Step ${_currentStep + 1} of 5',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 11,
+                    color: CDColors.textSecondary(context),
+                  ),
+            ),
+          ],
+        ),
+        actions: [
+          if (widget.isInitialSetup && _currentStep == 4)
+            TextButton(
+              onPressed: _saveAndProceed,
+              child: Text(
+                'Skip',
+                style: TextStyle(
+                  color: CDColors.textSecondary(context),
+                  fontWeight: FontWeight.w700,
                 ),
               ),
+            ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(3),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(CDRadius.pill),
+              child: LinearProgressIndicator(
+                value: (_currentStep + 1) / 5,
+                minHeight: 3,
+                backgroundColor: CDColors.borderSubtle(context),
+                valueColor: const AlwaysStoppedAnimation<Color>(CDColors.primary),
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: CDAtmosphericBackground(
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(CDSpacing.lg),

@@ -137,7 +137,7 @@ class _CreateScreenState extends State<CreateScreen> {
           ),
         );
       } else if (appState.lastError != null) {
-        // Show error snackbar / dialog
+        // Show error snackbar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(appState.lastError!.message),
@@ -169,57 +169,59 @@ class _CreateScreenState extends State<CreateScreen> {
 
         return Scaffold(
           backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_rounded,
+                color: CDColors.textPrimary(context),
+              ),
+              onPressed: _prevStep,
+            ),
+            title: Text(
+              _currentStep == 0 ? 'Choose Format' : 'Studio Canvas',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    color: CDColors.textPrimary(context),
+                  ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.bug_report_outlined, size: 20),
+                tooltip: 'Debug Panel',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
+                  );
+                },
+              ),
+            ],
+            centerTitle: true,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(3),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(CDRadius.pill),
+                  child: LinearProgressIndicator(
+                    value: (_currentStep + 1) / 2,
+                    backgroundColor: CDColors.borderSubtle(context),
+                    valueColor: const AlwaysStoppedAnimation<Color>(CDColors.brand),
+                    minHeight: 3,
+                  ),
+                ),
+              ),
+            ),
+          ),
           body: CDAtmosphericBackground(
             child: Stack(
               children: [
                 SafeArea(
+                  top: false,
                   child: Column(
                     children: [
-                      // Header Bar
-                      AppBar(
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        leading: IconButton(
-                          icon: Icon(
-                            Icons.arrow_back_rounded,
-                            color: CDColors.textPrimary(context),
-                          ),
-                          onPressed: _prevStep,
-                        ),
-                        title: Text(
-                          _currentStep == 0 ? 'Choose Format' : 'Studio Canvas',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 17,
-                                color: CDColors.textPrimary(context),
-                              ),
-                        ),
-                        actions: [
-                          IconButton(
-                            icon: const Icon(Icons.bug_report_outlined, size: 20),
-                            tooltip: 'Debug Panel',
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
-                              );
-                            },
-                          ),
-                        ],
-                        centerTitle: true,
-                      ),
-                      // Step Progress Line
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(CDRadius.pill),
-                          child: LinearProgressIndicator(
-                            value: (_currentStep + 1) / 2,
-                            backgroundColor: CDColors.borderSubtle(context),
-                            valueColor: const AlwaysStoppedAnimation<Color>(CDColors.brand),
-                            minHeight: 3,
-                          ),
-                        ),
-                      ),
                       // Error Banner if generation failed
                       if (error != null && !isGenerating)
                         Container(
@@ -423,42 +425,45 @@ class _CreateScreenState extends State<CreateScreen> {
           ),
           const SizedBox(height: CDSpacing.md),
 
-          // Collapsible Fine-Tune
-          Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              title: Text(
-                'Fine-Tune Parameters (Optional)',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: CDColors.textPrimary(context),
+          // Collapsible Fine-Tune wrapped in Material
+          Material(
+            color: Colors.transparent,
+            child: Theme(
+              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                title: Text(
+                  'Fine-Tune Parameters (Optional)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: CDColors.textPrimary(context),
+                  ),
                 ),
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: const EdgeInsets.only(top: CDSpacing.sm),
+                onExpansionChanged: (expanded) {
+                  AppHaptics.selection();
+                },
+                children: [
+                  CDTextInput(
+                    controller: _toneController,
+                    label: 'Tone of Voice',
+                    hint: 'E.g., Punchy, professional, humorous, educational',
+                  ),
+                  const SizedBox(height: CDSpacing.md),
+                  CDTextInput(
+                    controller: _targetAudienceController,
+                    label: 'Target Audience',
+                    hint: 'E.g., Beginners, senior designers, marketers',
+                  ),
+                  const SizedBox(height: CDSpacing.md),
+                  CDTextInput(
+                    controller: _keywordsController,
+                    label: 'Key Focus Keywords',
+                    hint: 'E.g., productivity, revenue, creator economy',
+                  ),
+                ],
               ),
-              tilePadding: EdgeInsets.zero,
-              childrenPadding: const EdgeInsets.only(top: CDSpacing.sm),
-              onExpansionChanged: (expanded) {
-                AppHaptics.selection();
-              },
-              children: [
-                CDTextInput(
-                  controller: _toneController,
-                  label: 'Tone of Voice',
-                  hint: 'E.g., Punchy, professional, humorous, educational',
-                ),
-                const SizedBox(height: CDSpacing.md),
-                CDTextInput(
-                  controller: _targetAudienceController,
-                  label: 'Target Audience',
-                  hint: 'E.g., Beginners, senior designers, marketers',
-                ),
-                const SizedBox(height: CDSpacing.md),
-                CDTextInput(
-                  controller: _keywordsController,
-                  label: 'Key Focus Keywords',
-                  hint: 'E.g., productivity, revenue, creator economy',
-                ),
-              ],
             ),
           ),
           const SizedBox(height: CDSpacing.xxl),

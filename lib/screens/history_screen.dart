@@ -121,56 +121,56 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
         return Scaffold(
           backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              'Content Archive',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 22,
+                    letterSpacing: -0.5,
+                    color: CDColors.textPrimary(context),
+                  ),
+            ),
+            actions: [
+              if (allHistory.isNotEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: CDSpacing.lg),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? CDColors.accentSubdued
+                            : CDColors.lightAccentSubtle,
+                        borderRadius: BorderRadius.circular(CDRadius.pill),
+                        border: Border.all(
+                          color: isDark
+                              ? CDColors.darkBorderSubtle
+                              : CDColors.lightBorderSubtle,
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        '${allHistory.length} creations',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: CDColors.primaryColor(context),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           body: CDAtmosphericBackground(
             child: SafeArea(
+              top: false,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // App Bar
-                  AppBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    title: Text(
-                      'Content Archive',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 22,
-                            letterSpacing: -0.5,
-                            color: CDColors.textPrimary(context),
-                          ),
-                    ),
-                    actions: [
-                      if (allHistory.isNotEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: CDSpacing.lg),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? CDColors.accentSubdued
-                                    : CDColors.lightAccentSubtle,
-                                borderRadius: BorderRadius.circular(CDRadius.pill),
-                                border: Border.all(
-                                  color: isDark
-                                      ? CDColors.darkBorderSubtle
-                                      : CDColors.lightBorderSubtle,
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Text(
-                                '${allHistory.length} creations',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: CDColors.primaryColor(context),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
                   // Filter Chips
                   if (allHistory.isNotEmpty)
                     Padding(
