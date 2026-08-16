@@ -117,6 +117,8 @@ class CDBrandMemoryCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '$niche • $tone • $language',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontSize: 11,
                             color: CDColors.textSecondary(context),

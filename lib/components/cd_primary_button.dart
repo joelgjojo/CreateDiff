@@ -132,13 +132,17 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton> {
                             ),
                             const SizedBox(width: 8),
                           ],
-                          Text(
-                            widget.label,
-                            style: const TextStyle(
-                              color: textColor,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.2,
+                          Flexible(
+                            child: Text(
+                              widget.label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: textColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.2,
+                              ),
                             ),
                           ),
                         ],

@@ -112,60 +112,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: profile.primaryColor.withValues(alpha: isDark ? 0.20 : 0.12),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: profile.primaryColor.withValues(alpha: 0.60),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: profile.primaryColor.withValues(alpha: 0.22),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: profile.primaryColor.withValues(alpha: isDark ? 0.20 : 0.12),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: profile.primaryColor.withValues(alpha: 0.60),
+                          width: 1.5,
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        creatorName.isNotEmpty ? creatorName[0].toUpperCase() : 'C',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: profile.primaryColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: profile.primaryColor.withValues(alpha: 0.22),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          creatorName.isNotEmpty ? creatorName[0].toUpperCase() : 'C',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: profile.primaryColor,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: CDSpacing.md),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        creatorName,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
-                              color: CDColors.textPrimary(context),
-                            ),
+                    const SizedBox(width: CDSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            creatorName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                  color: CDColors.textPrimary(context),
+                                ),
+                          ),
+                          Text(
+                            handle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: CDColors.textSecondary(context),
+                                  fontSize: 12,
+                                ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        handle,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: CDColors.textSecondary(context),
-                              fontSize: 12,
-                            ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -203,13 +212,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'BRAND MEMORY ATTRIBUTES',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: CDColors.primaryColor(context),
-                      letterSpacing: 0.6,
+                  Flexible(
+                    child: Text(
+                      'BRAND MEMORY ATTRIBUTES',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: CDColors.primaryColor(context),
+                        letterSpacing: 0.6,
+                      ),
                     ),
                   ),
                   Icon(
@@ -265,20 +278,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.symmetric(vertical: 3.5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.5,
-              color: CDColors.textSecondary(context),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.5,
+                color: CDColors.textSecondary(context),
+              ),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-              color: CDColors.textPrimary(context),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
             ),
           ),
         ],
@@ -438,20 +464,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Stored packs: ${appState.contentHistory.length}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: CDColors.textPrimary(context),
+              Flexible(
+                child: Text(
+                  'Stored packs: ${appState.contentHistory.length}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: CDColors.textPrimary(context),
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               TextButton(
                 onPressed: () => _confirmReset(context, appState),
                 style: TextButton.styleFrom(
                   foregroundColor: CDColors.error,
                   padding: EdgeInsets.zero,
                   minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: const Text('Reset All Data', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
               ),

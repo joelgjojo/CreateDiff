@@ -113,26 +113,32 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            greeting.toUpperCase(),
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: brandColor,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            name,
-                            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.6,
-                                  color: CDColors.textPrimary(context),
-                                ),
-                          ),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              greeting.toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: brandColor,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.6,
+                                    color: CDColors.textPrimary(context),
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
                       // Compact CD Monogram Brand Badge
                       Material(

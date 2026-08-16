@@ -160,6 +160,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       child: Text(
                         '${allHistory.length} creations',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,

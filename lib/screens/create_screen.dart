@@ -341,7 +341,7 @@ class _CreateScreenState extends State<CreateScreen> {
                 crossAxisCount: 2,
                 crossAxisSpacing: CDSpacing.md,
                 mainAxisSpacing: CDSpacing.md,
-                childAspectRatio: 1.25,
+                childAspectRatio: 1.15,
               ),
               itemCount: _contentTypes[_selectedPlatform!]!.length,
               itemBuilder: (context, index) {
@@ -417,6 +417,8 @@ class _CreateScreenState extends State<CreateScreen> {
                     children: [
                       Text(
                         '$_selectedPlatform • $_selectedContentType',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -425,6 +427,8 @@ class _CreateScreenState extends State<CreateScreen> {
                       ),
                       Text(
                         'Describe what you want to create.',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
                           color: CDColors.textSecondary(context),

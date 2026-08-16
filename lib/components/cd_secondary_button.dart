@@ -103,13 +103,17 @@ class _CDSecondaryButtonState extends State<CDSecondaryButton> {
                     ),
                     const SizedBox(width: CDSpacing.xs),
                   ],
-                  Text(
-                    widget.label,
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14.5,
-                      letterSpacing: 0.1,
+                  Flexible(
+                    child: Text(
+                      widget.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14.5,
+                        letterSpacing: 0.1,
+                      ),
                     ),
                   ),
                 ],

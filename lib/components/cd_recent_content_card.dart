@@ -87,13 +87,16 @@ class CDRecentContentCard extends StatelessWidget {
                             letterSpacing: 0.5,
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '• $relativeTime',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontSize: 11,
-                                color: CDColors.textSecondary(context),
-                              ),
+                        Flexible(
+                          child: Text(
+                            '• $relativeTime',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  fontSize: 11,
+                                  color: CDColors.textSecondary(context),
+                                ),
+                          ),
                         ),
                       ],
                     ),

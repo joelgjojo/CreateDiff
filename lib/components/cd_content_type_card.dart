@@ -60,7 +60,7 @@ class CDContentTypeCard extends StatelessWidget {
         child: AnimatedContainer(
           duration: CDMotion.micro,
           curve: CDMotion.defaultCurve,
-          padding: const EdgeInsets.all(CDSpacing.md),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             gradient: isSelected ? selectedGradient : unselectedGradient,
             borderRadius: BorderRadius.circular(CDRadius.large),
@@ -94,7 +94,7 @@ class CDContentTypeCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? accentColor.withValues(alpha: isDark ? 0.20 : 0.12)
@@ -103,7 +103,7 @@ class CDContentTypeCard extends StatelessWidget {
                     ),
                     child: Icon(
                       icon,
-                      size: 18,
+                      size: 17,
                       color: isSelected
                           ? accentColor
                           : CDColors.textPrimary(context),
@@ -118,38 +118,43 @@ class CDContentTypeCard extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.check_rounded,
-                        size: 12,
+                        size: 11,
                         color: isDark ? const Color(0xFF080A0F) : Colors.white,
                       ),
                     ),
                 ],
               ),
-              const SizedBox(height: CDSpacing.sm),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                          color: isSelected
-                              ? accentColor
-                              : CDColors.textPrimary(context),
-                        ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: 11,
-                          height: 1.25,
-                          color: CDColors.textSecondary(context),
-                        ),
-                  ),
-                ],
+              const SizedBox(height: 6),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                            color: isSelected
+                                ? accentColor
+                                : CDColors.textPrimary(context),
+                          ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 10.5,
+                            height: 1.2,
+                            color: CDColors.textSecondary(context),
+                          ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

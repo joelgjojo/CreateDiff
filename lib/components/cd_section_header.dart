@@ -23,14 +23,18 @@ class CDSectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  letterSpacing: -0.3,
-                  color: CDColors.textPrimary(context),
-                ),
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    letterSpacing: -0.3,
+                    color: CDColors.textPrimary(context),
+                  ),
+            ),
           ),
           if (actionLabel != null && onAction != null)
             Material(

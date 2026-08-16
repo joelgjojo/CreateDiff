@@ -55,35 +55,41 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Text(
-                  widget.label,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        color: CDColors.textPrimary(context),
-                      ),
-                ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.black.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(CDRadius.pill),
-                  ),
-                  child: Text(
-                    '${widget.hashtags.length}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: CDColors.textSecondary(context),
+            Flexible(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      widget.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            color: CDColors.textPrimary(context),
+                          ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(CDRadius.pill),
+                    ),
+                    child: Text(
+                      '${widget.hashtags.length}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: CDColors.textSecondary(context),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             InkWell(
               onTap: _copyAll,

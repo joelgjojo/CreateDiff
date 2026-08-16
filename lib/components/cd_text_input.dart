@@ -46,13 +46,17 @@ class CDTextInput extends StatelessWidget {
         if (label != null) ...[
           Row(
             children: [
-              Text(
-                label!,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      color: CDColors.textPrimary(context),
-                    ),
+              Flexible(
+                child: Text(
+                  label!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: CDColors.textPrimary(context),
+                      ),
+                ),
               ),
               if (isRequired)
                 const Text(

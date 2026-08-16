@@ -175,12 +175,16 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      '• Tailored for $creatorName',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontSize: 11,
-                            color: CDColors.textSecondary(context),
-                          ),
+                    Flexible(
+                      child: Text(
+                        '• Tailored for $creatorName',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 11,
+                              color: CDColors.textSecondary(context),
+                            ),
+                      ),
                     ),
                   ],
                 ),
@@ -307,33 +311,44 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    'Hook Variations',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
-                          color: CDColors.textPrimary(context),
-                        ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: isDark ? 0.16 : 0.10),
-                      borderRadius: BorderRadius.circular(CDRadius.pill),
-                    ),
-                    child: Text(
-                      '5 Angles',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: accentColor,
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Hook Variations',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                              color: CDColors.textPrimary(context),
+                            ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: isDark ? 0.16 : 0.10),
+                          borderRadius: BorderRadius.circular(CDRadius.pill),
+                        ),
+                        child: Text(
+                          '5 Angles',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: accentColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [
@@ -401,13 +416,17 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Calls to Action (CTA)',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                      color: CDColors.textPrimary(context),
-                    ),
+              Expanded(
+                child: Text(
+                  'Calls to Action (CTA)',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        color: CDColors.textPrimary(context),
+                      ),
+                ),
               ),
               IconButton(
                 icon: Icon(Icons.content_copy_rounded, size: 15, color: CDColors.textPrimary(context)),

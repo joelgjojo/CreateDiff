@@ -93,41 +93,52 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? CDColors.accentSubdued
-                          : CDColors.lightAccentSubtle,
-                      borderRadius: BorderRadius.circular(CDRadius.pill),
-                      border: Border.all(
-                        color: isDark
-                            ? CDColors.darkBorderSubtle
-                            : CDColors.lightBorderSubtle,
-                        width: 0.8,
-                      ),
-                    ),
-                    child: Text(
-                      widget.platform.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: primaryColor,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8.0),
-                  Text(
-                    '$_wordCount words',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: 11,
-                          color: CDColors.textSecondary(context),
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? CDColors.accentSubdued
+                              : CDColors.lightAccentSubtle,
+                          borderRadius: BorderRadius.circular(CDRadius.pill),
+                          border: Border.all(
+                            color: isDark
+                                ? CDColors.darkBorderSubtle
+                                : CDColors.lightBorderSubtle,
+                            width: 0.8,
+                          ),
                         ),
-                  ),
-                ],
+                        child: Text(
+                          widget.platform.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: primaryColor,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 5.0),
+                    Flexible(
+                      child: Text(
+                        '$_wordCount words',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 11,
+                              color: CDColors.textSecondary(context),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [

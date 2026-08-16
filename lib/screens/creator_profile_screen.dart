@@ -654,41 +654,47 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               ),
         ),
         const SizedBox(height: CDSpacing.sm),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: _brandColors.map((color) {
-            final isSelected = _primaryColor.toARGB32() == color.toARGB32();
-            return GestureDetector(
-              onTap: () {
-                AppHaptics.selection();
-                setState(() => _primaryColor = color);
-              },
-              child: AnimatedContainer(
-                duration: CDMotion.micro,
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: isSelected
-                      ? Border.all(color: CDColors.isDark(context) ? Colors.white : Colors.black, width: 2.5)
-                      : Border.all(color: CDColors.borderSubtle(context), width: 1),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: color.withValues(alpha: 0.45),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ]
-                      : null,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: _brandColors.map((color) {
+              final isSelected = _primaryColor.toARGB32() == color.toARGB32();
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: GestureDetector(
+                  onTap: () {
+                    AppHaptics.selection();
+                    setState(() => _primaryColor = color);
+                  },
+                  child: AnimatedContainer(
+                    duration: CDMotion.micro,
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: isSelected
+                          ? Border.all(color: CDColors.isDark(context) ? Colors.white : Colors.black, width: 2.5)
+                          : Border.all(color: CDColors.borderSubtle(context), width: 1),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.45),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: isSelected
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                        : null,
+                  ),
                 ),
-                child: isSelected
-                    ? const Icon(Icons.check, size: 16, color: Colors.white)
-                    : null,
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );

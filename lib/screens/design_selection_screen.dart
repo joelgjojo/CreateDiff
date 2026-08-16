@@ -171,6 +171,8 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
           children: [
             Text(
               'Choose Design Direction',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     fontSize: 17,
@@ -179,6 +181,8 @@ class _DesignSelectionScreenState extends State<DesignSelectionScreen> {
             ),
             Text(
               activeProject.platform,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
                 color: CDColors.primaryColor(context),

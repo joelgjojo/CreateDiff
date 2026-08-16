@@ -94,29 +94,35 @@ class CDDesignTemplateCard extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            template.name,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: CDColors.textPrimary(context),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              template.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: CDColors.textPrimary(context),
+                              ),
                             ),
-                          ),
-                          Text(
-                            template.style.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              color: isSelected
-                                  ? accentColor
-                                  : CDColors.textSecondary(context),
-                              letterSpacing: 0.5,
+                            Text(
+                              template.style.toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                color: isSelected
+                                    ? accentColor
+                                    : CDColors.textSecondary(context),
+                                letterSpacing: 0.5,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       if (isSelected)
                         Container(
@@ -216,6 +222,8 @@ class CDDesignTemplateCard extends StatelessWidget {
               ),
               child: Text(
                 brandName.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.white),
               ),
             ),
@@ -223,8 +231,10 @@ class CDDesignTemplateCard extends StatelessWidget {
               child: Text(
                 text,
                 textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
                   letterSpacing: -0.4,
@@ -252,9 +262,14 @@ class CDDesignTemplateCard extends StatelessWidget {
                   'N° 01',
                   style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: accent),
                 ),
-                Text(
-                  brandName.toUpperCase(),
-                  style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColor.withValues(alpha: 0.5)),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    brandName.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColor.withValues(alpha: 0.5)),
+                  ),
                 ),
               ],
             ),
@@ -268,8 +283,10 @@ class CDDesignTemplateCard extends StatelessWidget {
               ),
               child: Text(
                 text,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w800,
                   color: textColor,
                   height: 1.15,
@@ -294,20 +311,24 @@ class CDDesignTemplateCard extends StatelessWidget {
                 '✦',
                 style: TextStyle(fontSize: 11, color: accent),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 4),
               Text(
                 text,
                 textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: textColor,
-                  height: 1.25,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 4),
               Text(
                 brandName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 8, color: textColor.withValues(alpha: 0.6), fontWeight: FontWeight.w500),
               ),
             ],
@@ -324,17 +345,23 @@ class CDDesignTemplateCard extends StatelessWidget {
               children: [
                 Container(width: 4, height: 4, decoration: BoxDecoration(color: accent, shape: BoxShape.circle)),
                 const SizedBox(width: 4),
-                Text(
-                  brandName,
-                  style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: Colors.white70),
+                Flexible(
+                  child: Text(
+                    brandName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: Colors.white70),
+                  ),
                 ),
               ],
             ),
             Text(
               text,
               textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
                 letterSpacing: 0.2,
@@ -369,8 +396,10 @@ class CDDesignTemplateCard extends StatelessWidget {
             Text(
               text,
               textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFFF3F1E7),
                 letterSpacing: 0.4,
@@ -379,6 +408,8 @@ class CDDesignTemplateCard extends StatelessWidget {
             ),
             Text(
               brandName.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 7, color: Colors.white.withValues(alpha: 0.5), letterSpacing: 1.0),
             ),
           ],
@@ -397,16 +428,23 @@ class CDDesignTemplateCard extends StatelessWidget {
                   'GUIDE',
                   style: TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: accent),
                 ),
-                Text(
-                  brandName,
-                  style: TextStyle(fontSize: 7, color: textColorModern.withValues(alpha: 0.5)),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    brandName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 7, color: textColorModern.withValues(alpha: 0.5)),
+                  ),
                 ),
               ],
             ),
             Text(
               text,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w800,
                 color: textColorModern,
                 height: 1.18,
@@ -432,8 +470,10 @@ class CDDesignTemplateCard extends StatelessWidget {
             ),
             Text(
               text.toUpperCase(),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w900,
                 color: Colors.white,
                 height: 1.1,
@@ -442,6 +482,8 @@ class CDDesignTemplateCard extends StatelessWidget {
             ),
             Text(
               brandName.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.8),
             ),
           ],
@@ -456,12 +498,16 @@ class CDDesignTemplateCard extends StatelessWidget {
           children: [
             Text(
               brandName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: accent),
             ),
             Text(
               text,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w800,
                 color: textColorClean,
                 height: 1.2,
@@ -472,9 +518,13 @@ class CDDesignTemplateCard extends StatelessWidget {
               children: [
                 Container(width: 12, height: 1.5, color: accent),
                 const SizedBox(width: 4),
-                Text(
-                  'READ MORE',
-                  style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColorClean.withValues(alpha: 0.5)),
+                Flexible(
+                  child: Text(
+                    'READ MORE',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColorClean.withValues(alpha: 0.5)),
+                  ),
                 ),
               ],
             ),
