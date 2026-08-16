@@ -8,12 +8,15 @@ enum ApiKeyStatus {
   invalid,
 }
 
-/// Runtime and compile-time configuration for the xAI Grok integration.
+/// Runtime and compile-time configuration for CreateDiff AI Engine (xAI Grok & Groq).
 class ApiConfig {
   ApiConfig._();
 
   static const String defaultXAIUrl = 'https://api.x.ai/v1';
+  static const String defaultGroqUrl = 'https://api.groq.com/openai/v1';
+
   static const String defaultXAIModel = 'grok-beta';
+  static const String defaultGroqModel = 'llama-3.3-70b-versatile';
 
   static String _overrideApiKey = '';
   static String _overrideModel = '';
@@ -61,6 +64,7 @@ class ApiConfig {
   static bool get hasApiKey => apiKey.isNotEmpty;
   static bool get hasGrokKey => hasApiKey;
   static bool get startsWithXai => apiKey.startsWith('xai-');
+  static bool get startsWithGsk => apiKey.startsWith('gsk_');
   static int get apiKeyLength => apiKey.length;
 
   static ApiKeyStatus get keyStatus {
@@ -69,7 +73,10 @@ class ApiConfig {
     return ApiKeyStatus.configured;
   }
 
-  static String get providerName => 'xAI Grok';
+  static String get providerName {
+    if (startsWithGsk) return 'Groq';
+    return 'xAI Grok';
+  }
 
   static String get baseUrl {
     if (_hasExplicitOverride && _overrideBaseUrl.isNotEmpty) {
@@ -78,7 +85,12 @@ class ApiConfig {
     try {
       final envUrl = dotenv.env['GROK_BASE_URL'] ?? dotenv.env['XAI_BASE_URL'];
       if (envUrl != null && envUrl.trim().isNotEmpty) {
-        return envUrl.trim();
+        final trimmed = envUrl.trim();
+        // If it's a Groq key (gsk_) and URL is xAI default, route to Groq endpoint
+        if (startsWithGsk && (trimmed == defaultXAIUrl || trimmed.contains('api.x.ai'))) {
+          return defaultGroqUrl;
+        }
+        return trimmed;
       }
     } catch (_) {}
 
@@ -87,9 +99,16 @@ class ApiConfig {
       defaultValue: String.fromEnvironment('XAI_BASE_URL'),
     );
     if (dartDefineUrl.trim().isNotEmpty) {
-      return dartDefineUrl.trim();
+      final trimmed = dartDefineUrl.trim();
+      if (startsWithGsk && (trimmed == defaultXAIUrl || trimmed.contains('api.x.ai'))) {
+        return defaultGroqUrl;
+      }
+      return trimmed;
     }
 
+    if (startsWithGsk) {
+      return defaultGroqUrl;
+    }
     return defaultXAIUrl;
   }
 
@@ -100,7 +119,12 @@ class ApiConfig {
     try {
       final envModel = dotenv.env['GROK_MODEL'] ?? dotenv.env['XAI_MODEL'];
       if (envModel != null && envModel.trim().isNotEmpty) {
-        return envModel.trim();
+        final trimmed = envModel.trim();
+        // If Groq key and model is grok-*, route to llama-3.3-70b-versatile
+        if (startsWithGsk && trimmed.startsWith('grok')) {
+          return defaultGroqModel;
+        }
+        return trimmed;
       }
     } catch (_) {}
 
@@ -109,9 +133,16 @@ class ApiConfig {
       defaultValue: String.fromEnvironment('XAI_MODEL'),
     );
     if (dartDefineModel.trim().isNotEmpty) {
-      return dartDefineModel.trim();
+      final trimmed = dartDefineModel.trim();
+      if (startsWithGsk && trimmed.startsWith('grok')) {
+        return defaultGroqModel;
+      }
+      return trimmed;
     }
 
+    if (startsWithGsk) {
+      return defaultGroqModel;
+    }
     return defaultXAIModel;
   }
 
@@ -128,7 +159,7 @@ class ApiConfig {
 
     if (kDebugMode) {
       if (hasApiKey) {
-        debugPrint('Grok key loaded successfully (length: $apiKeyLength, starts with "xai-": $startsWithXai)');
+        debugPrint('Grok key loaded successfully (length: $apiKeyLength, provider: $providerName, endpoint: $baseUrl)');
       } else {
         debugPrint('Grok key missing in .env / launch configuration');
       }
@@ -143,7 +174,7 @@ class ApiConfig {
 
     if (kDebugMode) {
       if (hasApiKey) {
-        debugPrint('Grok key loaded successfully (length: $apiKeyLength, starts with "xai-": $startsWithXai)');
+        debugPrint('Grok key loaded successfully (length: $apiKeyLength, provider: $providerName, endpoint: $baseUrl)');
       } else {
         debugPrint('Grok key missing in .env / launch configuration');
       }

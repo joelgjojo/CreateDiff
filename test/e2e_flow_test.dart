@@ -114,7 +114,7 @@ void main() {
       expect(ApiConfig.grokApiKey, isNotNull);
       expect(ApiConfig.grokApiKey, isNotEmpty);
       expect(ApiConfig.hasApiKey, isTrue);
-      expect(ApiConfig.providerName, equals('xAI Grok'));
+      expect(ApiConfig.providerName, anyOf(equals('xAI Grok'), equals('Groq')));
     });
 
     test('4. Complete reset flow restarts state and clears persistence cleanly', () async {
