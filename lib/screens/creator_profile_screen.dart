@@ -192,95 +192,103 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
+    return PopScope(
+      canPop: _currentStep == 0 && !widget.isInitialSetup,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _currentStep > 0) {
+          setState(() => _currentStep--);
+        }
+      },
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: _currentStep > 0
-            ? IconButton(
-                icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
-                onPressed: () {
-                  AppHaptics.selection();
-                  setState(() => _currentStep--);
-                },
-              )
-            : (widget.isInitialSetup
-                ? null
-                : IconButton(
-                    icon: Icon(Icons.close_rounded, color: CDColors.textPrimary(context)),
-                    onPressed: () => Navigator.of(context).pop(),
-                  )),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Brand Memory Studio',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 17,
-                    color: CDColors.textPrimary(context),
-                  ),
-            ),
-            Text(
-              'Step ${_currentStep + 1} of 5',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 11,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: _currentStep > 0
+              ? IconButton(
+                  icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
+                  onPressed: () {
+                    AppHaptics.selection();
+                    setState(() => _currentStep--);
+                  },
+                )
+              : (widget.isInitialSetup
+                  ? null
+                  : IconButton(
+                      icon: Icon(Icons.close_rounded, color: CDColors.textPrimary(context)),
+                      onPressed: () => Navigator.of(context).pop(),
+                    )),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Brand Memory Studio',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 17,
+                      color: CDColors.textPrimary(context),
+                    ),
+              ),
+              Text(
+                'Step ${_currentStep + 1} of 5',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      color: CDColors.textSecondary(context),
+                    ),
+              ),
+            ],
+          ),
+          actions: [
+            if (widget.isInitialSetup && _currentStep == 4)
+              TextButton(
+                onPressed: _saveAndProceed,
+                child: Text(
+                  'Skip',
+                  style: TextStyle(
                     color: CDColors.textSecondary(context),
+                    fontWeight: FontWeight.w700,
                   ),
-            ),
-          ],
-        ),
-        actions: [
-          if (widget.isInitialSetup && _currentStep == 4)
-            TextButton(
-              onPressed: _saveAndProceed,
-              child: Text(
-                'Skip',
-                style: TextStyle(
-                  color: CDColors.textSecondary(context),
-                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(3),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(CDRadius.pill),
-              child: LinearProgressIndicator(
-                value: (_currentStep + 1) / 5,
-                minHeight: 3,
-                backgroundColor: CDColors.borderSubtle(context),
-                valueColor: const AlwaysStoppedAnimation<Color>(CDColors.primary),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(3),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(CDRadius.pill),
+                child: LinearProgressIndicator(
+                  value: (_currentStep + 1) / 5,
+                  minHeight: 3,
+                  backgroundColor: CDColors.borderSubtle(context),
+                  valueColor: const AlwaysStoppedAnimation<Color>(CDColors.primary),
+                ),
               ),
             ),
           ),
         ),
-      ),
-      body: CDAtmosphericBackground(
-        child: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
+        body: CDAtmosphericBackground(
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(CDSpacing.lg),
+                    child: _buildStepContent(),
+                  ),
+                ),
+                Padding(
                   padding: const EdgeInsets.all(CDSpacing.lg),
-                  child: _buildStepContent(),
+                  child: CDPrimaryButton(
+                    label: _currentStep < 4 ? 'Continue →' : (widget.isInitialSetup ? 'Complete Setup ✦' : 'Save Brand Changes'),
+                    isFullWidth: true,
+                    height: 50,
+                    onPressed: _saveAndProceed,
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(CDSpacing.lg),
-                child: CDPrimaryButton(
-                  label: _currentStep < 4 ? 'Continue →' : (widget.isInitialSetup ? 'Complete Setup ✦' : 'Save Brand Changes'),
-                  isFullWidth: true,
-                  height: 50,
-                  onPressed: _saveAndProceed,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

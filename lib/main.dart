@@ -8,13 +8,19 @@ import 'screens/splash_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: '.env');
+  // Load .env safely — ApiConfig.init() has its own fallback
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {
+    // .env may be absent; keys can come from --dart-define instead
+  }
 
   // Initialize persistent App State (SharedPreferences)
   await AppState.instance.init();
 
   runApp(const CreateDiffApp());
 }
+
 
 class CreateDiffApp extends StatelessWidget {
   const CreateDiffApp({super.key});

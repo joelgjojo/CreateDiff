@@ -81,18 +81,20 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
 
   void _openDesignSelection() {
     AppHaptics.light();
+    final project = AppState.instance.currentProject ?? widget.project;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => DesignSelectionScreen(project: _currentProject),
+        builder: (_) => DesignSelectionScreen(project: project),
       ),
     );
   }
 
   void _openExportShare() {
     AppHaptics.light();
+    final project = AppState.instance.currentProject ?? widget.project;
     CDExportShareSheet.show(
       context,
-      project: _currentProject,
+      project: project,
       onDone: () {
         Navigator.of(context).popUntil((route) => route.isFirst);
       },

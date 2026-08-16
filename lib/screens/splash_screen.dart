@@ -89,63 +89,62 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    SystemChrome.setSystemUIOverlayStyle(
-      isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-    );
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: CDAtmosphericBackground(
-        child: Center(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Official CD Monogram with diffused ambient glow
-                  Container(
-                    padding: const EdgeInsets.all(CDSpacing.xl),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: CDColors.brand.withValues(alpha: isDark ? 0.35 : 0.20),
-                          blurRadius: 36,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: const CDLogo.monogram(
-                      height: 54,
-                      colorMode: CDLogoColorMode.adaptive,
-                      isHero: true,
-                      heroTag: 'cd_brand_monogram',
-                    ),
-                  ),
-                  const SizedBox(height: CDSpacing.md),
-                  // Wordmark
-                  const CDLogo.wordmark(
-                    height: 28,
-                    colorMode: CDLogoColorMode.adaptive,
-                  ),
-                  const SizedBox(height: CDSpacing.sm),
-                  // Studio Subtitle
-                  FadeTransition(
-                    opacity: _subtitleFade,
-                    child: Text(
-                      'AI CONTENT STUDIO',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: CDColors.textMuted(context),
-                            letterSpacing: 2.0,
-                            fontWeight: FontWeight.w700,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: Theme.of(context).brightness == Brightness.dark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: CDAtmosphericBackground(
+          child: Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Official CD Monogram with diffused ambient glow
+                    Container(
+                      padding: const EdgeInsets.all(CDSpacing.xl),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: CDColors.brand.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.35 : 0.20),
+                            blurRadius: 36,
+                            offset: const Offset(0, 8),
                           ),
+                        ],
+                      ),
+                      child: const CDLogo.monogram(
+                        height: 54,
+                        colorMode: CDLogoColorMode.adaptive,
+                        isHero: true,
+                        heroTag: 'cd_brand_monogram',
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: CDSpacing.md),
+                    // Wordmark
+                    const CDLogo.wordmark(
+                      height: 28,
+                      colorMode: CDLogoColorMode.adaptive,
+                    ),
+                    const SizedBox(height: CDSpacing.sm),
+                    // Studio Subtitle
+                    FadeTransition(
+                      opacity: _subtitleFade,
+                      child: Text(
+                        'AI CONTENT STUDIO',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: CDColors.textMuted(context),
+                              letterSpacing: 2.0,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

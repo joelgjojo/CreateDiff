@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../theme/app_theme.dart';
 import '../models/creator_profile.dart';
 import '../services/app_state.dart';
@@ -46,15 +47,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.bug_report_outlined, size: 20),
-                tooltip: 'Developer Debug Panel',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
-                  );
-                },
-              ),
+              if (kDebugMode)
+                IconButton(
+                  icon: const Icon(Icons.bug_report_outlined, size: 20),
+                  tooltip: 'Developer Debug Panel',
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
+                    );
+                  },
+                ),
             ],
           ),
           body: CDAtmosphericBackground(

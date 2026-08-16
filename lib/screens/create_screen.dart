@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../theme/app_theme.dart';
 import '../services/app_state.dart';
 import '../components/cd_platform_selector.dart';
@@ -167,8 +168,15 @@ class _CreateScreenState extends State<CreateScreen> {
         final isGenerating = appState.isGenerating;
         final error = appState.lastError;
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
+        return PopScope(
+          canPop: _currentStep == 0,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop && _currentStep > 0) {
+              _prevStep();
+            }
+          },
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -188,15 +196,16 @@ class _CreateScreenState extends State<CreateScreen> {
                   ),
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.bug_report_outlined, size: 20),
-                tooltip: 'Debug Panel',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
-                  );
-                },
-              ),
+              if (kDebugMode)
+                IconButton(
+                  icon: const Icon(Icons.bug_report_outlined, size: 20),
+                  tooltip: 'Debug Panel',
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
+                    );
+                  },
+                ),
             ],
             centerTitle: true,
             bottom: PreferredSize(
@@ -270,7 +279,7 @@ class _CreateScreenState extends State<CreateScreen> {
               ],
             ),
           ),
-        );
+        ));
       },
     );
   }

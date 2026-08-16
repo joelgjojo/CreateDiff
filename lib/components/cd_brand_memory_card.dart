@@ -92,13 +92,16 @@ class CDBrandMemoryCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          creatorName,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                                color: CDColors.textPrimary(context),
-                              ),
+                        Flexible(
+                          child: Text(
+                            creatorName,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                  color: CDColors.textPrimary(context),
+                                ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         const SizedBox(width: 6),
                         Container(

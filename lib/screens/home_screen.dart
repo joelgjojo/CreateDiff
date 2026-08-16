@@ -50,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleDirectIdeaSubmit(BuildContext context) {
     final text = _quickIdeaController.text.trim();
+    _quickIdeaController.clear();
     if (text.isEmpty) {
       _openCreate(context);
     } else {

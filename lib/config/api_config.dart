@@ -18,10 +18,9 @@ class ApiConfig {
   static const String defaultXAIModel = 'grok-beta';
   static const String defaultGroqModel = 'llama-3.3-70b-versatile';
 
-  static String _overrideApiKey = '';
-  static String _overrideModel = '';
-  static String _overrideBaseUrl = '';
-  static bool _hasExplicitOverride = false;
+  static String? _overrideApiKey;
+  static String? _overrideModel;
+  static String? _overrideBaseUrl;
 
   /// Sanitizes key by stripping whitespace, trailing newlines, and enclosing quotes.
   static String sanitize(String? raw) {
@@ -36,7 +35,7 @@ class ApiConfig {
 
   /// Returns the active API key with quotes and whitespace stripped.
   static String get apiKey {
-    if (_hasExplicitOverride) {
+    if (_overrideApiKey != null) {
       return sanitize(_overrideApiKey);
     }
 
@@ -57,7 +56,7 @@ class ApiConfig {
       return sanitize(dartDefineKey);
     }
 
-    return sanitize(_overrideApiKey);
+    return '';
   }
 
   static String? get grokApiKey => hasApiKey ? apiKey : null;
@@ -79,8 +78,8 @@ class ApiConfig {
   }
 
   static String get baseUrl {
-    if (_hasExplicitOverride && _overrideBaseUrl.isNotEmpty) {
-      return _overrideBaseUrl;
+    if (_overrideBaseUrl != null && _overrideBaseUrl!.isNotEmpty) {
+      return _overrideBaseUrl!;
     }
     try {
       final envUrl = dotenv.env['GROK_BASE_URL'] ?? dotenv.env['XAI_BASE_URL'];
@@ -113,8 +112,8 @@ class ApiConfig {
   }
 
   static String get model {
-    if (_hasExplicitOverride && _overrideModel.isNotEmpty) {
-      return _overrideModel;
+    if (_overrideModel != null && _overrideModel!.isNotEmpty) {
+      return _overrideModel!;
     }
     try {
       final envModel = dotenv.env['GROK_MODEL'] ?? dotenv.env['XAI_MODEL'];
@@ -147,7 +146,9 @@ class ApiConfig {
   }
 
   static Future<void> init() async {
-    _hasExplicitOverride = false;
+    _overrideApiKey = null;
+    _overrideModel = null;
+    _overrideBaseUrl = null;
 
     try {
       final _ = dotenv.env;
@@ -166,8 +167,13 @@ class ApiConfig {
     }
   }
 
+  static void resetOverrides() {
+    _overrideApiKey = null;
+    _overrideModel = null;
+    _overrideBaseUrl = null;
+  }
+
   static void setConfig({String? apiKey, String? model, String? baseUrl}) {
-    _hasExplicitOverride = apiKey != null || model != null || baseUrl != null;
     if (apiKey != null) _overrideApiKey = apiKey.trim();
     if (model != null) _overrideModel = model.trim();
     if (baseUrl != null) _overrideBaseUrl = baseUrl.trim();

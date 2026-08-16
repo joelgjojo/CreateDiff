@@ -22,6 +22,7 @@ class AppState extends ChangeNotifier {
   String _generationStep = 'Understanding your idea...';
   ThemeMode _themeMode = ThemeMode.system;
   Timer? _loadingTimer;
+  bool _isApiConfigured = false;
 
   // Getters
   CreatorProfile get profile => _profile;
@@ -33,6 +34,7 @@ class AppState extends ChangeNotifier {
   AIServiceException? get lastError => _lastError;
   String get generationStep => _generationStep;
   ThemeMode get themeMode => _themeMode;
+  bool get isApiConfigured => _isApiConfigured;
 
   bool get hasCompletedOnboarding => StorageService.hasCompletedOnboarding;
   bool get hasCompletedProfileSetup => StorageService.hasCompletedProfileSetup;
@@ -40,6 +42,7 @@ class AppState extends ChangeNotifier {
   /// Load initial persisted state from SharedPreferences and AI config
   Future<void> init() async {
     await ApiConfig.init();
+    _isApiConfigured = ApiConfig.hasApiKey;
     await StorageService.init();
 
     final savedProfile = StorageService.getCreatorProfile();
@@ -94,6 +97,15 @@ class AppState extends ChangeNotifier {
     String? length,
   }) async {
     if (_isGenerating) return null;
+    if (!_isApiConfigured) {
+      _lastError = const AIServiceException(
+        status: AIGenerationStatus.apiKeyMissing,
+        message: 'AI features unavailable — API not configured.',
+      );
+      _generationStatus = AIGenerationStatus.apiKeyMissing;
+      notifyListeners();
+      return null;
+    }
     _isGenerating = true;
     _generationStatus = GrokGenerationStatus.loading;
     _lastError = null;

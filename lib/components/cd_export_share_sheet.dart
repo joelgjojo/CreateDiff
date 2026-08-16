@@ -152,132 +152,140 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}$watermarkTex
             top: false,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Drag Handle
-                  Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white24 : Colors.black12,
-                      borderRadius: BorderRadius.circular(CDRadius.pill),
-                    ),
-                  ),
-                  const SizedBox(height: 20.0),
-                  // Success Icon Badge with Monogram
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: CDColors.brand.withValues(alpha: isDark ? 0.16 : 0.10),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: CDColors.brand.withValues(alpha: 0.35),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: CDColors.brand.withValues(alpha: 0.20),
-                          blurRadius: 14,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const CDLogo.monogram(
-                      height: 20,
-                      colorMode: CDLogoColorMode.brand,
-                    ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  Text(
-                    'Ready to Publish',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                          color: CDColors.textPrimary(context),
-                        ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${widget.project.platform} ${widget.project.contentType} • $truncatedIdea',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: 12,
-                          color: CDColors.textSecondary(context),
-                        ),
-                  ),
-                  const SizedBox(height: 20.0),
-
-                  // Watermark Option Toggle
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.02),
-                      borderRadius: BorderRadius.circular(CDRadius.medium),
-                      border: Border.all(
-                        color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Drag Handle
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white24 : Colors.black12,
+                        borderRadius: BorderRadius.circular(CDRadius.pill),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.branding_watermark_outlined, size: 16, color: CDColors.textSecondary(context)),
-                            const SizedBox(width: CDSpacing.sm),
-                            Text(
-                              'Include CreateDiff watermark',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: CDColors.textPrimary(context),
-                              ),
+                    const SizedBox(height: 20.0),
+                    // Success Icon Badge with Monogram
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: CDColors.brand.withValues(alpha: isDark ? 0.16 : 0.10),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: CDColors.brand.withValues(alpha: 0.35),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: CDColors.brand.withValues(alpha: 0.20),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const CDLogo.monogram(
+                        height: 20,
+                        colorMode: CDLogoColorMode.brand,
+                      ),
+                    ),
+                    const SizedBox(height: 12.0),
+                    Text(
+                      'Ready to Publish',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 20,
+                            color: CDColors.textPrimary(context),
+                          ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${widget.project.platform} ${widget.project.contentType} • $truncatedIdea',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 12,
+                            color: CDColors.textSecondary(context),
+                          ),
+                    ),
+                    const SizedBox(height: 20.0),
+  
+                    // Watermark Option Toggle
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.02),
+                        borderRadius: BorderRadius.circular(CDRadius.medium),
+                        border: Border.all(
+                          color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Icon(Icons.branding_watermark_outlined, size: 16, color: CDColors.textSecondary(context)),
+                                const SizedBox(width: CDSpacing.sm),
+                                Expanded(
+                                  child: Text(
+                                    'Include CreateDiff watermark',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: CDColors.textPrimary(context),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        Switch.adaptive(
-                          value: _includeWatermark,
-                          activeTrackColor: CDColors.brand,
-                          onChanged: (val) {
-                            setState(() => _includeWatermark = val);
-                          },
-                        ),
-                      ],
+                          ),
+                          const SizedBox(width: CDSpacing.xs),
+                          Switch.adaptive(
+                            value: _includeWatermark,
+                            activeTrackColor: CDColors.brand,
+                            onChanged: (val) {
+                              setState(() => _includeWatermark = val);
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 14.0),
-
-                  // Action List
-                  _buildActionTile(
-                    context,
-                    icon: Icons.content_copy_rounded,
-                    title: 'Copy All Content',
-                    subtitle: 'Hooks, caption, CTAs, and hashtags in one click',
-                    onTap: () => _copyAllContent(context),
-                    primaryColor: primaryColor,
-                    isDark: isDark,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildActionTile(
-                    context,
-                    icon: Icons.share_rounded,
-                    title: 'Share Directly',
-                    subtitle: 'Send to Instagram, Notes, or WhatsApp',
-                    onTap: () => _shareViaNative(context),
-                    primaryColor: primaryColor,
-                    isDark: isDark,
-                  ),
-                  const SizedBox(height: 20.0),
-                  CDPrimaryButton(
-                    label: 'Done',
-                    isFullWidth: true,
-                    height: 50,
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      widget.onDone();
-                    },
-                  ),
-                ],
+                    const SizedBox(height: 14.0),
+  
+                    // Action List
+                    _buildActionTile(
+                      context,
+                      icon: Icons.content_copy_rounded,
+                      title: 'Copy All Content',
+                      subtitle: 'Hooks, caption, CTAs, and hashtags in one click',
+                      onTap: () => _copyAllContent(context),
+                      primaryColor: primaryColor,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildActionTile(
+                      context,
+                      icon: Icons.share_rounded,
+                      title: 'Share Directly',
+                      subtitle: 'Send to Instagram, Notes, or WhatsApp',
+                      onTap: () => _shareViaNative(context),
+                      primaryColor: primaryColor,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 20.0),
+                    CDPrimaryButton(
+                      label: 'Done',
+                      isFullWidth: true,
+                      height: 50,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        widget.onDone();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

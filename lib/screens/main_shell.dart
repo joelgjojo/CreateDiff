@@ -5,10 +5,8 @@ import '../components/cd_atmospheric_background.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'create_screen.dart';
-import 'design_selection_screen.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
-import '../components/cd_empty_state.dart';
 
 /// The main shell of CreateDiff with a persistent atmospheric background,
 /// IndexedStack tab state preservation, and floating frosted glass navigation.
@@ -24,6 +22,7 @@ class _MainShellState extends State<MainShell> {
 
   void _onTabSelected(int index) {
     if (index == 1) {
+      // Create tab triggers route push instead of switching IndexedStack
       AppHaptics.light();
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -34,29 +33,6 @@ class _MainShellState extends State<MainShell> {
       AppHaptics.selection();
       setState(() => _currentTabIndex = index);
     }
-  }
-
-  Widget _buildDesignTab(AppState appState) {
-    final latestProject = appState.currentProject ??
-        (appState.contentHistory.isNotEmpty
-            ? appState.contentHistory.first
-            : null);
-
-    if (latestProject == null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
-          child: CDEmptyState(
-            icon: Icons.palette_outlined,
-            title: 'No Designs Yet',
-            message: 'Create some content to view and edit designs.',
-            actionLabel: 'Create Content ✦',
-            onAction: () => _onTabSelected(1),
-          ),
-        ),
-      );
-    }
-    return DesignSelectionScreen(project: latestProject);
   }
 
   @override
@@ -75,10 +51,9 @@ class _MainShellState extends State<MainShell> {
                   index: _currentTabIndex,
                   children: [
                     HomeScreen(
-                      onNavigateToHistory: () => setState(() => _currentTabIndex = 3),
+                      onNavigateToHistory: () => setState(() => _currentTabIndex = 2),
                     ),
                     const SizedBox.shrink(), // Create tab triggers route push
-                    _buildDesignTab(appState),
                     const HistoryScreen(),
                     const ProfileScreen(),
                   ],

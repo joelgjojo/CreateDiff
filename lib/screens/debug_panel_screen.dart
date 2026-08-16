@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../theme/app_theme.dart';
 import '../services/grok_service.dart';
 import '../config/api_config.dart';
@@ -20,6 +21,7 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
   String? _testResult;
 
   Future<void> _runConnectionTest() async {
+    if (!mounted) return;
     setState(() {
       _isTesting = true;
       _testResult = null;
@@ -34,26 +36,39 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
         profile: appState.profile,
       );
 
+      if (!mounted) return;
       setState(() {
         _testResult = 'SUCCESS: Received ${content.hooks.length} hooks, ${content.caption.length} chars caption.';
       });
     } on GrokServiceException catch (e) {
+      if (!mounted) return;
       setState(() {
         _testResult = 'ERROR (${e.status.name}): ${e.message}\nStatus Code: ${e.statusCode}';
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _testResult = 'EXCEPTION: $e';
       });
     } finally {
-      setState(() {
-        _isTesting = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isTesting = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!kDebugMode) {
+      return const Scaffold(
+        body: Center(
+          child: Text('Debug panel is only available in debug builds.'),
+        ),
+      );
+    }
+    
     final isDark = CDColors.isDark(context);
     final lastLog = GrokService.lastDebugLog;
     final hasKey = ApiConfig.hasApiKey;
