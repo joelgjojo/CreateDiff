@@ -1,56 +1,92 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import '../models/creator_profile.dart';
 import '../models/generated_content.dart';
+import 'ai_config.dart';
 
+/// The CreateDiff AI Studio Service.
+///
+/// Integrates with xAI Grok (e.g. `grok-4.5`) as the production AI provider,
+/// with robust fallback to the built-in local creator engine.
 class AIService {
-  /// The Zero-Prompt Engine:
-  /// Transforms simple creator inputs into a fully structured AI specification.
-  /// (This runs invisibly behind the scenes).
-  static String buildPrompt({
-    required String platform,
-    required String contentType,
-    required String idea,
-    required String niche,
-    required String audience,
-    required String tone,
-    required String language,
-    String? brandVoice,
-    String? ctaStyle,
-    String? emojiUsage,
-    String? contentLength,
-  }) {
+  AIService._();
+
+  /// Dedicated CreateDiff Studio System Prompt for xAI Grok.
+  static String buildSystemPrompt({required CreatorProfile profile}) {
     final buffer = StringBuffer();
-    buffer.writeln('You are CreateDiff\'s content generation engine.');
-    buffer.writeln('Generate professional, platform-optimized creator content.');
+    buffer.writeln('You are the core AI Content Engine for CreateDiff — a premium mobile creator and design studio.');
+    buffer.writeln('Your role is to transform simple, raw ideas into complete, high-converting, platform-optimized creator content packs.');
     buffer.writeln('');
-    buffer.writeln('=== CREATOR CONTEXT ===');
-    buffer.writeln('Niche: $niche');
-    buffer.writeln('Target Audience: $audience');
-    buffer.writeln('Tone: $tone');
-    buffer.writeln('Language: $language');
-    if (brandVoice != null && brandVoice.isNotEmpty) {
-      buffer.writeln('Brand Voice: $brandVoice');
+    buffer.writeln('=== CREATOR BRAND MEMORY (STRICT CONTEXT) ===');
+    buffer.writeln('• Creator / Brand Name: ${profile.creatorName.isNotEmpty ? profile.creatorName : "Creator"}');
+    buffer.writeln('• Niche / Domain: ${profile.niche.isNotEmpty ? profile.niche : "General"}');
+    buffer.writeln('• Target Audience: ${profile.targetAudience.isNotEmpty ? profile.targetAudience : "General audience"}');
+    buffer.writeln('• Brand Voice & Tone: ${profile.tone.isNotEmpty ? profile.tone : "Educational & Engaging"}');
+    buffer.writeln('• Primary Language: ${profile.primaryLanguage.isNotEmpty ? profile.primaryLanguage : "English"}');
+    if (profile.secondaryLanguage.isNotEmpty) {
+      buffer.writeln('• Regional / Secondary Dialect: ${profile.secondaryLanguage}');
     }
-    if (emojiUsage != null) {
-      buffer.writeln('Emoji Usage: $emojiUsage');
+    if (profile.contentStyle.isNotEmpty) {
+      buffer.writeln('• Content Style: ${profile.contentStyle}');
     }
+    if (profile.brandDescription.isNotEmpty) {
+      buffer.writeln('• Brand Description: ${profile.brandDescription}');
+    }
+    buffer.writeln('• Preferred CTA Style: ${profile.preferredCTAStyle.isNotEmpty ? profile.preferredCTAStyle : "Direct"}');
+    buffer.writeln('• Emoji Density: ${profile.emojiUsage.isNotEmpty ? profile.emojiUsage : "moderate"}');
     buffer.writeln('');
-    buffer.writeln('=== CONTENT REQUEST ===');
-    buffer.writeln('Platform: $platform');
-    buffer.writeln('Format: $contentType');
-    buffer.writeln('Idea: $idea');
-    if (contentLength != null) {
-      buffer.writeln('Length: $contentLength');
-    }
+    buffer.writeln('=== STRICT INSTRUCTIONS ===');
+    buffer.writeln('1. Deliver output exclusively in valid, parseable JSON format.');
+    buffer.writeln('2. Do not wrap the JSON with markdown code blocks (no ```json or ```). Return raw JSON.');
+    buffer.writeln('3. Provide exactly 5 distinct, high-impact hooks covering curiosity, contrarian, blueprint, story, and question angles.');
+    buffer.writeln('4. Provide a full formatted caption with line breaks, value points, and a strong ending.');
+    buffer.writeln('5. Provide 3 action-oriented CTAs aligned with the creator\'s CTA style.');
+    buffer.writeln('6. Segment hashtags into 3 reach tiers: high reach (broad discovery), medium reach (niche/topic), and niche/community (highly targeted).');
+    buffer.writeln('7. Provide a punchy, high-contrast Cover Text (3-5 uppercase words) suitable for visual design slides.');
+    buffer.writeln('8. Provide 3 creative format variations (e.g. Standard, High-Engagement, Story Framework).');
+    buffer.writeln('9. Respect the specified language and regional dialect (e.g., Manglish should blend English & Malayalam naturally).');
+    buffer.writeln('10. Do NOT invent fictional personal brand facts not given in the Creator Brand Memory.');
     buffer.writeln('');
-    buffer.writeln('=== OUTPUT FORMAT ===');
-    buffer.writeln('Generate structured JSON with hooks, caption, ctas, hashtags (high, medium, niche), coverText, and variations.');
+    buffer.writeln('=== REQUIRED JSON SCHEMA ===');
+    buffer.writeln('''{
+  "hooks": ["hook 1", "hook 2", "hook 3", "hook 4", "hook 5"],
+  "caption": "Full formatted caption with linebreaks...",
+  "ctas": ["CTA 1", "CTA 2", "CTA 3"],
+  "hashtagsHighReach": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
+  "hashtagsMediumReach": ["#tag1", "#tag2", "#tag3", "#tag4"],
+  "hashtagsNiche": ["#tag1", "#tag2", "#tag3"],
+  "coverText": "PUNCHY GRAPHIC TITLE",
+  "variations": ["Variation 1", "Variation 2", "Variation 3"]
+}''');
     return buffer.toString();
   }
 
-  /// Generates a complete, personalized, platform-optimized Content Pack
-  /// directly influenced by the CreatorProfile (Brand Memory).
+  /// Builds user request prompt for the AI model.
+  static String buildUserPrompt({
+    required String platform,
+    required String contentType,
+    required String idea,
+    String? overrideTone,
+    String? overrideLanguage,
+  }) {
+    final buffer = StringBuffer();
+    buffer.writeln('Platform: $platform');
+    buffer.writeln('Format: $contentType');
+    buffer.writeln('Idea / Topic: $idea');
+    if (overrideTone != null && overrideTone.isNotEmpty) {
+      buffer.writeln('Tone Override: $overrideTone');
+    }
+    if (overrideLanguage != null && overrideLanguage.isNotEmpty) {
+      buffer.writeln('Language Override: $overrideLanguage');
+    }
+    buffer.writeln('');
+    buffer.writeln('Generate the complete structured JSON content pack now:');
+    return buffer.toString();
+  }
+
+  /// Generates a personalized content pack using xAI Grok (with fallback).
   static Future<GeneratedContent> generateContent({
     required String platform,
     required String contentType,
@@ -60,8 +96,155 @@ class AIService {
     String? overrideLanguage,
     String? overrideLength,
   }) async {
-    // Simulate generation latency (1.8 - 2.8s) for smooth visual pacing
-    await Future.delayed(Duration(milliseconds: 1800 + Random().nextInt(1000)));
+    // 1. If xAI Grok API key is available, call the production Grok API
+    if (AIConfig.hasApiKey) {
+      try {
+        final grokResult = await _generateWithGrok(
+          platform: platform,
+          contentType: contentType,
+          idea: idea,
+          profile: profile,
+          overrideTone: overrideTone,
+          overrideLanguage: overrideLanguage,
+        );
+        if (grokResult != null) {
+          return grokResult;
+        }
+      } catch (_) {
+        // Fall through to local generation fallback on error
+      }
+    }
+
+    // 2. Fallback to the rich local content engine
+    return _generateLocalContent(
+      platform: platform,
+      contentType: contentType,
+      idea: idea,
+      profile: profile,
+      overrideTone: overrideTone,
+      overrideLanguage: overrideLanguage,
+    );
+  }
+
+  /// Calls xAI Grok API (`/chat/completions`) using standard HttpClient.
+  static Future<GeneratedContent?> _generateWithGrok({
+    required String platform,
+    required String contentType,
+    required String idea,
+    required CreatorProfile profile,
+    String? overrideTone,
+    String? overrideLanguage,
+  }) async {
+    final client = HttpClient();
+    client.connectionTimeout = const Duration(seconds: 25);
+
+    try {
+      final uri = Uri.parse('${AIConfig.baseUrl}/chat/completions');
+      final request = await client.postUrl(uri);
+
+      request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer ${AIConfig.apiKey}');
+
+      final systemPrompt = buildSystemPrompt(profile: profile);
+      final userPrompt = buildUserPrompt(
+        platform: platform,
+        contentType: contentType,
+        idea: idea,
+        overrideTone: overrideTone,
+        overrideLanguage: overrideLanguage,
+      );
+
+      final payload = {
+        'model': AIConfig.model,
+        'temperature': 0.7,
+        'messages': [
+          {'role': 'system', 'content': systemPrompt},
+          {'role': 'user', 'content': userPrompt},
+        ],
+        'response_format': {'type': 'json_object'},
+      };
+
+      request.add(utf8.encode(jsonEncode(payload)));
+
+      final response = await request.close().timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final responseBody = await response.transform(utf8.decoder).join();
+        final jsonMap = jsonDecode(responseBody) as Map<String, dynamic>;
+
+        final choices = jsonMap['choices'] as List<dynamic>?;
+        if (choices != null && choices.isNotEmpty) {
+          final message = choices.first['message'] as Map<String, dynamic>?;
+          final contentStr = message?['content'] as String?;
+
+          if (contentStr != null && contentStr.isNotEmpty) {
+            return _parseStructuredContent(contentStr);
+          }
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
+  /// Parses and validates structured JSON response into a `GeneratedContent` object.
+  static GeneratedContent? _parseStructuredContent(String rawContent) {
+    try {
+      // Strip any accidental markdown formatting if present
+      var clean = rawContent.trim();
+      if (clean.startsWith('```json')) {
+        clean = clean.substring(7);
+      } else if (clean.startsWith('```')) {
+        clean = clean.substring(3);
+      }
+      if (clean.endsWith('```')) {
+        clean = clean.substring(0, clean.length - 3);
+      }
+      clean = clean.trim();
+
+      final parsed = jsonDecode(clean) as Map<String, dynamic>;
+
+      final hooks = (parsed['hooks'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+      final caption = parsed['caption']?.toString() ?? '';
+      final ctas = (parsed['ctas'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+      final highReach = (parsed['hashtagsHighReach'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+      final medReach = (parsed['hashtagsMediumReach'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+      final nicheReach = (parsed['hashtagsNiche'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+      final coverText = parsed['coverText']?.toString() ?? '';
+      final variations = (parsed['variations'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+
+      if (hooks.isNotEmpty && caption.isNotEmpty) {
+        return GeneratedContent(
+          hooks: hooks,
+          caption: caption,
+          ctas: ctas.isNotEmpty ? ctas : ['Save this post for later 💾'],
+          hashtagsHighReach: highReach,
+          hashtagsMediumReach: medReach,
+          hashtagsNiche: nicheReach,
+          coverText: coverText.isNotEmpty ? coverText : 'READY TO PUBLISH',
+          variations: variations.isNotEmpty ? variations : ['Standard Edition'],
+        );
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Local creation engine for offline/fallback scenarios.
+  static Future<GeneratedContent> _generateLocalContent({
+    required String platform,
+    required String contentType,
+    required String idea,
+    required CreatorProfile profile,
+    String? overrideTone,
+    String? overrideLanguage,
+  }) async {
+    // Pacing delay (1.6 - 2.4s) for smooth natural feedback
+    await Future.delayed(Duration(milliseconds: 1600 + Random().nextInt(800)));
 
     final tone = overrideTone ?? profile.tone;
     final language = overrideLanguage ?? profile.primaryLanguage;
@@ -70,8 +253,8 @@ class AIService {
     final niche = profile.niche;
     final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Creator';
 
-    final hooks = _generateHooks(idea: idea, tone: tone, language: language, emojiUsage: emojiUsage, platform: platform);
-    final caption = _generateCaption(
+    final hooks = _generateLocalHooks(idea: idea, tone: tone, language: language, emojiUsage: emojiUsage, platform: platform);
+    final caption = _generateLocalCaption(
       idea: idea,
       tone: tone,
       language: language,
@@ -81,10 +264,10 @@ class AIService {
       contentType: contentType,
       creatorName: creatorName,
     );
-    final ctas = _generateCTAs(tone: tone, ctaStyle: ctaStyle, language: language, emojiUsage: emojiUsage, creatorName: creatorName);
-    final hashtags = _generateHashtags(idea: idea, platform: platform, niche: niche, language: language);
-    final coverText = _generateCoverText(idea: idea, language: language);
-    final variations = _generateVariations(idea: idea, tone: tone, language: language);
+    final ctas = _generateLocalCTAs(tone: tone, ctaStyle: ctaStyle, language: language, emojiUsage: emojiUsage, creatorName: creatorName);
+    final hashtags = _generateLocalHashtags(idea: idea, platform: platform, niche: niche, language: language);
+    final coverText = _generateLocalCoverText(idea: idea, language: language);
+    final variations = _generateLocalVariations(idea: idea, tone: tone, language: language);
 
     return GeneratedContent(
       hooks: hooks,
@@ -98,7 +281,7 @@ class AIService {
     );
   }
 
-  static List<String> _generateHooks({
+  static List<String> _generateLocalHooks({
     required String idea,
     required String tone,
     required String language,
@@ -135,7 +318,6 @@ class AIService {
       ];
     }
 
-    // English - Tone sensitive
     final t = tone.toLowerCase();
     if (t == 'professional' || t == 'minimal') {
       return [
@@ -163,7 +345,6 @@ class AIService {
       ];
     }
 
-    // Default: Educational / Friendly
     return [
       'Here\'s the biggest breakthrough with $topic$emoji',
       'I spent months testing $topic so you don\'t have to.',
@@ -173,7 +354,7 @@ class AIService {
     ];
   }
 
-  static String _generateCaption({
+  static String _generateLocalCaption({
     required String idea,
     required String tone,
     required String language,
@@ -247,7 +428,6 @@ ${useEmoji ? '💡' : '→'} इस post को save कर लो — बहु
 आपका इस बारे में क्या सोचना है? नीचे comment करो${useEmoji ? ' 👇' : '!'}''';
     }
 
-    // Platform-specific English captions
     if (platform.toLowerCase() == 'linkedin') {
       return '''Over the past few months, I've been analyzing $idea across different workflows.
 
@@ -287,7 +467,6 @@ RESOURCES & LINKS:
 If this added value to your creative journey, make sure to like, subscribe, and share with someone who needs this!''';
     }
 
-    // Instagram / Default
     if (tone.toLowerCase() == 'professional' || tone.toLowerCase() == 'minimal') {
       return '''A structured breakdown of $idea and why it matters:
 
@@ -331,7 +510,7 @@ ${useEmoji ? '💡' : '→'} Save this post for when you need a quick reminder.
 What's your current approach to $idea? Drop your thoughts below${useEmoji ? ' 👇' : ''}''';
   }
 
-  static List<String> _generateCTAs({
+  static List<String> _generateLocalCTAs({
     required String tone,
     required String ctaStyle,
     required String language,
@@ -391,7 +570,7 @@ What's your current approach to $idea? Drop your thoughts below${useEmoji ? ' �
     ];
   }
 
-  static Map<String, List<String>> _generateHashtags({
+  static Map<String, List<String>> _generateLocalHashtags({
     required String idea,
     required String platform,
     required String niche,
@@ -445,13 +624,13 @@ What's your current approach to $idea? Drop your thoughts below${useEmoji ? ' �
     };
   }
 
-  static String _generateCoverText({required String idea, required String language}) {
+  static String _generateLocalCoverText({required String idea, required String language}) {
     final words = idea.split(' ').where((w) => w.trim().isNotEmpty).toList();
     final short = words.take(4).join(' ');
     return short.toUpperCase();
   }
 
-  static List<String> _generateVariations({
+  static List<String> _generateLocalVariations({
     required String idea,
     required String tone,
     required String language,

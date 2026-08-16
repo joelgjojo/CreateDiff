@@ -5,6 +5,7 @@ import '../models/content_project.dart';
 import '../models/generated_content.dart';
 import 'storage_service.dart';
 import 'ai_service.dart';
+import 'ai_config.dart';
 
 class AppState extends ChangeNotifier {
   static final AppState instance = AppState._internal();
@@ -32,8 +33,9 @@ class AppState extends ChangeNotifier {
   bool get hasCompletedOnboarding => StorageService.hasCompletedOnboarding;
   bool get hasCompletedProfileSetup => StorageService.hasCompletedProfileSetup;
 
-  /// Load initial persisted state from SharedPreferences
+  /// Load initial persisted state from SharedPreferences and AI config
   Future<void> init() async {
+    await AIConfig.init();
     await StorageService.init();
 
     final savedProfile = StorageService.getCreatorProfile();
@@ -87,6 +89,7 @@ class AppState extends ChangeNotifier {
     String? language,
     String? length,
   }) async {
+    if (_isGenerating) return null;
     _isGenerating = true;
     _generationStep = 'Understanding your idea...';
     notifyListeners();
@@ -177,7 +180,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> regenerateHooks() async {
-    if (_currentProject == null || _currentGeneratedContent == null) return;
+    if (_isGenerating || _currentProject == null || _currentGeneratedContent == null) return;
     _isGenerating = true;
     _generationStep = 'Crafting fresh hooks...';
     notifyListeners();
