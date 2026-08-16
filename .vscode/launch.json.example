@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "CreateDiff (Debug)",
+      "request": "launch",
+      "type": "dart",
+      "toolArgs": [
+        "--dart-define=GROK_API_KEY=YOUR_GROK_API_KEY"
+      ]
+    },
+    {
+      "name": "CreateDiff (Release)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "toolArgs": [
+        "--dart-define=GROK_API_KEY=YOUR_GROK_API_KEY"
+      ]
+    }
+  ]
+}

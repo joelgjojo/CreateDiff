@@ -1,18 +1,12 @@
 import 'package:flutter/foundation.dart';
 
-/// Secure runtime configuration for xAI Grok.
+/// Secure compile-time configuration for xAI Grok.
 ///
-/// API keys are supplied at build/launch time via `--dart-define` flags.
-/// This prevents hardcoding secrets in source code, APK assets, or version control.
-///
-/// Launch command:
-/// ```bash
-/// flutter run --dart-define=GROK_API_KEY=your_xai_api_key
-/// ```
+/// API keys are supplied via `--dart-define=GROK_API_KEY=...`.
+/// This prevents hardcoding secrets in source code or relying on unbundled `.env` files.
 class AIConfig {
   AIConfig._();
 
-  // Compile-time environment configuration
   static const String _defaultModel = 'grok-4.5';
   static const String _defaultBaseUrl = 'https://api.x.ai/v1';
 
@@ -42,9 +36,8 @@ class AIConfig {
   static String get baseUrl => _baseUrl.trim().isNotEmpty ? _baseUrl.trim() : _defaultBaseUrl;
   static bool get hasApiKey => apiKey.isNotEmpty;
 
-  /// Initializes the AI configuration and logs status in debug mode.
+  /// Initializes the AI configuration and outputs a debug-only log.
   static Future<void> init() async {
-    // If not set via compile-time define, ensure values are clean
     _apiKey = const String.fromEnvironment(
       'GROK_API_KEY',
       defaultValue: String.fromEnvironment('XAI_API_KEY'),
@@ -67,7 +60,11 @@ class AIConfig {
     }
 
     if (kDebugMode) {
-      debugPrint('[CreateDiff Grok AI] Initialized. Provider: xAI Grok, Model: $model, Key configured: $hasApiKey');
+      if (hasApiKey) {
+        debugPrint('Grok key loaded');
+      } else {
+        debugPrint('Grok key missing');
+      }
     }
   }
 
@@ -78,7 +75,11 @@ class AIConfig {
     if (baseUrl != null && baseUrl.trim().isNotEmpty) _baseUrl = baseUrl.trim();
 
     if (kDebugMode) {
-      debugPrint('[CreateDiff Grok AI] Runtime config updated. Model: $_model, Key configured: $hasApiKey');
+      if (hasApiKey) {
+        debugPrint('Grok key loaded');
+      } else {
+        debugPrint('Grok key missing');
+      }
     }
   }
 }
