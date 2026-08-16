@@ -1,12 +1,16 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// A calm, luminous generation overlay with breathing ambient pulses,
+/// frosted glass backdrop, and rotating studio milestone messages.
 class CDLoadingState extends StatefulWidget {
-  final String currentMessage;
+  final String? currentMessage;
 
   const CDLoadingState({
     super.key,
-    required this.currentMessage,
+    this.currentMessage,
   });
 
   @override
@@ -17,109 +21,157 @@ class _CDLoadingStateState extends State<CDLoadingState>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
+  late Animation<double> _glowAnimation;
+
+  int _messageIndex = 0;
+  Timer? _messageTimer;
+
+  final List<String> _rotatingMessages = const [
+    'Finding the strongest angle...',
+    'Adapting to your brand voice...',
+    'Structuring your hooks & caption...',
+    'Curating strategic hashtags...',
+    'Polishing your personalized pack...',
+  ];
 
   @override
   void initState() {
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
 
-    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.15).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    _scaleAnimation = Tween<double>(begin: 0.90, end: 1.10).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutCubic),
     );
-    
-    _opacityAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+
+    _glowAnimation = Tween<double>(begin: 0.35, end: 0.85).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutCubic),
     );
+
+    _messageTimer = Timer.periodic(const Duration(milliseconds: 1400), (_) {
+      if (mounted) {
+        setState(() {
+          _messageIndex = (_messageIndex + 1) % _rotatingMessages.length;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _messageTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = CDColors.primary;
-    final bg = CDColors.background(context).withValues(alpha: 0.95);
-    final surfaceColor = CDColors.elevated(context);
-    final borderColor = CDColors.border(context);
+    final isDark = CDColors.isDark(context);
+    final displayedMessage = widget.currentMessage ?? _rotatingMessages[_messageIndex];
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        color: bg,
-        width: double.infinity,
-        height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xxl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Calm pulsing animation
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: surfaceColor,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: borderColor,
-                  width: 1.0,
-                ),
-              ),
-              child: Center(
-                child: AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _scaleAnimation.value,
-                      child: Opacity(
-                        opacity: _opacityAnimation.value,
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            shape: BoxShape.circle,
+      body: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: CDGlass.heavyBlurSigma,
+          sigmaY: CDGlass.heavyBlurSigma,
+        ),
+        child: Container(
+          color: (isDark ? const Color(0xFF090B10) : const Color(0xFFF0F3F9))
+              .withValues(alpha: 0.88),
+          width: double.infinity,
+          height: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xxl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Luminous Breathing Orb Centerpiece
+              AnimatedBuilder(
+                animation: _pulseController,
+                builder: (context, child) {
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Diffused Outer Glow
+                      Container(
+                        width: 120 * _scaleAnimation.value,
+                        height: 120 * _scaleAnimation.value,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              CDColors.primaryLight.withValues(alpha: 0.28 * _glowAnimation.value),
+                              CDColors.icyBlue.withValues(alpha: 0.12 * _glowAnimation.value),
+                              Colors.transparent,
+                            ],
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
+                      // Frosted Glass Orb Ring
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.white.withValues(alpha: 0.90),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.25)
+                                : Colors.black.withValues(alpha: 0.08),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: CDColors.primary.withValues(alpha: 0.25),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 26,
+                            color: CDColors.primaryLight,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
-            ),
-            const SizedBox(height: CDSpacing.xxl),
-            Text(
-              'Creating your content pack',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    letterSpacing: -0.3,
-                    color: CDColors.textPrimary(context),
-                  ),
-            ),
-            const SizedBox(height: CDSpacing.xs),
-            AnimatedSwitcher(
-              duration: CDMotion.standard,
-              switchInCurve: CDMotion.enterCurve,
-              switchOutCurve: CDMotion.exitCurve,
-              child: Text(
-                widget.currentMessage,
-                key: ValueKey(widget.currentMessage),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: CDColors.textSecondary(context),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
+              const SizedBox(height: CDSpacing.xxxl),
+              Text(
+                'Creating Your Studio Pack',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                      letterSpacing: -0.4,
+                      color: CDColors.textPrimary(context),
                     ),
               ),
-            ),
-          ],
+              const SizedBox(height: CDSpacing.sm),
+              AnimatedSwitcher(
+                duration: CDMotion.standard,
+                switchInCurve: CDMotion.enterCurve,
+                switchOutCurve: CDMotion.exitCurve,
+                child: Text(
+                  displayedMessage,
+                  key: ValueKey(displayedMessage),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: CDColors.textSecondary(context),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

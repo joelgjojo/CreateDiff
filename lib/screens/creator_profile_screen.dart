@@ -4,8 +4,11 @@ import '../models/creator_profile.dart';
 import '../services/app_state.dart';
 import '../components/cd_text_input.dart';
 import '../components/cd_primary_button.dart';
+import '../components/cd_atmospheric_background.dart';
+import '../components/cd_glass_card.dart';
 import 'main_shell.dart';
 
+/// Guided 5-step Brand Memory wizard with frosted glass cards and brand color palette picker.
 class CreatorProfileScreen extends StatefulWidget {
   final bool isInitialSetup;
 
@@ -38,8 +41,8 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   String _secondaryLang = 'Manglish';
   String _emojiUsage = 'moderate';
   String _ctaStyle = 'Direct';
-  Color _primaryColor = const Color(0xFF6C5CE7);
-  final Color _secondaryColor = const Color(0xFFA29BFE);
+  Color _primaryColor = const Color(0xFF7C6CF2);
+  final Color _secondaryColor = const Color(0xFFA99CFF);
 
   final List<String> _niches = [
     'Technology',
@@ -90,9 +93,10 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   ];
 
   final List<Color> _brandColors = [
-    const Color(0xFF6C5CE7), // Violet
+    const Color(0xFF7C6CF2), // Violet
+    const Color(0xFFC9D6FF), // Icy Blue
+    const Color(0xFF00B894), // Mint
     const Color(0xFFE4405F), // Crimson
-    const Color(0xFF00B894), // Emerald
     const Color(0xFF0984E3), // Electric Blue
     const Color(0xFFE84393), // Pink
     const Color(0xFFFDCB6E), // Amber
@@ -189,90 +193,94 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: CDColors.background(context),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: _currentStep > 0
-            ? IconButton(
-                icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
-                onPressed: () {
-                  AppHaptics.selection();
-                  setState(() => _currentStep--);
-                },
-              )
-            : (widget.isInitialSetup
-                ? null
-                : IconButton(
-                    icon: Icon(Icons.close_rounded, color: CDColors.textPrimary(context)),
-                    onPressed: () => Navigator.of(context).pop(),
-                  )),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Brand Memory',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: CDColors.textPrimary(context),
+      backgroundColor: Colors.transparent,
+      body: CDAtmosphericBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: _currentStep > 0
+                    ? IconButton(
+                        icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
+                        onPressed: () {
+                          AppHaptics.selection();
+                          setState(() => _currentStep--);
+                        },
+                      )
+                    : (widget.isInitialSetup
+                        ? null
+                        : IconButton(
+                            icon: Icon(Icons.close_rounded, color: CDColors.textPrimary(context)),
+                            onPressed: () => Navigator.of(context).pop(),
+                          )),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Brand Memory Studio',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                            color: CDColors.textPrimary(context),
+                          ),
+                    ),
+                    Text(
+                      'Step ${_currentStep + 1} of 5',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 11,
+                            color: CDColors.textSecondary(context),
+                          ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  if (widget.isInitialSetup && _currentStep == 4)
+                    TextButton(
+                      onPressed: _saveAndProceed,
+                      child: Text(
+                        'Skip',
+                        style: TextStyle(
+                          color: CDColors.textSecondary(context),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(3),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(CDRadius.pill),
+                      child: LinearProgressIndicator(
+                        value: (_currentStep + 1) / 5,
+                        minHeight: 3,
+                        backgroundColor: CDColors.borderSubtle(context),
+                        valueColor: const AlwaysStoppedAnimation<Color>(CDColors.primary),
+                      ),
+                    ),
                   ),
-            ),
-            Text(
-              'Step ${_currentStep + 1} of 5',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 11,
-                color: CDColors.textSecondary(context),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          if (widget.isInitialSetup && _currentStep == 4)
-            TextButton(
-              onPressed: _saveAndProceed,
-              child: Text(
-                'Skip',
-                style: TextStyle(
-                  color: CDColors.textSecondary(context),
-                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(3),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl),
-            child: ClipRRect(
-              borderRadius: CDRadius.rPill,
-              child: LinearProgressIndicator(
-                value: (_currentStep + 1) / 5,
-                minHeight: 3,
-                backgroundColor: CDColors.elevated(context),
-                valueColor: AlwaysStoppedAnimation<Color>(CDColors.primary),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(CDSpacing.lg),
+                  child: _buildStepContent(),
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.all(CDSpacing.lg),
+                child: CDPrimaryButton(
+                  label: _currentStep < 4 ? 'Continue →' : (widget.isInitialSetup ? 'Complete Setup ✦' : 'Save Brand Changes'),
+                  isFullWidth: true,
+                  height: 50,
+                  onPressed: _saveAndProceed,
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(CDSpacing.xl),
-                child: _buildStepContent(),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(CDSpacing.xl),
-              child: CDPrimaryButton(
-                label: _currentStep < 4 ? 'Continue →' : (widget.isInitialSetup ? 'Complete Setup ✦' : 'Save Brand Changes'),
-                isFullWidth: true,
-                onPressed: _saveAndProceed,
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -295,41 +303,51 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   }
 
   Widget _buildStep0Identity() {
+    final isDark = CDColors.isDark(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Who are you creating for?',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
                 color: CDColors.textPrimary(context),
               ),
         ),
         const SizedBox(height: 4),
         Text(
-          'CreateDiff will use this identity to tailor all future content packs.',
+          'CreateDiff uses this identity to tailor all future content packs.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: CDSpacing.xxl),
-        CDTextInput(
-          label: 'Creator / Business Name',
-          hint: 'e.g., TechWithJoel or Artisan Bakery',
-          controller: _nameController,
-          isRequired: true,
+        const SizedBox(height: CDSpacing.xl),
+        CDGlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CDTextInput(
+                label: 'Creator / Business Name',
+                hint: 'e.g., TechWithJoel or Artisan Bakery',
+                controller: _nameController,
+                isRequired: true,
+              ),
+              const SizedBox(height: CDSpacing.lg),
+              CDTextInput(
+                label: 'Username / Handle',
+                hint: '@yourbrand',
+                controller: _usernameController,
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: CDSpacing.lg),
-        CDTextInput(
-          label: 'Username / Handle',
-          hint: '@yourbrand',
-          controller: _usernameController,
-        ),
-        const SizedBox(height: CDSpacing.lg),
+        const SizedBox(height: CDSpacing.xl),
         Text(
           'Select your niche',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -350,10 +368,12 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
               ),
-              backgroundColor: CDColors.surface(context),
-              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              backgroundColor: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
               side: BorderSide(
                 color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
               ),
@@ -365,13 +385,16 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   }
 
   Widget _buildStep1AudienceTone() {
+    final isDark = CDColors.isDark(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Target Audience & Voice',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -382,18 +405,32 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: CDSpacing.xxl),
-        CDTextInput(
-          label: 'Who is your target audience?',
-          hint: 'e.g., College students, freelancers, foodies in Kerala...',
-          controller: _audienceController,
-          maxLines: 2,
+        const SizedBox(height: CDSpacing.xl),
+        CDGlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CDTextInput(
+                label: 'Who is your target audience?',
+                hint: 'e.g., College students, freelancers, foodies in Kerala...',
+                controller: _audienceController,
+                maxLines: 2,
+              ),
+              const SizedBox(height: CDSpacing.lg),
+              CDTextInput(
+                label: 'Content Style / Description',
+                hint: 'e.g., Short-form educational with actionable takeaways',
+                controller: _contentStyleController,
+                maxLines: 2,
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: CDSpacing.lg),
+        const SizedBox(height: CDSpacing.xl),
         Text(
           'Choose your default tone',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -414,35 +451,33 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
               ),
-              backgroundColor: CDColors.surface(context),
-              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              backgroundColor: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
               side: BorderSide(
                 color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
               ),
             );
           }).toList(),
         ),
-        const SizedBox(height: CDSpacing.lg),
-        CDTextInput(
-          label: 'Content Style / Description',
-          hint: 'e.g., Short-form educational with actionable takeaways',
-          controller: _contentStyleController,
-          maxLines: 2,
-        ),
       ],
     );
   }
 
   Widget _buildStep2Language() {
+    final isDark = CDColors.isDark(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Language & Expression',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -453,11 +488,11 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: CDSpacing.xxl),
+        const SizedBox(height: CDSpacing.xl),
         Text(
           'Primary Language',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -478,21 +513,23 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
               ),
-              backgroundColor: CDColors.surface(context),
-              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              backgroundColor: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
               side: BorderSide(
                 color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
               ),
             );
           }).toList(),
         ),
-        const SizedBox(height: CDSpacing.lg),
+        const SizedBox(height: CDSpacing.xl),
         Text(
           'Emoji Usage in Captions',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -513,10 +550,12 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
               ),
-              backgroundColor: CDColors.surface(context),
-              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              backgroundColor: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
               side: BorderSide(
                 color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
               ),
@@ -534,7 +573,8 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         Text(
           'Brand Identity & Aesthetics',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -545,18 +585,25 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: CDSpacing.xxl),
-        CDTextInput(
-          label: 'Brand One-Liner Description',
-          hint: 'What makes your content or business special?',
-          controller: _brandDescController,
-          maxLines: 3,
+        const SizedBox(height: CDSpacing.xl),
+        CDGlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CDTextInput(
+                label: 'Brand One-Liner Description',
+                hint: 'What makes your content or business special?',
+                controller: _brandDescController,
+                maxLines: 3,
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: CDSpacing.lg),
+        const SizedBox(height: CDSpacing.xl),
         Text(
           'Call to Action (CTA) Preference',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -577,21 +624,23 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
               ),
-              backgroundColor: CDColors.surface(context),
-              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              backgroundColor: CDColors.isDark(context)
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
               side: BorderSide(
                 color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
               ),
             );
           }).toList(),
         ),
-        const SizedBox(height: CDSpacing.lg),
+        const SizedBox(height: CDSpacing.xl),
         Text(
-          'Brand Accent Color',
+          'Brand Accent Palette',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -615,6 +664,15 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                   border: isSelected
                       ? Border.all(color: CDColors.isDark(context) ? Colors.white : Colors.black, width: 2.5)
                       : Border.all(color: CDColors.borderSubtle(context), width: 1),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.45),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: isSelected
                     ? const Icon(Icons.check, size: 16, color: Colors.white)
@@ -634,7 +692,8 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         Text(
           'Social Channels (Optional)',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
                 color: CDColors.textPrimary(context),
               ),
         ),
@@ -645,26 +704,32 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: CDSpacing.xxl),
-        CDTextInput(
-          label: 'Instagram Handle',
-          hint: '@yourinstagram',
-          controller: _instagramController,
-          prefixIcon: Icon(Icons.camera_alt_outlined, size: 18, color: CDColors.textSecondary(context)),
-        ),
-        const SizedBox(height: CDSpacing.lg),
-        CDTextInput(
-          label: 'YouTube Channel',
-          hint: '@youryoutube',
-          controller: _youtubeController,
-          prefixIcon: Icon(Icons.play_circle_outline_rounded, size: 18, color: CDColors.textSecondary(context)),
-        ),
-        const SizedBox(height: CDSpacing.lg),
-        CDTextInput(
-          label: 'Website URL',
-          hint: 'https://yoursite.com',
-          controller: _websiteController,
-          prefixIcon: Icon(Icons.language_rounded, size: 18, color: CDColors.textSecondary(context)),
+        const SizedBox(height: CDSpacing.xl),
+        CDGlassCard(
+          child: Column(
+            children: [
+              CDTextInput(
+                label: 'Instagram Handle',
+                hint: '@yourinstagram',
+                controller: _instagramController,
+                prefixIcon: Icon(Icons.camera_alt_outlined, size: 18, color: CDColors.textSecondary(context)),
+              ),
+              const SizedBox(height: CDSpacing.lg),
+              CDTextInput(
+                label: 'YouTube Channel',
+                hint: '@youryoutube',
+                controller: _youtubeController,
+                prefixIcon: Icon(Icons.play_circle_outline_rounded, size: 18, color: CDColors.textSecondary(context)),
+              ),
+              const SizedBox(height: CDSpacing.lg),
+              CDTextInput(
+                label: 'Website URL',
+                hint: 'https://yoursite.com',
+                controller: _websiteController,
+                prefixIcon: Icon(Icons.language_rounded, size: 18, color: CDColors.textSecondary(context)),
+              ),
+            ],
+          ),
         ),
       ],
     );

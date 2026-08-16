@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// A frosted glass secondary button with clean typography and subtle border.
 class CDSecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -19,20 +20,47 @@ class CDSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = CDColors.surface(context);
-    final border = CDColors.border(context);
+    final isDark = CDColors.isDark(context);
+    final border = isDark
+        ? Colors.white.withValues(alpha: 0.14)
+        : Colors.black.withValues(alpha: 0.08);
     final textColor = CDColors.textPrimary(context);
     final buttonHeight = height ?? CDButton.standardHeight;
+
+    final bgGradient = isDark
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.08),
+              Colors.white.withValues(alpha: 0.03),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.90),
+              Colors.white.withValues(alpha: 0.70),
+            ],
+          );
 
     return Container(
       height: buttonHeight,
       constraints: BoxConstraints(
-        minWidth: isFullWidth ? double.infinity : 96,
+        minWidth: isFullWidth ? double.infinity : 100,
       ),
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: CDRadius.rMedium,
-        border: Border.all(color: border, width: 1),
+        gradient: bgGradient,
+        borderRadius: BorderRadius.circular(CDRadius.medium),
+        border: Border.all(color: border, width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -43,7 +71,7 @@ class CDSecondaryButton extends StatelessWidget {
                   onPressed!();
                 }
               : null,
-          borderRadius: CDRadius.rMedium,
+          borderRadius: BorderRadius.circular(CDRadius.medium),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
             child: Row(
@@ -60,6 +88,7 @@ class CDSecondaryButton extends StatelessWidget {
                         color: textColor,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
+                        letterSpacing: 0.1,
                       ),
                 ),
               ],

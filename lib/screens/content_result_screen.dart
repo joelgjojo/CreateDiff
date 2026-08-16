@@ -11,8 +11,10 @@ import '../components/cd_hashtag_group.dart';
 import '../components/cd_primary_button.dart';
 import '../components/cd_secondary_button.dart';
 import '../components/cd_export_share_sheet.dart';
+import '../components/cd_atmospheric_background.dart';
 import 'design_selection_screen.dart';
 
+/// The editorial studio workspace displaying the complete generated content pack.
 class ContentResultScreen extends StatefulWidget {
   final ContentProject project;
 
@@ -68,7 +70,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
               size: 16,
             ),
             const SizedBox(width: CDSpacing.xs),
-            Text(_isBookmarked ? 'Added to Bookmarks' : 'Removed from Bookmarks'),
+            Text(_isBookmarked ? 'Added to Studio Bookmarks' : 'Removed from Bookmarks'),
           ],
         ),
         duration: const Duration(milliseconds: 1400),
@@ -107,8 +109,8 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Failed to regenerate hooks'),
+          const SnackBar(
+            content: Text('Failed to regenerate hooks'),
             backgroundColor: CDColors.error,
           ),
         );
@@ -140,140 +142,154 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
             : 'You';
 
         return Scaffold(
-          backgroundColor: CDColors.background(context),
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Content Workspace',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: CDColors.textPrimary(context),
-                      ),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      '${_currentProject.platform} ${_currentProject.contentType}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: CDColors.primary,
-                      ),
+          backgroundColor: Colors.transparent,
+          body: CDAtmosphericBackground(
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  // App Bar
+                  AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    leading: IconButton(
+                      icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '• Personalized for $creatorName',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontSize: 11,
-                            color: CDColors.textSecondary(context),
-                          ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.share_outlined, size: 20, color: CDColors.textPrimary(context)),
-                tooltip: 'Export & Share',
-                onPressed: _openExportShare,
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(
-                    left: CDSpacing.xl,
-                    right: CDSpacing.xl,
-                    top: CDSpacing.xl,
-                    bottom: CDSpacing.navBarClearance,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // --- Section 1: Hooks ---
-                      _buildHooksSection(generated, appState),
-                      const SizedBox(height: CDSpacing.lg),
-
-                      // --- Section 2: Formatted Caption ---
-                      CDCaptionCard(
-                        captionText: generated.caption,
-                        platform: _currentProject.platform,
-                        onCaptionChanged: (newText) {
-                          appState.updateCurrentProjectCaption(newText);
-                        },
-                      ),
-                      const SizedBox(height: CDSpacing.lg),
-
-                      // --- Section 3: Call To Actions ---
-                      _buildCTASection(generated),
-                      const SizedBox(height: CDSpacing.lg),
-
-                      // --- Section 4: Segmented Hashtags ---
-                      _buildHashtagsSection(generated),
-                      const SizedBox(height: CDSpacing.lg),
-
-                      // --- Section 5: Graphic Cover Text ---
-                      if (generated.coverText.isNotEmpty) ...[
-                        _buildCoverTextSection(generated),
-                        const SizedBox(height: CDSpacing.xl),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Content Workspace',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 17,
+                                color: CDColors.textPrimary(context),
+                              ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              '${_currentProject.platform} ${_currentProject.contentType}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: CDColors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '• Tailored for $creatorName',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: 11,
+                                    color: CDColors.textSecondary(context),
+                                  ),
+                            ),
+                          ],
+                        ),
                       ],
-
-                      // --- Section 6: Visual Design Bridge Card ---
-                      _buildTurnIntoDesignCard(),
-                      const SizedBox(height: CDSpacing.xl),
+                    ),
+                    actions: [
+                      IconButton(
+                        icon: Icon(Icons.share_outlined, size: 20, color: CDColors.textPrimary(context)),
+                        tooltip: 'Export & Share',
+                        onPressed: _openExportShare,
+                      ),
                     ],
                   ),
-                ),
-              ),
-              // Bottom Action Bar
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl, vertical: 12),
-                decoration: BoxDecoration(
-                  color: CDColors.surface(context),
-                  border: Border(
-                    top: BorderSide(
-                      color: CDColors.borderSubtle(context),
-                      width: 1.0,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(
+                        left: CDSpacing.lg,
+                        right: CDSpacing.lg,
+                        top: CDSpacing.md,
+                        bottom: CDSpacing.navBarClearance,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // --- Section 1: Hooks ---
+                          _buildHooksSection(generated, appState),
+                          const SizedBox(height: CDSpacing.lg),
+
+                          // --- Section 2: Formatted Caption ---
+                          CDCaptionCard(
+                            captionText: generated.caption,
+                            platform: _currentProject.platform,
+                            onCaptionChanged: (newText) {
+                              appState.updateCurrentProjectCaption(newText);
+                            },
+                          ),
+                          const SizedBox(height: CDSpacing.lg),
+
+                          // --- Section 3: Call To Actions ---
+                          _buildCTASection(generated),
+                          const SizedBox(height: CDSpacing.lg),
+
+                          // --- Section 4: Segmented Hashtags ---
+                          _buildHashtagsSection(generated),
+                          const SizedBox(height: CDSpacing.lg),
+
+                          // --- Section 5: Graphic Cover Text ---
+                          if (generated.coverText.isNotEmpty) ...[
+                            _buildCoverTextSection(generated),
+                            const SizedBox(height: CDSpacing.xl),
+                          ],
+
+                          // --- Section 6: Visual Design Bridge Card ---
+                          _buildTurnIntoDesignCard(),
+                          const SizedBox(height: CDSpacing.xl),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Row(
-                    children: [
-                      CDSecondaryButton(
-                        label: _isBookmarked ? 'Saved' : 'Bookmark',
-                        height: 48,
-                        icon: Icon(
-                          _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                          size: 17,
-                        ),
-                        onPressed: _toggleBookmark,
-                      ),
-                      const SizedBox(width: CDSpacing.md),
-                      Expanded(
-                        child: CDPrimaryButton(
-                          label: 'Use This Content ✦',
-                          height: 48,
-                          onPressed: _openExportShare,
+                  // Bottom Action Bar with frosted glass styling
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: CDColors.surface(context),
+                      border: Border(
+                        top: BorderSide(
+                          color: CDColors.borderSubtle(context),
+                          width: 1.0,
                         ),
                       ),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 16,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Row(
+                        children: [
+                          CDSecondaryButton(
+                            label: _isBookmarked ? 'Saved' : 'Bookmark',
+                            height: 48,
+                            icon: Icon(
+                              _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                              size: 17,
+                            ),
+                            onPressed: _toggleBookmark,
+                          ),
+                          const SizedBox(width: CDSpacing.md),
+                          Expanded(
+                            child: CDPrimaryButton(
+                              label: 'Use This Content ✦',
+                              height: 48,
+                              onPressed: _openExportShare,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -291,26 +307,26 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
               Row(
                 children: [
                   Text(
-                    'Hooks',
+                    'Hook Variations',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                           fontSize: 15,
                           color: CDColors.textPrimary(context),
                         ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: CDColors.elevated(context),
-                      borderRadius: CDRadius.rPill,
+                      color: CDColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(CDRadius.pill),
                     ),
-                    child: Text(
-                      '5 Options',
+                    child: const Text(
+                      '5 Angles',
                       style: TextStyle(
                         fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: CDColors.textSecondary(context),
+                        fontWeight: FontWeight.w700,
+                        color: CDColors.primary,
                       ),
                     ),
                   ),
@@ -324,7 +340,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                       _copySection('All Hooks', all);
                     },
                     icon: Icon(Icons.content_copy_rounded, size: 13, color: CDColors.textPrimary(context)),
-                    label: Text('Copy All', style: TextStyle(fontSize: 11, color: CDColors.textPrimary(context))),
+                    label: Text('Copy All', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: CDColors.textPrimary(context))),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       minimumSize: Size.zero,
@@ -385,7 +401,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
               Text(
                 'Calls to Action (CTA)',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       fontSize: 15,
                       color: CDColors.textPrimary(context),
                     ),
@@ -404,7 +420,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
           const SizedBox(height: 6),
           ...ctas.map((cta) {
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 3.0),
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -423,7 +439,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                       cta,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: CDColors.textPrimary(context),
-                            fontSize: 13,
+                            fontSize: 13.5,
                           ),
                     ),
                   ),
@@ -448,21 +464,21 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Segmented Hashtag Strategy',
+            'Strategic Hashtag Clusters',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   fontSize: 15,
                   color: CDColors.textPrimary(context),
                 ),
           ),
           const SizedBox(height: CDSpacing.md),
           CDHashtagGroup(
-            label: 'High Reach',
+            label: 'High Reach & Trending',
             hashtags: generated.hashtagsHighReach,
           ),
           const SizedBox(height: CDSpacing.md),
           CDHashtagGroup(
-            label: 'Medium / Regional Reach',
+            label: 'Medium & Regional',
             hashtags: generated.hashtagsMediumReach,
           ),
           const SizedBox(height: CDSpacing.md),
@@ -487,8 +503,8 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                 Text(
                   'Visual Graphic Title',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
                         color: CDColors.textSecondary(context),
                       ),
                 ),
@@ -506,7 +522,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.content_copy_rounded, size: 15, color: CDColors.textPrimary(context)),
+            icon: Icon(Icons.content_copy_rounded, size: 16, color: CDColors.textPrimary(context)),
             tooltip: 'Copy Title',
             onPressed: () => _copySection('Graphic Title', generated.coverText),
           ),
@@ -516,30 +532,33 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
   }
 
   Widget _buildTurnIntoDesignCard() {
-    return Container(
+    final isDark = CDColors.isDark(context);
+
+    return CDGlassCard(
+      elevated: true,
       padding: const EdgeInsets.all(CDSpacing.lg),
-      decoration: BoxDecoration(
-        color: CDColors.surface(context),
-        borderRadius: CDRadius.rLarge,
-        border: Border.all(
-          color: CDColors.primary.withValues(alpha: 0.3),
-          width: 1.2,
-        ),
-      ),
+      borderColor: CDColors.primary.withValues(alpha: isDark ? 0.35 : 0.25),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Icon(Icons.palette_outlined, size: 28, color: CDColors.primary),
-          const SizedBox(height: CDSpacing.xs),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: CDColors.primary.withValues(alpha: isDark ? 0.20 : 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.palette_outlined, size: 24, color: CDColors.primaryLight),
+          ),
+          const SizedBox(height: CDSpacing.sm),
           Text(
             'Turn this into a visual design',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
                   color: CDColors.textPrimary(context),
                 ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Text(
             'Explore 8 professional layout directions customized with your brand identity.',
             textAlign: TextAlign.center,
@@ -551,7 +570,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
           const SizedBox(height: CDSpacing.md),
           CDPrimaryButton(
             label: 'Choose Design Direction →',
-            height: 44,
+            height: 46,
             onPressed: _openDesignSelection,
           ),
         ],

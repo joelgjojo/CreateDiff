@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/creator_profile.dart';
 
+/// A frosted glass summary card for the Brand Memory profile.
 class CDBrandMemoryCard extends StatelessWidget {
   final CreatorProfile profile;
   final VoidCallback onTap;
@@ -15,11 +16,31 @@ class CDBrandMemoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = CDColors.isDark(context);
     final primaryColor = CDColors.primary;
-    final cardBg = CDColors.surface(context);
-    final border = CDColors.borderSubtle(context);
+    final border = isDark
+        ? Colors.white.withValues(alpha: 0.10)
+        : Colors.black.withValues(alpha: 0.06);
 
-    final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Your Creator Identity';
+    final glassGradient = isDark
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.07),
+              Colors.white.withValues(alpha: 0.02),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.92),
+              Colors.white.withValues(alpha: 0.72),
+            ],
+          );
+
+    final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Creator Identity';
     final niche = profile.niche.isNotEmpty ? profile.niche : 'General';
     final tone = profile.tone.isNotEmpty ? profile.tone : 'Educational';
     final language = profile.primaryLanguage.isNotEmpty ? profile.primaryLanguage : 'English';
@@ -33,30 +54,48 @@ class CDBrandMemoryCard extends StatelessWidget {
           AppHaptics.selection();
           onTap();
         },
-        borderRadius: CDRadius.rLarge,
+        borderRadius: BorderRadius.circular(CDRadius.large),
         child: Container(
           padding: const EdgeInsets.all(CDSpacing.md),
           decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: CDRadius.rLarge,
+            gradient: glassGradient,
+            borderRadius: BorderRadius.circular(CDRadius.large),
             border: Border.all(color: border, width: 1.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.14 : 0.03),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
+              // Avatar with glowing brand color ring
               Container(
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: profile.primaryColor.withValues(alpha: 0.16),
+                  color: profile.primaryColor.withValues(alpha: isDark ? 0.20 : 0.12),
                   shape: BoxShape.circle,
-                  border: Border.all(color: profile.primaryColor.withValues(alpha: 0.4), width: 1.2),
+                  border: Border.all(
+                    color: profile.primaryColor.withValues(alpha: 0.6),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: profile.primaryColor.withValues(alpha: 0.20),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Center(
                   child: Text(
                     initials,
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       color: profile.primaryColor,
                     ),
                   ),
@@ -72,7 +111,7 @@ class CDBrandMemoryCard extends StatelessWidget {
                         Text(
                           creatorName,
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w700,
                                 fontSize: 14,
                                 color: CDColors.textPrimary(context),
                               ),
@@ -100,16 +139,24 @@ class CDBrandMemoryCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: CDColors.elevated(context),
-                  borderRadius: CDRadius.rPill,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : CDColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(CDRadius.pill),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.12)
+                        : CDColors.primary.withValues(alpha: 0.15),
+                    width: 0.8,
+                  ),
                 ),
                 child: Text(
                   'Edit',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: primaryColor,
                   ),
                 ),

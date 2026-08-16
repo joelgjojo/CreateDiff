@@ -4,9 +4,11 @@ import '../models/content_project.dart';
 import '../services/app_state.dart';
 import '../components/cd_recent_content_card.dart';
 import '../components/cd_empty_state.dart';
+import '../components/cd_atmospheric_background.dart';
 import 'content_result_screen.dart';
 import 'create_screen.dart';
 
+/// The creative archive screen for managing, duplicating, and viewing past creations.
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
@@ -59,9 +61,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: CDColors.surface(context),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.large)),
           title: Text(
             'Delete Content Pack',
-            style: TextStyle(color: CDColors.textPrimary(context)),
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: CDColors.textPrimary(context),
+            ),
           ),
           content: Text(
             'Are you sure you want to delete this content pack? This action cannot be undone.',
@@ -72,14 +78,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
                 'Cancel',
-                style: TextStyle(color: CDColors.textPrimary(context)),
+                style: TextStyle(color: CDColors.textPrimary(context), fontWeight: FontWeight.w600),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               child: const Text(
                 'Delete',
-                style: TextStyle(color: CDColors.error),
+                style: TextStyle(color: CDColors.error, fontWeight: FontWeight.w700),
               ),
             ),
           ],
@@ -105,6 +111,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = AppState.instance;
+    final isDark = CDColors.isDark(context);
 
     return ListenableBuilder(
       listenable: appState,
@@ -113,120 +120,140 @@ class _HistoryScreenState extends State<HistoryScreen> {
         final filtered = _getFilteredHistory(allHistory);
 
         return Scaffold(
-          backgroundColor: CDColors.background(context),
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Text(
-              'Content History',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    color: CDColors.textPrimary(context),
-                  ),
-            ),
-            actions: [
-              if (allHistory.isNotEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: CDSpacing.lg),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: CDColors.elevated(context),
-                        borderRadius: CDRadius.rPill,
-                      ),
-                      child: Text(
-                        '${allHistory.length} creations',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: CDColors.textSecondary(context),
-                        ),
-                      ),
+          backgroundColor: Colors.transparent,
+          body: CDAtmosphericBackground(
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // App Bar
+                  AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    title: Text(
+                      'Content Archive',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 22,
+                            letterSpacing: -0.5,
+                            color: CDColors.textPrimary(context),
+                          ),
                     ),
-                  ),
-                ),
-            ],
-          ),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Filter Chips
-              if (allHistory.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl, vertical: CDSpacing.xs),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: _filters.map((f) {
-                        final isSelected = _selectedPlatformFilter == f;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: CDSpacing.sm),
-                          child: ChoiceChip(
-                            label: Text(f),
-                            selected: isSelected,
-                            onSelected: (_) {
-                              AppHaptics.selection();
-                              setState(() => _selectedPlatformFilter = f);
-                            },
-                            selectedColor: CDColors.primary,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : CDColors.textPrimary(context),
-                              fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                            ),
-                            backgroundColor: CDColors.surface(context),
-                            shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
-                            side: BorderSide(
-                              color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+                    actions: [
+                      if (allHistory.isNotEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: CDSpacing.lg),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : CDColors.primary.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(CDRadius.pill),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.12)
+                                      : CDColors.primary.withValues(alpha: 0.15),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                '${allHistory.length} creations',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? CDColors.icyBlue : CDColors.primary,
+                                ),
+                              ),
                             ),
                           ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              Expanded(
-                child: filtered.isEmpty
-                    ? CDEmptyState(
-                        icon: Icons.history_rounded,
-                        title: _selectedPlatformFilter == 'All'
-                            ? 'No creations yet'
-                            : 'No $_selectedPlatformFilter creations',
-                        message: 'Start with an idea and CreateDiff will build and store your personalized content packs here.',
-                        actionLabel: 'Create a pack ✦',
-                        onAction: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const CreateScreen(),
-                            ),
-                          );
-                        },
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(
-                          left: CDSpacing.xl,
-                          right: CDSpacing.xl,
-                          top: CDSpacing.md,
-                          bottom: CDSpacing.navBarClearance,
                         ),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final project = filtered[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: CDSpacing.sm),
-                            child: CDRecentContentCard(
-                              project: project,
-                              onTap: () => _openProject(project),
-                              onDuplicate: () => _duplicateProject(project),
-                              onDelete: () => _deleteProject(project),
-                            ),
-                          );
-                        },
+                    ],
+                  ),
+                  // Filter Chips
+                  if (allHistory.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg, vertical: CDSpacing.xs),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: _filters.map((f) {
+                            final isSelected = _selectedPlatformFilter == f;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: CDSpacing.sm),
+                              child: ChoiceChip(
+                                label: Text(f),
+                                selected: isSelected,
+                                onSelected: (_) {
+                                  AppHaptics.selection();
+                                  setState(() => _selectedPlatformFilter = f);
+                                },
+                                selectedColor: CDColors.primary,
+                                labelStyle: TextStyle(
+                                  color: isSelected ? Colors.white : CDColors.textPrimary(context),
+                                  fontSize: 12,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                ),
+                                backgroundColor: isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? Colors.transparent
+                                      : (isDark ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.06)),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
+                    ),
+                  // Content List
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? CDEmptyState(
+                            icon: Icons.history_rounded,
+                            title: _selectedPlatformFilter == 'All'
+                                ? 'No creations yet'
+                                : 'No $_selectedPlatformFilter creations',
+                            message: 'Start with an idea and CreateDiff will build and store your personalized content packs here.',
+                            actionLabel: 'Create a pack ✦',
+                            onAction: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const CreateScreen(),
+                                ),
+                              );
+                            },
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.only(
+                              left: CDSpacing.lg,
+                              right: CDSpacing.lg,
+                              top: CDSpacing.md,
+                              bottom: CDSpacing.navBarClearance,
+                            ),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final project = filtered[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: CDSpacing.sm),
+                                child: CDRecentContentCard(
+                                  project: project,
+                                  onTap: () => _openProject(project),
+                                  onDuplicate: () => _duplicateProject(project),
+                                  onDelete: () => _deleteProject(project),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },

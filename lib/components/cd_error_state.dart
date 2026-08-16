@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'cd_primary_button.dart';
 
+/// Refined frosted glass error state with retry button.
 class CDErrorState extends StatelessWidget {
   final String title;
   final String message;
@@ -27,8 +28,12 @@ class CDErrorState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(CDSpacing.md),
               decoration: BoxDecoration(
-                color: CDColors.error.withValues(alpha: 0.12),
+                color: CDColors.error.withValues(alpha: 0.14),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: CDColors.error.withValues(alpha: 0.35),
+                  width: 1.2,
+                ),
               ),
               child: const Icon(
                 Icons.error_outline_rounded,
@@ -41,17 +46,18 @@ class CDErrorState extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 16,
                     color: CDColors.textPrimary(context),
                   ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: CDColors.textSecondary(context),
+                    fontSize: 13,
                   ),
             ),
             if (onRetry != null) ...[

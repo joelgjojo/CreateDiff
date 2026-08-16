@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 import 'cd_glass_card.dart';
 
+/// A frosted glass card displaying the generated caption with live word count,
+/// inline editing mode, and instant copy feedback.
 class CDCaptionCard extends StatefulWidget {
   final String captionText;
   final String platform;
@@ -23,23 +25,34 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
   late TextEditingController _controller;
   bool _isEditing = false;
   bool _copied = false;
+  int _wordCount = 0;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.captionText);
+    _updateWordCount();
+    _controller.addListener(_updateWordCount);
+  }
+
+  void _updateWordCount() {
+    final count = _controller.text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+    if (_wordCount != count) {
+      setState(() => _wordCount = count);
+    }
   }
 
   @override
   void didUpdateWidget(CDCaptionCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.captionText != widget.captionText) {
+    if (oldWidget.captionText != widget.captionText && !_isEditing) {
       _controller.text = widget.captionText;
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_updateWordCount);
     _controller.dispose();
     super.dispose();
   }
@@ -53,7 +66,7 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
         content: Row(
           children: [
             Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
-            SizedBox(width: CDSpacing.sm),
+            SizedBox(width: 8.0),
             Text('Caption copied to clipboard'),
           ],
         ),
@@ -69,8 +82,8 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = CDColors.isDark(context);
     final primaryColor = CDColors.primary;
-    final wordCount = _controller.text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
 
     return CDGlassCard(
       padding: const EdgeInsets.all(CDSpacing.lg),
@@ -83,24 +96,32 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: CDColors.elevated(context),
-                      borderRadius: CDRadius.rPill,
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : CDColors.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(CDRadius.pill),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.12)
+                            : CDColors.primary.withValues(alpha: 0.15),
+                        width: 0.8,
+                      ),
                     ),
                     child: Text(
                       widget.platform.toUpperCase(),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: CDColors.textPrimary(context),
+                        color: primaryColor,
                         letterSpacing: 0.5,
                       ),
                     ),
                   ),
-                  const SizedBox(width: CDSpacing.sm),
+                  const SizedBox(width: 8.0),
                   Text(
-                    '$wordCount words',
+                    '$_wordCount words',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 11,
                           color: CDColors.textSecondary(context),
@@ -127,29 +148,29 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
                     ),
                     label: Text(
                       _isEditing ? 'Done' : 'Edit',
-                      style: TextStyle(fontSize: 12, color: primaryColor, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 12, color: primaryColor, fontWeight: FontWeight.w700),
                     ),
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      minimumSize: const Size(40, 36),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
-                  const SizedBox(width: CDSpacing.xs),
+                  const SizedBox(width: 4.0),
                   IconButton(
                     icon: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 180),
                       child: Icon(
                         _copied ? Icons.check_rounded : Icons.content_copy_rounded,
                         key: ValueKey(_copied),
-                        size: 15,
+                        size: 16,
                         color: _copied
                             ? CDColors.success
                             : CDColors.textSecondary(context),
                       ),
                     ),
                     tooltip: 'Copy Caption',
-                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                     padding: EdgeInsets.zero,
                     onPressed: _copyCaption,
                   ),
@@ -168,10 +189,16 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
                   ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: CDColors.elevated(context),
+                fillColor: isDark ? Colors.black.withValues(alpha: 0.35) : Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: CDRadius.rMedium,
-                  borderSide: BorderSide(color: primaryColor),
+                  borderRadius: BorderRadius.circular(CDRadius.medium),
+                  borderSide: BorderSide(color: primaryColor, width: 1.2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(CDRadius.medium),
+                  borderSide: BorderSide(
+                    color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.10),
+                  ),
                 ),
                 contentPadding: const EdgeInsets.all(CDSpacing.md),
               ),
@@ -181,6 +208,7 @@ class _CDCaptionCardState extends State<CDCaptionCard> {
               _controller.text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     height: 1.55,
+                    fontSize: 14,
                     color: CDColors.textPrimary(context),
                   ),
             ),

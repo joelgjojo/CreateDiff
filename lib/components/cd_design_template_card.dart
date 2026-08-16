@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../models/design_template.dart';
 import '../models/creator_profile.dart';
 
+/// A creative studio gallery card rendering an interactive design template preview.
 class CDDesignTemplateCard extends StatelessWidget {
   final DesignTemplate template;
   final String coverText;
@@ -25,7 +26,9 @@ class CDDesignTemplateCard extends StatelessWidget {
     final primaryColor = CDColors.primary;
     final border = isSelected
         ? primaryColor
-        : CDColors.borderSubtle(context);
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.12)
+            : Colors.black.withValues(alpha: 0.08));
 
     final displayTitle = coverText.isNotEmpty ? coverText : 'READY TO PUBLISH';
 
@@ -36,11 +39,13 @@ class CDDesignTemplateCard extends StatelessWidget {
           AppHaptics.selection();
           onSelect();
         },
-        borderRadius: CDRadius.rLarge,
+        borderRadius: BorderRadius.circular(CDRadius.large),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
+          duration: CDMotion.screen,
+          transform: isSelected ? Matrix4.diagonal3Values(0.98, 0.98, 1.0) : Matrix4.identity(),
+          transformAlignment: Alignment.center,
           decoration: BoxDecoration(
-            borderRadius: CDRadius.rLarge,
+            borderRadius: BorderRadius.circular(CDRadius.large),
             border: Border.all(
               color: border,
               width: isSelected ? 2.0 : 1.0,
@@ -48,15 +53,21 @@ class CDDesignTemplateCard extends StatelessWidget {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.22),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      color: primaryColor.withValues(alpha: 0.28),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
                     ),
                   ]
-                : null,
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
           ),
           child: ClipRRect(
-            borderRadius: CDRadius.rLarge,
+            borderRadius: BorderRadius.circular(CDRadius.large),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -70,8 +81,16 @@ class CDDesignTemplateCard extends StatelessWidget {
                 ),
                 // Bottom Metadata Info Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  color: CDColors.surface(context),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF10131A) : Colors.white,
+                    border: Border(
+                      top: BorderSide(
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                        width: 0.8,
+                      ),
+                    ),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -82,7 +101,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                             template.name,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               color: CDColors.textPrimary(context),
                             ),
                           ),
@@ -90,11 +109,11 @@ class CDDesignTemplateCard extends StatelessWidget {
                             template.style.toUpperCase(),
                             style: TextStyle(
                               fontSize: 9,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w800,
                               color: isSelected
                                   ? primaryColor
                                   : CDColors.textSecondary(context),
-                              letterSpacing: 0.4,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ],
@@ -106,7 +125,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                             color: CDColors.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.check, size: 12, color: Colors.white),
+                          child: const Icon(Icons.check_rounded, size: 12, color: Colors.white),
                         ),
                     ],
                   ),
@@ -123,23 +142,30 @@ class CDDesignTemplateCard extends StatelessWidget {
     switch (id) {
       case 'bold_typography':
         return BoxDecoration(
-          color: profile.primaryColor,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              profile.primaryColor,
+              profile.primaryColor.withValues(alpha: 0.85),
+            ],
+          ),
         );
       case 'swiss_grid':
         return BoxDecoration(
-          color: isDark ? const Color(0xFF14141A) : const Color(0xFFF9F9FA),
+          color: isDark ? const Color(0xFF12141A) : const Color(0xFFF9F9FA),
         );
       case 'creator_minimal':
         return BoxDecoration(
-          color: isDark ? const Color(0xFF16161D) : const Color(0xFFF6F5F2),
+          color: isDark ? const Color(0xFF141720) : const Color(0xFFF6F5F2),
         );
       case 'dark_impact':
         return const BoxDecoration(
-          color: Color(0xFF0C0C10),
+          color: Color(0xFF08090D),
         );
       case 'luxury_editorial':
         return BoxDecoration(
-          color: isDark ? const Color(0xFF1A1922) : const Color(0xFF22202A),
+          color: isDark ? const Color(0xFF16151E) : const Color(0xFF1F1D26),
         );
       case 'soft_modern':
         return BoxDecoration(
@@ -147,8 +173,8 @@ class CDDesignTemplateCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDark
-                ? [const Color(0xFF1E1B32), const Color(0xFF121218)]
-                : [const Color(0xFFEBE9F5), const Color(0xFFFFFFFF)],
+                ? [const Color(0xFF1C1A2E), const Color(0xFF0F1118)]
+                : [const Color(0xFFE8EAF5), const Color(0xFFFFFFFF)],
           ),
         );
       case 'high_contrast':
@@ -158,7 +184,7 @@ class CDDesignTemplateCard extends StatelessWidget {
       case 'clean_editorial':
       default:
         return BoxDecoration(
-          color: isDark ? const Color(0xFF181820) : const Color(0xFFFFFFFF),
+          color: isDark ? const Color(0xFF12151E) : const Color(0xFFFFFFFF),
         );
     }
   }
@@ -177,7 +203,7 @@ class CDDesignTemplateCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.22),
-                borderRadius: CDRadius.rSmall,
+                borderRadius: BorderRadius.circular(CDRadius.small),
               ),
               child: Text(
                 brandName.toUpperCase(),
@@ -189,7 +215,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                 text,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
                   letterSpacing: -0.4,
@@ -324,7 +350,7 @@ class CDDesignTemplateCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.amber.withValues(alpha: 0.4), width: 0.8),
-                borderRadius: CDRadius.rSmall,
+                borderRadius: BorderRadius.circular(CDRadius.small),
               ),
               child: Text(
                 'CURATED',
@@ -381,7 +407,7 @@ class CDDesignTemplateCard extends StatelessWidget {
             Container(
               height: 3,
               width: 18,
-              decoration: BoxDecoration(color: accent, borderRadius: CDRadius.rPill),
+              decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(CDRadius.pill)),
             ),
           ],
         );

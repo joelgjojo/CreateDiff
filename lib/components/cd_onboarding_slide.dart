@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// Frosted glass onboarding slide with luminous icon orb and editorial typography.
 class CDOnboardingSlide extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -17,30 +18,45 @@ class CDOnboardingSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = CDColors.isDark(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xxl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(CDSpacing.xl),
+            width: 88,
+            height: 88,
             decoration: BoxDecoration(
-              color: accentColor.withValues(alpha: 0.12),
+              color: accentColor.withValues(alpha: isDark ? 0.16 : 0.12),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: accentColor.withValues(alpha: isDark ? 0.40 : 0.25),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.20),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Icon(
               icon,
-              size: 36,
+              size: 40,
               color: accentColor,
             ),
           ),
-          const SizedBox(height: CDSpacing.xxl),
+          const SizedBox(height: CDSpacing.xxxl),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.3,
+            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 26,
+                  letterSpacing: -0.6,
                   color: CDColors.textPrimary(context),
                 ),
           ),
@@ -48,9 +64,9 @@ class CDOnboardingSlide extends StatelessWidget {
           Text(
             description,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: CDColors.textSecondary(context),
-                  fontSize: 14,
+                  fontSize: 15,
                   height: 1.55,
                 ),
           ),

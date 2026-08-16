@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// Clean editorial section header with optional action button.
 class CDSectionHeader extends StatelessWidget {
   final String title;
   final String? actionLabel;
@@ -18,16 +19,16 @@ class CDSectionHeader extends StatelessWidget {
     final primaryColor = CDColors.primary;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: CDSpacing.sm, top: 4),
+      padding: const EdgeInsets.only(bottom: CDSpacing.sm, top: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  letterSpacing: -0.2,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  letterSpacing: -0.3,
                   color: CDColors.textPrimary(context),
                 ),
           ),
@@ -39,14 +40,14 @@ class CDSectionHeader extends StatelessWidget {
                   AppHaptics.selection();
                   onAction!();
                 },
-                borderRadius: CDRadius.rSmall,
+                borderRadius: BorderRadius.circular(CDRadius.small),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   child: Text(
                     actionLabel!,
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: primaryColor,
                     ),
                   ),

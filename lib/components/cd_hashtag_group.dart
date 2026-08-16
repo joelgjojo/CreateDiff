@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 
+/// Compact frosted glass hashtag chips with strategic reach categorizations.
 class CDHashtagGroup extends StatefulWidget {
   final String label;
   final List<String> hashtags;
-  final Color? badgeColor;
 
   const CDHashtagGroup({
     super.key,
     required this.label,
     required this.hashtags,
-    this.badgeColor,
   });
 
   @override
@@ -31,7 +30,7 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
         content: Row(
           children: [
             const Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
-            const SizedBox(width: CDSpacing.sm),
+            const SizedBox(width: 8.0),
             Text('${widget.label} hashtags copied'),
           ],
         ),
@@ -47,10 +46,8 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = CDColors.primary;
-    final chipBg = CDColors.elevated(context);
-
     if (widget.hashtags.isEmpty) return const SizedBox.shrink();
+    final isDark = CDColors.isDark(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,39 +60,53 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
                 Text(
                   widget.label,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         fontSize: 12,
+                        color: CDColors.textPrimary(context),
                       ),
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  '(${widget.hashtags.length})',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 11,
-                        color: CDColors.textSecondary(context),
-                      ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(CDRadius.pill),
+                  ),
+                  child: Text(
+                    '${widget.hashtags.length}',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: CDColors.textSecondary(context),
+                    ),
+                  ),
                 ),
               ],
             ),
             InkWell(
               onTap: _copyAll,
-              borderRadius: CDRadius.rSmall,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              borderRadius: BorderRadius.circular(CDRadius.small),
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 32),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       _copied ? Icons.check_rounded : Icons.content_copy_rounded,
-                      size: 12,
-                      color: _copied ? CDColors.success : primaryColor,
+                      size: 13,
+                      color: _copied ? CDColors.success : CDColors.primary,
                     ),
-                    const SizedBox(width: 3),
+                    const SizedBox(width: 4),
                     Text(
                       _copied ? 'Copied' : 'Copy',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: _copied ? CDColors.success : primaryColor,
+                        fontWeight: FontWeight.w700,
+                        color: _copied ? CDColors.success : CDColors.primary,
                       ),
                     ),
                   ],
@@ -104,19 +115,23 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Wrap(
           spacing: 6,
           runSpacing: 6,
           children: widget.hashtags.map((tag) {
             final tagText = tag.startsWith('#') ? tag : '#$tag';
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: chipBg,
-                borderRadius: CDRadius.rPill,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(CDRadius.pill),
                 border: Border.all(
-                  color: CDColors.borderSubtle(context),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.10)
+                      : Colors.black.withValues(alpha: 0.06),
                   width: 0.8,
                 ),
               ),
@@ -124,7 +139,7 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
                 tagText,
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: CDColors.textPrimary(context),
                 ),
               ),

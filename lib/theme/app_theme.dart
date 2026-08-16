@@ -7,14 +7,13 @@ import 'design_tokens.dart';
 export 'design_tokens.dart';
 
 // =============================================================================
-// CreateDiff App Theme
+// CreateDiff App Theme V2 — Atmospheric Glassmorphism
 // =============================================================================
 // Builds Material 3 ThemeData for light and dark modes using the centralized
 // design tokens defined in design_tokens.dart.
 //
-// Typography uses Inter via google_fonts.
-// Colors reference CDColors (design_tokens.dart).
-// Spacing, radii, motion, glass values are in design_tokens.dart.
+// Typography uses Inter with refined editorial scale.
+// Colors reference CDColors (Icy Blue, Cool Lavender, Studio Violet, Deep Charcoal).
 // =============================================================================
 
 class AppHaptics {
@@ -29,7 +28,7 @@ class AppTheme {
   AppTheme._();
 
   // -------------------------------------------------------------------------
-  // LIGHT THEME
+  // LIGHT THEME (Frosted Daylight)
   // -------------------------------------------------------------------------
 
   static ThemeData get lightTheme {
@@ -41,6 +40,7 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary: CDColors.primary,
         secondary: CDColors.primaryLight,
+        tertiary: CDColors.icyBlue,
         surface: CDColors.lightSurface,
         surfaceContainerHighest: CDColors.lightSoftSurface,
         error: CDColors.error,
@@ -58,7 +58,7 @@ class AppTheme {
         space: 1,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: CDColors.lightBackground,
+        backgroundColor: Colors.transparent,
         foregroundColor: CDColors.lightText,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -71,7 +71,8 @@ class AppTheme {
         ),
         titleTextStyle: GoogleFonts.inter(
           fontSize: 18,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
           color: CDColors.lightText,
         ),
       ),
@@ -91,7 +92,7 @@ class AppTheme {
   }
 
   // -------------------------------------------------------------------------
-  // DARK THEME
+  // DARK THEME (Atmospheric Obsidian & Icy Glow)
   // -------------------------------------------------------------------------
 
   static ThemeData get darkTheme {
@@ -103,6 +104,7 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: CDColors.primary,
         secondary: CDColors.primaryLight,
+        tertiary: CDColors.icyBlue,
         surface: CDColors.darkSurface,
         surfaceContainerHighest: CDColors.darkElevated,
         error: CDColors.error,
@@ -120,7 +122,7 @@ class AppTheme {
         space: 1,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: CDColors.darkBackground,
+        backgroundColor: Colors.transparent,
         foregroundColor: CDColors.darkText,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -133,7 +135,8 @@ class AppTheme {
         ),
         titleTextStyle: GoogleFonts.inter(
           fontSize: 18,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
           color: CDColors.darkText,
         ),
       ),
@@ -153,72 +156,72 @@ class AppTheme {
   }
 
   // -------------------------------------------------------------------------
-  // TYPOGRAPHY (Inter)
+  // TYPOGRAPHY (Inter) — Editorial & Modern Scale
   // -------------------------------------------------------------------------
 
   static TextTheme _buildTextTheme(
       Color primaryTextColor, Color secondaryTextColor) {
     return TextTheme(
-      // 36px — Large hero headings
+      // 36px — Hero headings with strong tracking
       displayLarge: GoogleFonts.inter(
-        fontSize: 36,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -1.0,
+        fontSize: 34,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -1.2,
         height: 1.15,
         color: primaryTextColor,
       ),
-      // 30px — Screen titles
+      // 28px — Screen titles
       displayMedium: GoogleFonts.inter(
-        fontSize: 30,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.6,
+        fontSize: 28,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.8,
         height: 1.2,
         color: primaryTextColor,
       ),
-      // 24px — Section titles
+      // 22px — Section titles
       displaySmall: GoogleFonts.inter(
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.3,
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.4,
         height: 1.25,
         color: primaryTextColor,
       ),
-      // 20px — Sub-sections
+      // 20px — Prominent Card titles
       headlineLarge: GoogleFonts.inter(
         fontSize: 20,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.2,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
         height: 1.3,
         color: primaryTextColor,
       ),
-      // 18px — Card titles
+      // 18px — Standard Card titles
       headlineMedium: GoogleFonts.inter(
         fontSize: 18,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.1,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.2,
         height: 1.35,
         color: primaryTextColor,
       ),
-      // 16px — Prominent body
+      // 16px — Prominent subheadings
       headlineSmall: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        letterSpacing: 0,
+        letterSpacing: -0.1,
         height: 1.4,
         color: primaryTextColor,
       ),
       // 16px — Regular title
       titleLarge: GoogleFonts.inter(
         fontSize: 16,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         letterSpacing: 0,
         height: 1.4,
         color: primaryTextColor,
       ),
-      // 14px — Subtitle
+      // 14px — Subtitle / Section headers
       titleMedium: GoogleFonts.inter(
         fontSize: 14,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         letterSpacing: 0.05,
         height: 1.4,
         color: primaryTextColor,
@@ -226,12 +229,12 @@ class AppTheme {
       // 13px — Small title
       titleSmall: GoogleFonts.inter(
         fontSize: 13,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         letterSpacing: 0.1,
         height: 1.4,
         color: primaryTextColor,
       ),
-      // 16px — Body
+      // 16px — Body Large
       bodyLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w400,
@@ -239,7 +242,7 @@ class AppTheme {
         height: 1.55,
         color: primaryTextColor,
       ),
-      // 14px — Body secondary
+      // 14px — Body Regular
       bodyMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w400,
@@ -255,27 +258,27 @@ class AppTheme {
         height: 1.45,
         color: secondaryTextColor,
       ),
-      // 14px — Button labels
+      // 15px — CTA Button labels
       labelLarge: GoogleFonts.inter(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
         letterSpacing: 0.1,
         height: 1.35,
         color: primaryTextColor,
       ),
-      // 12px — Small labels
+      // 12px — Secondary buttons / Small labels
       labelMedium: GoogleFonts.inter(
         fontSize: 12,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         letterSpacing: 0.2,
         height: 1.3,
         color: secondaryTextColor,
       ),
-      // 11px — Tiny metadata
+      // 11px — Tiny metadata / badges
       labelSmall: GoogleFonts.inter(
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.3,
+        fontSize: 10.5,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.4,
         height: 1.25,
         color: secondaryTextColor,
       ),

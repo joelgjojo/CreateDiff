@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 
+/// An editorial hook card with copy feedback and primary hook highlight.
 class CDHookCard extends StatefulWidget {
   final int index;
   final String hookText;
@@ -24,7 +25,6 @@ class CDHookCard extends StatefulWidget {
 
 class _CDHookCardState extends State<CDHookCard> {
   bool _copied = false;
-  bool _isSaved = false;
 
   void _copyToClipboard() {
     AppHaptics.light();
@@ -35,8 +35,8 @@ class _CDHookCardState extends State<CDHookCard> {
         content: Row(
           children: [
             const Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
-            const SizedBox(width: CDSpacing.sm),
-            Text('Hook #${widget.index} copied'),
+            const SizedBox(width: 8),
+            Text('Hook #${widget.index} copied to clipboard'),
           ],
         ),
         duration: const Duration(milliseconds: 1400),
@@ -54,7 +54,6 @@ class _CDHookCardState extends State<CDHookCard> {
     final isDark = CDColors.isDark(context);
     final primaryColor = CDColors.primary;
     final textColor = CDColors.textPrimary(context);
-    final numBg = CDColors.elevated(context);
 
     if (widget.isPrimary) {
       return Container(
@@ -62,13 +61,20 @@ class _CDHookCardState extends State<CDHookCard> {
         padding: const EdgeInsets.all(CDSpacing.md),
         decoration: BoxDecoration(
           color: isDark
-              ? primaryColor.withValues(alpha: 0.10)
-              : primaryColor.withValues(alpha: 0.06),
-          borderRadius: CDRadius.rMedium,
+              ? primaryColor.withValues(alpha: 0.12)
+              : CDColors.icyBlue.withValues(alpha: 0.35),
+          borderRadius: BorderRadius.circular(CDRadius.medium),
           border: Border.all(
-            color: primaryColor.withValues(alpha: 0.35),
+            color: primaryColor.withValues(alpha: isDark ? 0.35 : 0.45),
             width: 1.2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withValues(alpha: 0.10),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,70 +83,48 @@ class _CDHookCardState extends State<CDHookCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: primaryColor,
-                    borderRadius: CDRadius.rSmall,
+                    borderRadius: BorderRadius.circular(CDRadius.small),
                   ),
                   child: const Text(
                     'PRIMARY HOOK',
                     style: TextStyle(
                       fontSize: 9,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.6,
                     ),
                   ),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        child: Icon(
-                          _copied ? Icons.check_rounded : Icons.content_copy_rounded,
-                          key: ValueKey(_copied),
-                          size: 15,
-                          color: _copied
-                              ? CDColors.success
-                              : CDColors.textSecondary(context),
-                        ),
-                      ),
-                      tooltip: 'Copy Hook',
-                      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                      padding: EdgeInsets.zero,
-                      onPressed: _copyToClipboard,
+                IconButton(
+                  icon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: Icon(
+                      _copied ? Icons.check_rounded : Icons.content_copy_rounded,
+                      key: ValueKey(_copied),
+                      size: 16,
+                      color: _copied
+                          ? CDColors.success
+                          : CDColors.textSecondary(context),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                        size: 17,
-                        color: _isSaved
-                            ? primaryColor
-                            : CDColors.textSecondary(context),
-                      ),
-                      tooltip: 'Save Hook',
-                      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        AppHaptics.selection();
-                        setState(() => _isSaved = !_isSaved);
-                        widget.onSave?.call();
-                      },
-                    ),
-                  ],
+                  ),
+                  tooltip: 'Copy Hook',
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
+                  onPressed: _copyToClipboard,
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               widget.hookText,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: textColor,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    height: 1.38,
+                    height: 1.4,
                   ),
             ),
           ],
@@ -158,7 +142,9 @@ class _CDHookCardState extends State<CDHookCard> {
             height: 24,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: numBg,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -178,51 +164,30 @@ class _CDHookCardState extends State<CDHookCard> {
                 widget.hookText,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: textColor,
-                      height: 1.38,
+                      height: 1.4,
+                      fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),
               ),
             ),
           ),
-          const SizedBox(width: CDSpacing.sm),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 180),
-                  child: Icon(
-                    _copied ? Icons.check_rounded : Icons.content_copy_rounded,
-                    key: ValueKey(_copied),
-                    size: 15,
-                    color: _copied
-                        ? CDColors.success
-                        : CDColors.textSecondary(context),
-                  ),
-                ),
-                tooltip: 'Copy Hook',
-                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                padding: EdgeInsets.zero,
-                onPressed: _copyToClipboard,
+          const SizedBox(width: 8.0),
+          IconButton(
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: Icon(
+                _copied ? Icons.check_rounded : Icons.content_copy_rounded,
+                key: ValueKey(_copied),
+                size: 16,
+                color: _copied
+                    ? CDColors.success
+                    : CDColors.textSecondary(context),
               ),
-              IconButton(
-                icon: Icon(
-                  _isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                  size: 17,
-                  color: _isSaved
-                      ? primaryColor
-                      : CDColors.textSecondary(context),
-                ),
-                tooltip: 'Save Hook',
-                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  AppHaptics.selection();
-                  setState(() => _isSaved = !_isSaved);
-                  widget.onSave?.call();
-                },
-              ),
-            ],
+            ),
+            tooltip: 'Copy Hook',
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            padding: EdgeInsets.zero,
+            onPressed: _copyToClipboard,
           ),
         ],
       ),

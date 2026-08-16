@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// A compact frosted glass shortcut chip for the Home screen.
 class CDQuickActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -17,8 +18,28 @@ class CDQuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardBg = CDColors.surface(context);
-    final border = CDColors.borderSubtle(context);
+    final isDark = CDColors.isDark(context);
+    final border = isDark
+        ? Colors.white.withValues(alpha: 0.10)
+        : Colors.black.withValues(alpha: 0.06);
+
+    final glassGradient = isDark
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.08),
+              Colors.white.withValues(alpha: 0.02),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.92),
+              Colors.white.withValues(alpha: 0.75),
+            ],
+          );
 
     return Material(
       color: Colors.transparent,
@@ -27,38 +48,46 @@ class CDQuickActionCard extends StatelessWidget {
           AppHaptics.selection();
           onTap();
         },
-        borderRadius: CDRadius.rMedium,
+        borderRadius: BorderRadius.circular(CDRadius.pill),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: CDRadius.rMedium,
+            gradient: glassGradient,
+            borderRadius: BorderRadius.circular(CDRadius.pill),
             border: Border.all(color: border, width: 1.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.12 : 0.02),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 26,
-                height: 26,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.12),
-                  borderRadius: CDRadius.rSmall,
+                  color: accentColor.withValues(alpha: isDark ? 0.18 : 0.12),
+                  shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
-                  size: 14,
+                  size: 12,
                   color: accentColor,
                 ),
               ),
-              const SizedBox(width: 7),
+              const SizedBox(width: 8),
               Text(
                 label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                      color: CDColors.textPrimary(context),
-                    ),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12.5,
+                  color: CDColors.textPrimary(context),
+                  letterSpacing: -0.1,
+                ),
               ),
             ],
           ),

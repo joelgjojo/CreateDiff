@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// A frosted glass text field with crisp borders and refined typography.
 class CDTextInput extends StatelessWidget {
   final String? label;
   final String hint;
@@ -31,8 +32,13 @@ class CDTextInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fillBg = CDColors.surface(context);
-    final borderColor = CDColors.borderSubtle(context);
+    final isDark = CDColors.isDark(context);
+    final fillBg = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.white;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.08);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,7 +49,7 @@ class CDTextInput extends StatelessWidget {
               Text(
                 label!,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       fontSize: 13,
                       color: CDColors.textPrimary(context),
                     ),
@@ -70,26 +76,28 @@ class CDTextInput extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: CDColors.textPrimary(context),
                 fontWeight: FontWeight.w400,
+                fontSize: 14,
               ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: CDColors.textSecondary(context).withValues(alpha: 0.7),
+                  color: CDColors.textMuted(context),
+                  fontSize: 14,
                 ),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             filled: true,
             fillColor: fillBg,
             border: OutlineInputBorder(
-              borderRadius: CDRadius.rMedium,
+              borderRadius: BorderRadius.circular(CDRadius.medium),
               borderSide: BorderSide(color: borderColor, width: 1.0),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: CDRadius.rMedium,
+              borderRadius: BorderRadius.circular(CDRadius.medium),
               borderSide: BorderSide(color: borderColor, width: 1.0),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: CDRadius.rMedium,
+              borderRadius: BorderRadius.circular(CDRadius.medium),
               borderSide: const BorderSide(color: CDColors.primary, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(

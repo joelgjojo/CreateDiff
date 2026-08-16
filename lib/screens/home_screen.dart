@@ -5,10 +5,14 @@ import '../components/cd_section_header.dart';
 import '../components/cd_recent_content_card.dart';
 import '../components/cd_brand_memory_card.dart';
 import '../components/cd_empty_state.dart';
+import '../components/cd_glass_card.dart';
+import '../components/cd_primary_button.dart';
 import 'create_screen.dart';
 import 'content_result_screen.dart';
 import 'creator_profile_screen.dart';
 
+/// The centerpiece Home screen featuring an editorial greeting, a frosted glass
+/// hero creation surface, horizontal platform shortcuts, and recent creation history.
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onNavigateToHistory;
 
@@ -61,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final appState = AppState.instance;
+    final isDark = CDColors.isDark(context);
 
     return ListenableBuilder(
       listenable: appState,
@@ -69,89 +74,164 @@ class _HomeScreenState extends State<HomeScreen> {
         final name = profile.creatorName.isNotEmpty ? profile.creatorName : 'Creator';
         final history = appState.contentHistory;
         final greeting = _getGreeting();
-        
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final initials = _getInitials(name);
 
         return Scaffold(
-          backgroundColor: CDColors.surface(context),
+          backgroundColor: Colors.transparent,
           body: SafeArea(
             bottom: false,
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
-                CDSpacing.md,
                 CDSpacing.lg,
                 CDSpacing.md,
-                CDSpacing.navBarClearance + CDSpacing.lg,
+                CDSpacing.lg,
+                CDSpacing.navBarClearance + CDSpacing.xl, // Zero overlap guarantee
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- 1. Header ---
-                  Text(
-                    greeting,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? CDColors.darkMuted : CDColors.lightMuted,
-                    ),
-                  ),
-                  const SizedBox(height: CDSpacing.xs),
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
+                  // --- 1. Editorial Greeting Header ---
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            greeting.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              color: isDark ? CDColors.icyBlue : CDColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            name,
+                            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 26,
+                                  letterSpacing: -0.6,
+                                  color: CDColors.textPrimary(context),
+                                ),
+                          ),
+                        ],
+                      ),
+                      // Creator Glowing Ring Avatar
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const CreatorProfileScreen(isInitialSetup: false),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(CDRadius.pill),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: profile.primaryColor.withValues(alpha: isDark ? 0.20 : 0.12),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: profile.primaryColor.withValues(alpha: 0.60),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: profile.primaryColor.withValues(alpha: 0.25),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                initials,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: profile.primaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: CDSpacing.xl),
 
-                  // --- 2. Hero Creation Surface ---
-                  Container(
-                    decoration: BoxDecoration(
-                      color: CDColors.elevated(context),
-                      borderRadius: BorderRadius.circular(CDRadius.large),
-                      border: Border.all(
-                        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        )
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(CDSpacing.md),
+                  // --- 2. Hero Frosted Glass Creation Surface ---
+                  CDGlassCard(
+                    useBlur: true,
+                    elevated: true,
+                    padding: const EdgeInsets.all(CDSpacing.xl),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.auto_awesome_rounded,
-                              size: 20,
-                              color: CDColors.primary,
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? CDColors.primary.withValues(alpha: 0.20)
+                                    : CDColors.icyBlue.withValues(alpha: 0.50),
+                                borderRadius: BorderRadius.circular(CDRadius.small),
+                              ),
+                              child: const Icon(
+                                Icons.auto_awesome_rounded,
+                                size: 16,
+                                color: CDColors.primaryLight,
+                              ),
                             ),
                             const SizedBox(width: CDSpacing.sm),
-                            Text(
-                              'What are we creating today?',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white : Colors.black,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'What are we creating today?',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.2,
+                                      color: CDColors.textPrimary(context),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    'Describe an idea, trend, topic, or simply start typing...',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w400,
+                                      color: CDColors.textSecondary(context),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: CDSpacing.md),
+                        const SizedBox(height: CDSpacing.lg),
+
+                        // Multiline Input Surface
                         Container(
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.shade100,
+                            color: isDark
+                                ? Colors.black.withValues(alpha: 0.35)
+                                : Colors.white.withValues(alpha: 0.85),
                             borderRadius: BorderRadius.circular(CDRadius.medium),
                             border: Border.all(
-                              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.12)
+                                  : Colors.black.withValues(alpha: 0.08),
+                              width: 1.0,
                             ),
                           ),
                           child: TextField(
@@ -159,61 +239,40 @@ class _HomeScreenState extends State<HomeScreen> {
                             minLines: 3,
                             maxLines: 5,
                             style: TextStyle(
-                              fontSize: 16,
-                              color: isDark ? Colors.white : Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: CDColors.textPrimary(context),
+                              height: 1.45,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'Describe an idea, trend, or topic...',
+                              hintText: 'E.g., 5 AI tools every creator needs in 2026, breakdown of my morning routine, carousel on design principles...',
                               hintStyle: TextStyle(
-                                color: isDark ? CDColors.darkMuted : CDColors.lightMuted,
+                                color: CDColors.textMuted(context),
+                                fontSize: 13.5,
+                                height: 1.45,
                               ),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.all(CDSpacing.md),
                             ),
                           ),
                         ),
-                        const SizedBox(height: CDSpacing.md),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => _handleDirectIdeaSubmit(context),
-                                borderRadius: BorderRadius.circular(CDRadius.pill),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: CDSpacing.lg,
-                                    vertical: CDSpacing.sm,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: CDColors.primary,
-                                    borderRadius: BorderRadius.circular(CDRadius.pill),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Create ✦',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: CDSpacing.lg),
+
+                        // Luminous Create CTA Button
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: CDPrimaryButton(
+                            label: 'Create ✦',
+                            height: 46,
+                            onPressed: () => _handleDirectIdeaSubmit(context),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: CDSpacing.xl),
+                  const SizedBox(height: CDSpacing.xxl),
 
-                  // --- 3. Quick Create Shortcuts ---
+                  // --- 3. Quick Create Shortcuts (No clipping) ---
                   const CDSectionHeader(title: 'Quick Shortcuts'),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -243,6 +302,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         _buildShortcutChip(
                           context,
+                          label: 'Carousel',
+                          icon: Icons.view_carousel_rounded,
+                          color: CDColors.instagram,
+                          onTap: () => _openCreate(context, platform: 'Instagram', contentType: 'Carousel'),
+                        ),
+                        _buildShortcutChip(
+                          context,
                           label: 'YouTube',
                           icon: Icons.play_circle_fill_rounded,
                           color: CDColors.youtube,
@@ -258,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: CDSpacing.xl),
+                  const SizedBox(height: CDSpacing.xxl),
 
                   // --- 4. Recent Creations ---
                   CDSectionHeader(
@@ -293,9 +359,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }).toList(),
                     ),
-                  const SizedBox(height: CDSpacing.xl),
+                  const SizedBox(height: CDSpacing.xxl),
 
-                  // --- 5. Brand Memory Summary ---
+                  // --- 5. Brand Memory Summary (Safe from bottom nav overlap) ---
                   const CDSectionHeader(title: 'Brand Memory'),
                   CDBrandMemoryCard(
                     profile: profile,
@@ -323,8 +389,26 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+    final isDark = CDColors.isDark(context);
+
+    final glassGradient = isDark
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.08),
+              Colors.white.withValues(alpha: 0.02),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.92),
+              Colors.white.withValues(alpha: 0.75),
+            ],
+          );
+
     return Padding(
       padding: const EdgeInsets.only(right: CDSpacing.sm),
       child: Material(
@@ -334,27 +418,45 @@ class _HomeScreenState extends State<HomeScreen> {
             AppHaptics.selection();
             onTap();
           },
-          borderRadius: BorderRadius.circular(CDRadius.medium),
+          borderRadius: BorderRadius.circular(CDRadius.pill),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
             decoration: BoxDecoration(
-              color: CDColors.elevated(context),
-              borderRadius: BorderRadius.circular(CDRadius.medium),
+              gradient: glassGradient,
+              borderRadius: BorderRadius.circular(CDRadius.pill),
               border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : Colors.black.withValues(alpha: 0.06),
+                width: 1.0,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.12 : 0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 16, color: color),
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: isDark ? 0.20 : 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 12, color: color),
+                ),
                 const SizedBox(width: 8),
                 Text(
                   label,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.w700,
+                    color: CDColors.textPrimary(context),
                   ),
                 ),
               ],
@@ -363,5 +465,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'CD';
+    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length < 2 ? name.length : 2).toUpperCase();
   }
 }

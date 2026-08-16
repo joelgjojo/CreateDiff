@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/content_project.dart';
 
+/// Lightweight editorial frosted glass row representing a recent creation.
 class CDRecentContentCard extends StatelessWidget {
   final ContentProject project;
   final VoidCallback onTap;
@@ -18,8 +19,28 @@ class CDRecentContentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardBg = CDColors.surface(context);
-    final border = CDColors.borderSubtle(context);
+    final isDark = CDColors.isDark(context);
+    final border = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.05);
+
+    final glassGradient = isDark
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.06),
+              Colors.white.withValues(alpha: 0.02),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.90),
+              Colors.white.withValues(alpha: 0.70),
+            ],
+          );
 
     final platformColor = _getPlatformColor(project.platform);
     final relativeTime = _formatRelativeDate(project.createdAt);
@@ -31,22 +52,34 @@ class CDRecentContentCard extends StatelessWidget {
           AppHaptics.light();
           onTap();
         },
-        borderRadius: CDRadius.rLarge,
+        borderRadius: BorderRadius.circular(CDRadius.large),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: CDSpacing.md, vertical: 12),
           decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: CDRadius.rLarge,
+            gradient: glassGradient,
+            borderRadius: BorderRadius.circular(CDRadius.large),
             border: Border.all(color: border, width: 1.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.12 : 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Row(
             children: [
+              // Platform Icon Pill
               Container(
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: platformColor.withValues(alpha: 0.12),
-                  borderRadius: CDRadius.rMedium,
+                  color: platformColor.withValues(alpha: isDark ? 0.14 : 0.10),
+                  borderRadius: BorderRadius.circular(CDRadius.medium),
+                  border: Border.all(
+                    color: platformColor.withValues(alpha: 0.25),
+                    width: 0.8,
+                  ),
                 ),
                 child: Icon(
                   _getPlatformIcon(project.platform),
@@ -67,7 +100,7 @@ class CDRecentContentCard extends StatelessWidget {
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: platformColor,
-                            letterSpacing: 0.4,
+                            letterSpacing: 0.5,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -120,7 +153,7 @@ class CDRecentContentCard extends StatelessWidget {
                         ),
                       ),
                     if (onDelete != null)
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
                         child: Row(
                           children: [

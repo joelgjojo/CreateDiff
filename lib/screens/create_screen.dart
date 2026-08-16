@@ -6,8 +6,10 @@ import '../components/cd_content_type_card.dart';
 import '../components/cd_text_input.dart';
 import '../components/cd_primary_button.dart';
 import '../components/cd_loading_state.dart';
+import '../components/cd_atmospheric_background.dart';
 import 'content_result_screen.dart';
 
+/// Guided 2-step studio creation flow with frosted glass cards and generation overlay.
 class CreateScreen extends StatefulWidget {
   final String? initialPlatform;
   final String? initialContentType;
@@ -27,10 +29,10 @@ class CreateScreen extends StatefulWidget {
 class _CreateScreenState extends State<CreateScreen> {
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  
+
   String? _selectedPlatform;
   String? _selectedContentType;
-  
+
   final TextEditingController _ideaController = TextEditingController();
   final TextEditingController _toneController = TextEditingController();
   final TextEditingController _targetAudienceController = TextEditingController();
@@ -61,7 +63,7 @@ class _CreateScreenState extends State<CreateScreen> {
     if (widget.initialIdea != null) {
       _ideaController.text = widget.initialIdea!;
     }
-    
+
     if (_selectedPlatform != null || widget.initialIdea != null) {
       _selectedPlatform ??= 'Instagram';
       _selectedContentType ??= 'Reel';
@@ -90,8 +92,8 @@ class _CreateScreenState extends State<CreateScreen> {
       AppHaptics.light();
       setState(() => _currentStep = 1);
       _pageController.nextPage(
-        duration: CDMotion.standard,
-        curve: Curves.easeInOut,
+        duration: CDMotion.screen,
+        curve: CDMotion.defaultCurve,
       );
     }
   }
@@ -101,8 +103,8 @@ class _CreateScreenState extends State<CreateScreen> {
       AppHaptics.light();
       setState(() => _currentStep = 0);
       _pageController.previousPage(
-        duration: CDMotion.standard,
-        curve: Curves.easeInOut,
+        duration: CDMotion.screen,
+        curve: CDMotion.defaultCurve,
       );
     } else {
       Navigator.of(context).pop();
@@ -137,7 +139,6 @@ class _CreateScreenState extends State<CreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final appState = AppState.instance;
 
     return ListenableBuilder(
@@ -146,60 +147,71 @@ class _CreateScreenState extends State<CreateScreen> {
         final isGenerating = appState.isGenerating;
 
         return Scaffold(
-          backgroundColor: CDColors.surface(context),
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_rounded,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-              onPressed: _prevStep,
-            ),
-            title: Text(
-              _currentStep == 0 ? 'Choose Format' : 'Add Detail',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            centerTitle: true,
-          ),
-          body: Stack(
-            children: [
-              Column(
-                children: [
-                  // Progress indicator
-                  LinearProgressIndicator(
-                    value: (_currentStep + 1) / 2,
-                    backgroundColor: isDark ? CDColors.darkMuted.withValues(alpha: 0.2) : CDColors.lightMuted.withValues(alpha: 0.2),
-                    valueColor: const AlwaysStoppedAnimation<Color>(CDColors.primary),
-                    minHeight: 2,
+          backgroundColor: Colors.transparent,
+          body: CDAtmosphericBackground(
+            child: Stack(
+              children: [
+                SafeArea(
+                  child: Column(
+                    children: [
+                      // Header Bar
+                      AppBar(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        leading: IconButton(
+                          icon: Icon(
+                            Icons.arrow_back_rounded,
+                            color: CDColors.textPrimary(context),
+                          ),
+                          onPressed: _prevStep,
+                        ),
+                        title: Text(
+                          _currentStep == 0 ? 'Choose Format' : 'Studio Canvas',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 17,
+                                color: CDColors.textPrimary(context),
+                              ),
+                        ),
+                        centerTitle: true,
+                      ),
+                      // Step Progress Line
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(CDRadius.pill),
+                          child: LinearProgressIndicator(
+                            value: (_currentStep + 1) / 2,
+                            backgroundColor: CDColors.borderSubtle(context),
+                            valueColor: const AlwaysStoppedAnimation<Color>(CDColors.primary),
+                            minHeight: 3,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: PageView(
+                          controller: _pageController,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            _buildStep0Format(),
+                            _buildStep1Idea(),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        _buildStep0Format(isDark),
-                        _buildStep1Idea(isDark),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              if (isGenerating)
-                const CDLoadingState(currentMessage: 'Generating your content pack...'),
-            ],
+                ),
+                if (isGenerating)
+                  const CDLoadingState(currentMessage: 'Generating your studio content pack...'),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildStep0Format(bool isDark) {
+  Widget _buildStep0Format() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(CDSpacing.lg),
       child: Column(
@@ -207,11 +219,11 @@ class _CreateScreenState extends State<CreateScreen> {
         children: [
           Text(
             'Select Platform',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white : Colors.black,
-            ),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: CDColors.textPrimary(context),
+                ),
           ),
           const SizedBox(height: CDSpacing.md),
           CDPlatformSelector(
@@ -225,15 +237,15 @@ class _CreateScreenState extends State<CreateScreen> {
               AppHaptics.selection();
             },
           ),
-          const SizedBox(height: CDSpacing.xl),
+          const SizedBox(height: CDSpacing.xxl),
           if (_selectedPlatform != null) ...[
             Text(
-              'Content Type',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : Colors.black,
-              ),
+              'Content Format',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: CDColors.textPrimary(context),
+                  ),
             ),
             const SizedBox(height: CDSpacing.md),
             GridView.builder(
@@ -243,14 +255,14 @@ class _CreateScreenState extends State<CreateScreen> {
                 crossAxisCount: 2,
                 crossAxisSpacing: CDSpacing.md,
                 mainAxisSpacing: CDSpacing.md,
-                childAspectRatio: 1.2,
+                childAspectRatio: 1.25,
               ),
               itemCount: _contentTypes[_selectedPlatform!]!.length,
               itemBuilder: (context, index) {
                 final typeData = _contentTypes[_selectedPlatform!]![index];
                 return CDContentTypeCard(
                   label: typeData['type'] as String,
-                  description: 'Create a ${typeData['type']}',
+                  description: 'Personalized ${typeData['type']}',
                   icon: typeData['icon'] as IconData,
                   isSelected: _selectedContentType == typeData['type'],
                   onTap: () {
@@ -262,9 +274,11 @@ class _CreateScreenState extends State<CreateScreen> {
                 );
               },
             ),
-            const SizedBox(height: CDSpacing.xl),
+            const SizedBox(height: CDSpacing.xxl),
             CDPrimaryButton(
-              label: 'Next Step',
+              label: 'Continue to Canvas →',
+              isFullWidth: true,
+              height: 50,
               onPressed: _selectedContentType != null ? _nextStep : null,
             ),
           ],
@@ -273,26 +287,56 @@ class _CreateScreenState extends State<CreateScreen> {
     );
   }
 
-  Widget _buildStep1Idea(bool isDark) {
+  Widget _buildStep1Idea() {
+    final isDark = CDColors.isDark(context);
+
+    final glassGradient = isDark
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.08),
+              Colors.white.withValues(alpha: 0.02),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.92),
+              Colors.white.withValues(alpha: 0.75),
+            ],
+          );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(CDSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Format pill indicator
           Container(
-            padding: const EdgeInsets.all(CDSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: CDColors.elevated(context),
+              gradient: glassGradient,
               borderRadius: BorderRadius.circular(CDRadius.medium),
               border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+                color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.06),
+                width: 1.0,
               ),
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.auto_awesome_rounded,
-                  color: CDColors.primary,
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: CDColors.primary.withValues(alpha: isDark ? 0.20 : 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    color: CDColors.primaryLight,
+                    size: 16,
+                  ),
                 ),
                 const SizedBox(width: CDSpacing.md),
                 Expanded(
@@ -303,15 +347,15 @@ class _CreateScreenState extends State<CreateScreen> {
                         '$_selectedPlatform • $_selectedContentType',
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.w700,
+                          color: CDColors.textPrimary(context),
                         ),
                       ),
                       Text(
                         'Describe what you want to create.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? CDColors.darkMuted : CDColors.lightMuted,
+                          color: CDColors.textSecondary(context),
                         ),
                       ),
                     ],
@@ -321,55 +365,60 @@ class _CreateScreenState extends State<CreateScreen> {
             ),
           ),
           const SizedBox(height: CDSpacing.xl),
+
           CDTextInput(
             controller: _ideaController,
-            label: 'Core Idea',
-            hint: 'E.g., 5 AI tools for creators, behind the scenes of my workspace...',
+            label: 'Core Idea or Topic',
+            hint: 'E.g., 5 AI tools for creators, behind the scenes of my workspace, mindset shift for 2026...',
             maxLines: 5,
             minLines: 3,
-            
           ),
           const SizedBox(height: CDSpacing.md),
+
+          // Collapsible Fine-Tune
           Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               title: Text(
-                'Fine-Tune (Optional)',
+                'Fine-Tune Parameters (Optional)',
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.w700,
+                  color: CDColors.textPrimary(context),
                 ),
               ),
               tilePadding: EdgeInsets.zero,
-              childrenPadding: const EdgeInsets.only(top: CDSpacing.md),
+              childrenPadding: const EdgeInsets.only(top: CDSpacing.sm),
               onExpansionChanged: (expanded) {
                 AppHaptics.selection();
               },
               children: [
                 CDTextInput(
                   controller: _toneController,
-                  label: 'Tone',
-                  hint: 'E.g., Professional, humorous, educational',
+                  label: 'Tone of Voice',
+                  hint: 'E.g., Punchy, professional, humorous, educational',
                 ),
                 const SizedBox(height: CDSpacing.md),
                 CDTextInput(
                   controller: _targetAudienceController,
                   label: 'Target Audience',
-                  hint: 'E.g., Beginners, designers, marketers',
+                  hint: 'E.g., Beginners, senior designers, marketers',
                 ),
                 const SizedBox(height: CDSpacing.md),
                 CDTextInput(
                   controller: _keywordsController,
-                  label: 'Keywords',
-                  hint: 'E.g., productivity, tips, setup',
+                  label: 'Key Focus Keywords',
+                  hint: 'E.g., productivity, revenue, creator economy',
                 ),
               ],
             ),
           ),
-          const SizedBox(height: CDSpacing.xl),
+          const SizedBox(height: CDSpacing.xxl),
+
           CDPrimaryButton(
-            label: 'Generate Content Pack ✦',
+            label: 'Generate Studio Content Pack ✦',
+            isFullWidth: true,
+            height: 52,
             onPressed: _handleGenerate,
           ),
         ],

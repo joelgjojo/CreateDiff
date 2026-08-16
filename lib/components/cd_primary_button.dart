@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
+/// A premium luminous CTA button featuring a rich studio gradient,
+/// top specular bevel highlight, soft ambient glow shadow, and smooth press scale.
 class CDPrimaryButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -9,6 +11,7 @@ class CDPrimaryButton extends StatefulWidget {
   final bool isFullWidth;
   final double? height;
   final Color? backgroundColor;
+  final Gradient? gradient;
   final Color? textColor;
 
   const CDPrimaryButton({
@@ -20,6 +23,7 @@ class CDPrimaryButton extends StatefulWidget {
     this.isFullWidth = false,
     this.height,
     this.backgroundColor,
+    this.gradient,
     this.textColor,
   });
 
@@ -53,9 +57,20 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
   @override
   Widget build(BuildContext context) {
     final isEnabled = widget.onPressed != null && !widget.isLoading;
-    final btnColor = widget.backgroundColor ?? CDColors.primary;
-    final txtColor = widget.textColor ?? Colors.white;
     final height = widget.height ?? CDButton.standardHeight;
+    final txtColor = widget.textColor ?? Colors.white;
+
+    final defaultGradient = widget.gradient ??
+        (widget.backgroundColor != null
+            ? null
+            : const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF8C7DFF),
+                  Color(0xFF6C5CE7),
+                ],
+              ));
 
     Widget content = Row(
       mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
@@ -79,9 +94,9 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
             widget.label,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: txtColor,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   fontSize: 15,
-                  letterSpacing: 0.1,
+                  letterSpacing: 0.2,
                 ),
           ),
         ],
@@ -100,45 +115,75 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
         child: Container(
           height: height,
           constraints: BoxConstraints(
-            minWidth: widget.isFullWidth ? double.infinity : 110,
+            minWidth: widget.isFullWidth ? double.infinity : 118,
           ),
           decoration: BoxDecoration(
-            color: btnColor,
-            borderRadius: CDRadius.rMedium,
+            color: widget.backgroundColor ?? (defaultGradient == null ? CDColors.primary : null),
+            gradient: defaultGradient,
+            borderRadius: BorderRadius.circular(CDRadius.medium),
             boxShadow: isEnabled
                 ? [
+                    // Studio luminous ambient glow
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 8,
+                      color: const Color(0xFF6C5CE7).withValues(alpha: 0.32),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                    // Crisp bottom depth shadow
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.20),
+                      blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ]
-                : [],
+                : null,
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: isEnabled
-                  ? () {
-                      AppHaptics.light();
-                      widget.onPressed!();
-                    }
-                  : null,
-              onTapDown: (_) {
-                if (isEnabled) _controller.forward();
-              },
-              onTapUp: (_) {
-                if (isEnabled) _controller.reverse();
-              },
-              onTapCancel: () {
-                if (isEnabled) _controller.reverse();
-              },
-              borderRadius: CDRadius.rMedium,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl),
-                child: Center(child: content),
+          child: Stack(
+            children: [
+              // Top specular rim light
+              Positioned(
+                top: 0,
+                left: CDRadius.medium * 0.5,
+                right: CDRadius.medium * 0.5,
+                height: 1.0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        Colors.white.withValues(alpha: 0.45),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: isEnabled
+                      ? () {
+                          AppHaptics.light();
+                          widget.onPressed!();
+                        }
+                      : null,
+                  onTapDown: (_) {
+                    if (isEnabled) _controller.forward();
+                  },
+                  onTapUp: (_) {
+                    if (isEnabled) _controller.reverse();
+                  },
+                  onTapCancel: () {
+                    if (isEnabled) _controller.reverse();
+                  },
+                  borderRadius: BorderRadius.circular(CDRadius.medium),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl),
+                    child: Center(child: content),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

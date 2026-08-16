@@ -3,8 +3,12 @@ import '../theme/app_theme.dart';
 import '../models/creator_profile.dart';
 import '../services/app_state.dart';
 import '../components/cd_secondary_button.dart';
+import '../components/cd_glass_card.dart';
+import '../components/cd_atmospheric_background.dart';
 import 'creator_profile_screen.dart';
 
+/// The profile and studio settings screen featuring Brand Memory progressive disclosure,
+/// appearance mode selection, data reset, and studio info.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -25,44 +29,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final profile = appState.profile;
 
         return Scaffold(
-          backgroundColor: CDColors.background(context),
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Text(
-              'Profile & Studio',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    color: CDColors.textPrimary(context),
+          backgroundColor: Colors.transparent,
+          body: CDAtmosphericBackground(
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    title: Text(
+                      'Profile & Studio',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 22,
+                            letterSpacing: -0.5,
+                            color: CDColors.textPrimary(context),
+                          ),
+                    ),
                   ),
-            ),
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.only(
-              left: CDSpacing.xl,
-              right: CDSpacing.xl,
-              top: CDSpacing.sm,
-              bottom: CDSpacing.navBarClearance,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // --- Brand Memory Highlight Card ---
-                _buildBrandMemorySection(context, profile),
-                const SizedBox(height: CDSpacing.xl),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(
+                        left: CDSpacing.lg,
+                        right: CDSpacing.lg,
+                        top: CDSpacing.xs,
+                        bottom: CDSpacing.navBarClearance,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // --- Brand Memory Highlight Card ---
+                          _buildBrandMemorySection(context, profile),
+                          const SizedBox(height: CDSpacing.xl),
 
-                // --- Appearance & Theme ---
-                _buildAppearanceSection(context, appState),
-                const SizedBox(height: CDSpacing.xl),
+                          // --- Appearance & Theme ---
+                          _buildAppearanceSection(context, appState),
+                          const SizedBox(height: CDSpacing.xl),
 
-                // --- Studio Data Management ---
-                _buildDataManagementSection(context, appState),
-                const SizedBox(height: CDSpacing.xl),
+                          // --- Studio Data Management ---
+                          _buildDataManagementSection(context, appState),
+                          const SizedBox(height: CDSpacing.xl),
 
-                // --- About CreateDiff ---
-                _buildAboutSection(context),
-              ],
+                          // --- About CreateDiff ---
+                          _buildAboutSection(context),
+                          const SizedBox(height: CDSpacing.md),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -71,16 +88,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildBrandMemorySection(BuildContext context, CreatorProfile profile) {
+    final isDark = CDColors.isDark(context);
     final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Creator Identity';
     final handle = profile.handle.isNotEmpty ? profile.handle : '@handle';
 
-    return Container(
+    return CDGlassCard(
+      elevated: true,
       padding: const EdgeInsets.all(CDSpacing.lg),
-      decoration: BoxDecoration(
-        color: CDColors.surface(context),
-        borderRadius: CDRadius.rLarge,
-        border: Border.all(color: CDColors.borderSubtle(context), width: 1.0),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -90,19 +104,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Row(
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 46,
+                    height: 46,
                     decoration: BoxDecoration(
-                      color: profile.primaryColor.withValues(alpha: 0.16),
+                      color: profile.primaryColor.withValues(alpha: isDark ? 0.20 : 0.12),
                       shape: BoxShape.circle,
-                      border: Border.all(color: profile.primaryColor.withValues(alpha: 0.4), width: 1.2),
+                      border: Border.all(
+                        color: profile.primaryColor.withValues(alpha: 0.60),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: profile.primaryColor.withValues(alpha: 0.22),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Text(
                         creatorName.isNotEmpty ? creatorName[0].toUpperCase() : 'C',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                           color: profile.primaryColor,
                         ),
                       ),
@@ -115,8 +139,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         creatorName,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
                               color: CDColors.textPrimary(context),
                             ),
                       ),
@@ -134,14 +158,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: CDColors.elevated(context),
-                  borderRadius: CDRadius.rPill,
+                  color: CDColors.success.withValues(alpha: isDark ? 0.16 : 0.10),
+                  borderRadius: BorderRadius.circular(CDRadius.pill),
+                  border: Border.all(
+                    color: CDColors.success.withValues(alpha: 0.30),
+                    width: 0.8,
+                  ),
                 ),
                 child: const Text(
-                  'ACTIVE',
+                  'ACTIVE MEMORY',
                   style: TextStyle(
                     fontSize: 9,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     color: CDColors.success,
                     letterSpacing: 0.5,
                   ),
@@ -152,24 +180,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: CDSpacing.md),
           Divider(height: 1, color: CDColors.borderSubtle(context)),
           const SizedBox(height: CDSpacing.md),
-          
+
           InkWell(
             onTap: () {
               AppHaptics.selection();
               setState(() => _isMemoryExpanded = !_isMemoryExpanded);
             },
-            borderRadius: CDRadius.rSmall,
+            borderRadius: BorderRadius.circular(CDRadius.small),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'BRAND MEMORY PARAMETERS',
+                    'BRAND MEMORY ATTRIBUTES',
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: CDColors.textSecondary(context),
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? CDColors.icyBlue : CDColors.primary,
                       letterSpacing: 0.6,
                     ),
                   ),
@@ -182,7 +210,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-          
+
           AnimatedCrossFade(
             firstChild: const SizedBox(height: CDSpacing.xs, width: double.infinity),
             secondChild: Column(
@@ -193,7 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildMemoryRow('Target Audience', profile.targetAudience.isNotEmpty ? profile.targetAudience : 'General'),
                 _buildMemoryRow('Languages', profile.primaryLanguage.isNotEmpty ? profile.primaryLanguage : 'English'),
                 _buildMemoryRow('Tone of Voice', profile.tone.isNotEmpty ? profile.tone : 'Educational'),
-                _buildMemoryRow('CTA Preference', profile.preferredCTAStyle.isNotEmpty ? profile.preferredCTAStyle : 'Direct'),
+                _buildMemoryRow('CTA Style', profile.preferredCTAStyle.isNotEmpty ? profile.preferredCTAStyle : 'Direct'),
                 _buildMemoryRow('Emoji Usage', profile.emojiUsage.toUpperCase()),
                 const SizedBox(height: CDSpacing.md),
               ],
@@ -201,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossFadeState: _isMemoryExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             duration: CDMotion.standard,
           ),
-          
+
           const SizedBox(height: CDSpacing.sm),
           CDSecondaryButton(
             label: 'Edit Brand Memory',
@@ -223,22 +251,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildMemoryRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3.0),
+      padding: const EdgeInsets.symmetric(vertical: 3.5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.5,
               color: CDColors.textSecondary(context),
             ),
           ),
           Text(
             value,
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
               color: CDColors.textPrimary(context),
             ),
           ),
@@ -248,20 +276,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAppearanceSection(BuildContext context, AppState appState) {
-    return Container(
+    return CDGlassCard(
       padding: const EdgeInsets.all(CDSpacing.lg),
-      decoration: BoxDecoration(
-        color: CDColors.surface(context),
-        borderRadius: CDRadius.rLarge,
-        border: Border.all(color: CDColors.borderSubtle(context), width: 1.0),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Appearance',
+            'Appearance Environment',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   fontSize: 15,
                   color: CDColors.textPrimary(context),
                 ),
@@ -306,6 +329,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final isDark = CDColors.isDark(context);
+
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -314,17 +339,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             AppHaptics.selection();
             onTap();
           },
-          borderRadius: CDRadius.rMedium,
-          child: Container(
+          borderRadius: BorderRadius.circular(CDRadius.medium),
+          child: AnimatedContainer(
+            duration: CDMotion.micro,
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: isSelected
-                  ? CDColors.primary.withValues(alpha: 0.14)
-                  : CDColors.elevated(context),
-              borderRadius: CDRadius.rMedium,
+                  ? CDColors.primary.withValues(alpha: isDark ? 0.22 : 0.12)
+                  : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
+              borderRadius: BorderRadius.circular(CDRadius.medium),
               border: Border.all(
                 color: isSelected ? CDColors.primary : CDColors.borderSubtle(context),
-                width: 1.2,
+                width: isSelected ? 1.4 : 1.0,
               ),
             ),
             child: Column(
@@ -339,7 +365,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   label,
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                     color: isSelected ? CDColors.primary : CDColors.textPrimary(context),
                   ),
                 ),
@@ -352,27 +378,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDataManagementSection(BuildContext context, AppState appState) {
-    return Container(
+    return CDGlassCard(
       padding: const EdgeInsets.all(CDSpacing.lg),
-      decoration: BoxDecoration(
-        color: CDColors.surface(context),
-        borderRadius: CDRadius.rLarge,
-        border: Border.all(color: CDColors.borderSubtle(context), width: 1.0),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Local Storage & Studio Data',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   fontSize: 15,
                   color: CDColors.textPrimary(context),
                 ),
           ),
           const SizedBox(height: 4),
           Text(
-            'All your profile data and content history are stored securely on this device.',
+            'All your profile data and content history are stored locally and encrypted on this device.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: CDColors.textSecondary(context),
                   fontSize: 12,
@@ -383,10 +404,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Stored creations: ${appState.contentHistory.length}',
+                'Stored packs: ${appState.contentHistory.length}',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: CDColors.textPrimary(context),
                 ),
               ),
@@ -397,7 +418,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: EdgeInsets.zero,
                   minimumSize: Size.zero,
                 ),
-                child: const Text('Reset All Data', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                child: const Text('Reset All Data', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
               ),
             ],
           ),
@@ -414,13 +435,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'CreateDiff Studio v2.0.0',
             style: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               color: CDColors.textSecondary(context),
             ),
           ),
           const SizedBox(height: 2),
           Text(
-            'Zero-prompt creator workflow software',
+            'Zero-prompt creator workflow studio',
             style: TextStyle(
               fontSize: 11,
               color: CDColors.textMuted(context),
@@ -436,9 +457,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: CDColors.surface(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.large)),
         title: Text(
           'Reset Studio Data?',
-          style: TextStyle(color: CDColors.textPrimary(context)),
+          style: TextStyle(fontWeight: FontWeight.w800, color: CDColors.textPrimary(context)),
         ),
         content: Text(
           'This will clear your local Brand Memory profile and all saved content creations. This action cannot be undone.',
@@ -449,7 +471,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: CDColors.textPrimary(context)),
+              style: TextStyle(color: CDColors.textPrimary(context), fontWeight: FontWeight.w600),
             ),
           ),
           TextButton(
@@ -463,7 +485,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
             },
-            child: const Text('Reset', style: TextStyle(color: CDColors.error)),
+            child: const Text('Reset', style: TextStyle(color: CDColors.error, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
