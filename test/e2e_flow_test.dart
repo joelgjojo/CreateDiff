@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:creatediff/models/creator_profile.dart';
@@ -15,6 +16,7 @@ void main() {
   group('CreateDiff Master Brand & Grok AI Observability Tests', () {
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
+      await dotenv.load(fileName: '.env');
       await AppState.instance.init();
     });
 
@@ -104,6 +106,15 @@ void main() {
 
       // Clean up test config
       ApiConfig.setConfig(apiKey: '', model: 'grok-beta', baseUrl: 'https://api.x.ai/v1');
+    });
+
+    test('3b. Grok config loads from .env runtime values', () async {
+      await dotenv.load(fileName: '.env');
+
+      expect(ApiConfig.grokApiKey, isNotNull);
+      expect(ApiConfig.grokApiKey, isNotEmpty);
+      expect(ApiConfig.hasApiKey, isTrue);
+      expect(ApiConfig.providerName, equals('xAI Grok'));
     });
 
     test('4. Complete reset flow restarts state and clears persistence cleanly', () async {

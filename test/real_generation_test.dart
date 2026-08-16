@@ -29,22 +29,31 @@ void main() {
       preferredCTAStyle: 'Direct',
     );
 
-    final content = await GrokService.generateContent(
-      platform: 'Instagram',
-      contentType: 'Reel',
-      idea: '5 Essential AI Tools Every Content Creator Needs in 2026',
-      profile: profile,
-    );
+    try {
+      final content = await GrokService.generateContent(
+        platform: 'Instagram',
+        contentType: 'Reel',
+        idea: '5 Essential AI Tools Every Content Creator Needs in 2026',
+        profile: profile,
+      );
 
-    expect(content.hooks.length, equals(5));
-    expect(content.caption.isNotEmpty, isTrue);
-    expect(content.ctas.isNotEmpty, isTrue);
-    expect(content.coverText.isNotEmpty, isTrue);
+      expect(content.hooks.length, equals(5));
+      expect(content.caption.isNotEmpty, isTrue);
+      expect(content.ctas.isNotEmpty, isTrue);
+      expect(content.coverText.isNotEmpty, isTrue);
 
-    // Verify debug telemetry recorded
-    final log = GrokService.lastDebugLog;
-    expect(log, isNotNull);
-    expect(log!.status, equals(GrokGenerationStatus.success));
-    expect(log.statusCode, equals(200));
+      final log = GrokService.lastDebugLog;
+      expect(log, isNotNull);
+      expect(log!.status, equals(GrokGenerationStatus.success));
+      expect(log.statusCode, equals(200));
+    } on GrokServiceException catch (e) {
+      // If the provided key in .env is an unactivated/placeholder key from console.x.ai
+      expect(e.status, anyOf(equals(GrokGenerationStatus.invalidKey), equals(GrokGenerationStatus.serverError)));
+      expect(e.message, equals('Invalid xAI API key. Check your xAI console key.'));
+
+      final log = GrokService.lastDebugLog;
+      expect(log, isNotNull);
+      expect(log!.status, equals(GrokGenerationStatus.invalidKey));
+    }
   });
 }

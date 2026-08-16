@@ -187,11 +187,14 @@ class GrokService {
     final provider = ApiConfig.providerName;
     final model = ApiConfig.model;
     final endpoint = '${ApiConfig.baseUrl}/chat/completions';
+    final apiKey = ApiConfig.apiKey;
+    final startsWithXai = ApiConfig.startsWithXai;
+    final keyLength = ApiConfig.apiKeyLength;
 
     // 1. Verify API key
     if (!ApiConfig.hasApiKey) {
       if (kDebugMode) {
-        debugPrint('[CreateDiff Grok AI] Error: Grok API key is missing. Launch with --dart-define=GROK_API_KEY=your_key');
+        debugPrint('[CreateDiff Grok AI] Error: Grok API key is missing. Add GROK_API_KEY to .env or launch flags.');
       }
 
       _lastDebugLog = GrokDebugLog(
@@ -199,7 +202,7 @@ class GrokService {
         model: model,
         timestamp: DateTime.now(),
         status: GrokGenerationStatus.apiKeyMissing,
-        errorMessage: 'Missing GROK_API_KEY compile-time flag',
+        errorMessage: 'Missing GROK_API_KEY in .env / environment',
         durationMs: 0,
         promptLength: 0,
         responseLength: 0,
@@ -207,7 +210,7 @@ class GrokService {
 
       throw const GrokServiceException(
         status: GrokGenerationStatus.apiKeyMissing,
-        message: 'Grok API Key is not configured. Please launch with --dart-define=GROK_API_KEY=your_key',
+        message: 'Grok API key is missing. Ensure .env contains GROK_API_KEY.',
       );
     }
 
@@ -225,12 +228,14 @@ class GrokService {
 
     final totalPromptLength = systemPrompt.length + userPrompt.length;
 
-    // Debug request logging (NEVER logs API key)
+    // Debug request logging (NEVER logs full API key)
     if (kDebugMode) {
       debugPrint('==================== [CreateDiff Grok AI Request] ====================');
       debugPrint('[CreateDiff Grok AI] Provider: $provider');
       debugPrint('[CreateDiff Grok AI] Model: $model');
-      debugPrint('[CreateDiff Grok AI] Endpoint: $endpoint');
+      debugPrint('[CreateDiff Grok AI] Endpoint URL: $endpoint');
+      debugPrint('[CreateDiff Grok AI] API Key starts with "xai-": $startsWithXai');
+      debugPrint('[CreateDiff Grok AI] API Key Length: $keyLength chars');
       debugPrint('[CreateDiff Grok AI] Prompt Length: $totalPromptLength chars');
       debugPrint('======================================================================');
     }
@@ -240,7 +245,7 @@ class GrokService {
       final request = await client.postUrl(uri);
 
       request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
-      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer ${ApiConfig.apiKey}');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $apiKey');
 
       final payload = {
         'model': model,
@@ -263,7 +268,7 @@ class GrokService {
       // Debug response logging
       if (kDebugMode) {
         debugPrint('==================== [CreateDiff Grok AI Response] ====================');
-        debugPrint('[CreateDiff Grok AI] HTTP Status: $statusCode');
+        debugPrint('[CreateDiff Grok AI] HTTP Status Code: $statusCode');
         debugPrint('[CreateDiff Grok AI] Latency: ${stopwatch.elapsedMilliseconds} ms');
         debugPrint('[CreateDiff Grok AI] Response Body: $responseBody');
         debugPrint('======================================================================');
@@ -318,14 +323,23 @@ class GrokService {
           rawResponse: responseBody,
         );
       } else {
-        final serverError = _extractServerErrorMessage(responseBody, statusCode);
+        final rawServerError = _extractServerErrorMessage(responseBody, statusCode);
+        final isAuthFailure = statusCode == 401 ||
+            statusCode == 403 ||
+            rawServerError.toLowerCase().contains('incorrect api key') ||
+            rawServerError.toLowerCase().contains('invalid api key') ||
+            rawServerError.toLowerCase().contains('invalid-api-key');
+
+        final userFacingMessage = isAuthFailure
+            ? 'Invalid xAI API key. Check your xAI console key.'
+            : rawServerError;
 
         if (kDebugMode) {
-          debugPrint('[CreateDiff Grok AI] Parsed Error: $serverError');
+          debugPrint('[CreateDiff Grok AI] Parsed Error: $userFacingMessage (Server: $rawServerError)');
         }
 
         GrokGenerationStatus failureStatus;
-        if (statusCode == 401 || statusCode == 403) {
+        if (isAuthFailure) {
           failureStatus = GrokGenerationStatus.invalidKey;
         } else if (statusCode == 429) {
           failureStatus = GrokGenerationStatus.rateLimited;
@@ -339,7 +353,7 @@ class GrokService {
           timestamp: DateTime.now(),
           status: failureStatus,
           statusCode: statusCode,
-          errorMessage: serverError,
+          errorMessage: userFacingMessage,
           durationMs: stopwatch.elapsedMilliseconds,
           promptLength: totalPromptLength,
           responseLength: responseBody.length,
@@ -347,7 +361,7 @@ class GrokService {
 
         throw GrokServiceException(
           status: failureStatus,
-          message: serverError,
+          message: userFacingMessage,
           statusCode: statusCode,
           rawResponse: responseBody,
         );
