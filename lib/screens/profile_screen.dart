@@ -445,10 +445,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: CDSpacing.xs),
           Text(
-            'Studio v2.0 • Powered by xAI Grok Engine',
+            'CreateDiff • AI Creation Studio',
             style: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: CDColors.textMuted(context),
             ),
           ),

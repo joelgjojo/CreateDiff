@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../services/ai_service.dart';
-import '../services/ai_config.dart';
+import '../services/grok_service.dart';
+import '../config/api_config.dart';
 import '../services/app_state.dart';
 import '../components/cd_glass_card.dart';
 import '../components/cd_primary_button.dart';
@@ -27,7 +27,7 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
 
     try {
       final appState = AppState.instance;
-      final content = await AIService.generateContent(
+      final content = await GrokService.generateContent(
         platform: 'Instagram',
         contentType: 'Reel',
         idea: 'Quick connection test for developer debug panel',
@@ -37,7 +37,7 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
       setState(() {
         _testResult = 'SUCCESS: Received ${content.hooks.length} hooks, ${content.caption.length} chars caption.';
       });
-    } on AIServiceException catch (e) {
+    } on GrokServiceException catch (e) {
       setState(() {
         _testResult = 'ERROR (${e.status.name}): ${e.message}\nStatus Code: ${e.statusCode}';
       });
@@ -55,11 +55,8 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
-    final lastLog = AIService.lastDebugLog;
-    final hasKey = AIConfig.hasApiKey;
-    final maskedKey = AIConfig.apiKey.isNotEmpty
-        ? '${AIConfig.apiKey.substring(0, 6)}...${AIConfig.apiKey.substring(AIConfig.apiKey.length - 4)}'
-        : 'Not Configured';
+    final lastLog = GrokService.lastDebugLog;
+    final hasKey = ApiConfig.hasApiKey;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -101,10 +98,10 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
                         ],
                       ),
                       const SizedBox(height: CDSpacing.md),
-                      _buildDebugRow('Provider', 'xAI Grok'),
-                      _buildDebugRow('Model', AIConfig.model),
-                      _buildDebugRow('Base URL', AIConfig.baseUrl),
-                      _buildDebugRow('API Key Status', hasKey ? 'Configured ($maskedKey)' : 'Missing'),
+                      _buildDebugRow('AI Provider', ApiConfig.providerName),
+                      _buildDebugRow('Model', ApiConfig.model),
+                      _buildDebugRow('Endpoint', '${ApiConfig.baseUrl}/chat/completions'),
+                      _buildDebugRow('API Key', hasKey ? 'Configured' : 'Missing'),
                     ],
                   ),
                 ),
@@ -129,13 +126,16 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
                           style: TextStyle(color: CDColors.textMuted(context)),
                         )
                       else ...[
-                        _buildDebugRow('Status', lastLog.status.name.toUpperCase()),
+                        _buildDebugRow(
+                          'Last Request',
+                          lastLog.status == GrokGenerationStatus.success ? 'Success' : 'Error',
+                        ),
                         if (lastLog.statusCode != null)
                           _buildDebugRow('HTTP Status', '${lastLog.statusCode}'),
                         _buildDebugRow('Timestamp', lastLog.timestamp.toIso8601String()),
                         _buildDebugRow('Latency', '${lastLog.durationMs} ms'),
-                        _buildDebugRow('Prompt Size', '${lastLog.promptLength} chars'),
-                        _buildDebugRow('Response Size', '${lastLog.responseLength} chars'),
+                        _buildDebugRow('Prompt', '${lastLog.promptLength} characters'),
+                        _buildDebugRow('Response', '${lastLog.responseLength} characters'),
                         if (lastLog.errorMessage != null) ...[
                           const SizedBox(height: CDSpacing.xs),
                           Text(

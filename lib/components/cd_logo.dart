@@ -150,7 +150,7 @@ class CDLogo extends StatelessWidget {
       case CDLogoVariant.wordmark:
         return 'CreateDiff';
       case CDLogoVariant.lockup:
-        return 'CreateDiff Studio';
+        return 'CreateDiff AI Creation Studio';
     }
   }
 }

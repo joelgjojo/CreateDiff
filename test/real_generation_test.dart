@@ -1,18 +1,18 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:creatediff/models/creator_profile.dart';
-import 'package:creatediff/services/ai_service.dart';
-import 'package:creatediff/services/ai_config.dart';
+import 'package:creatediff/services/grok_service.dart';
+import 'package:creatediff/config/api_config.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = null; // Enable live HTTP requests during integration testing
 
   test('Live AI Generation Pipeline Test (when GROK_API_KEY is supplied)', () async {
-    await AIConfig.init();
+    await ApiConfig.init();
 
-    if (!AIConfig.hasApiKey) {
-      expect(AIConfig.hasApiKey, isFalse);
+    if (!ApiConfig.hasApiKey) {
+      expect(ApiConfig.hasApiKey, isFalse);
       return;
     }
 
@@ -29,7 +29,7 @@ void main() {
       preferredCTAStyle: 'Direct',
     );
 
-    final content = await AIService.generateContent(
+    final content = await GrokService.generateContent(
       platform: 'Instagram',
       contentType: 'Reel',
       idea: '5 Essential AI Tools Every Content Creator Needs in 2026',
@@ -42,9 +42,9 @@ void main() {
     expect(content.coverText.isNotEmpty, isTrue);
 
     // Verify debug telemetry recorded
-    final log = AIService.lastDebugLog;
+    final log = GrokService.lastDebugLog;
     expect(log, isNotNull);
-    expect(log!.status, equals(AIGenerationStatus.success));
+    expect(log!.status, equals(GrokGenerationStatus.success));
     expect(log.statusCode, equals(200));
   });
 }

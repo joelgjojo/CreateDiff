@@ -4,8 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:creatediff/models/creator_profile.dart';
 import 'package:creatediff/models/content_project.dart';
 import 'package:creatediff/models/generated_content.dart';
-import 'package:creatediff/services/ai_service.dart';
-import 'package:creatediff/services/ai_config.dart';
+import 'package:creatediff/services/grok_service.dart';
+import 'package:creatediff/config/api_config.dart';
 import 'package:creatediff/services/storage_service.dart';
 import 'package:creatediff/services/app_state.dart';
 
@@ -33,9 +33,9 @@ void main() {
         preferredCTAStyle: 'Question',
       );
 
-      final systemPrompt = AIService.buildSystemPrompt(profile: profile);
+      final systemPrompt = GrokService.buildSystemPrompt(profile: profile);
 
-      expect(systemPrompt, contains('CreateDiff — a premium mobile creator and design studio'));
+      expect(systemPrompt, contains('CreateDiff — a premium mobile AI Creation Studio'));
       expect(systemPrompt, contains('• Creator / Brand Name: Joel G Jojo'));
       expect(systemPrompt, contains('• Niche / Domain: Technology'));
       expect(systemPrompt, contains('• Target Audience: College students and creators'));
@@ -50,7 +50,7 @@ void main() {
       expect(systemPrompt, contains('"hashtagsHighReach"'));
       expect(systemPrompt, contains('"coverText"'));
 
-      final userPrompt = AIService.buildUserPrompt(
+      final userPrompt = GrokService.buildUserPrompt(
         platform: 'Instagram',
         contentType: 'Reel',
         idea: '5 AI tools for creators',
@@ -62,7 +62,7 @@ void main() {
 
     test('2. Grok AI strict error observability when API key is missing', () async {
       // Ensure key is empty
-      AIConfig.setConfig(apiKey: '', model: 'grok-4.5', baseUrl: 'https://api.x.ai/v1');
+      ApiConfig.setConfig(apiKey: '', model: 'grok-beta', baseUrl: 'https://api.x.ai/v1');
 
       const profile = CreatorProfile(
         creatorName: 'Joel G Jojo',
@@ -70,40 +70,40 @@ void main() {
       );
 
       expect(
-        () => AIService.generateContent(
+        () => GrokService.generateContent(
           platform: 'Instagram',
           contentType: 'Reel',
           idea: '5 AI Tools',
           profile: profile,
         ),
-        throwsA(isA<AIServiceException>().having(
+        throwsA(isA<GrokServiceException>().having(
           (e) => e.status,
           'status',
-          equals(AIGenerationStatus.missingApiKey),
+          equals(GrokGenerationStatus.apiKeyMissing),
         )),
       );
 
       // Verify Debug Log telemetry is populated
-      final log = AIService.lastDebugLog;
+      final log = GrokService.lastDebugLog;
       expect(log, isNotNull);
-      expect(log!.status, equals(AIGenerationStatus.missingApiKey));
+      expect(log!.status, equals(GrokGenerationStatus.apiKeyMissing));
       expect(log.provider, equals('xAI Grok'));
     });
 
     test('3. Grok AI Configuration & Runtime Overrides', () {
-      AIConfig.setConfig(
+      ApiConfig.setConfig(
         apiKey: 'test_grok_key_12345',
-        model: 'grok-4.5',
+        model: 'grok-beta',
         baseUrl: 'https://api.x.ai/v1',
       );
 
-      expect(AIConfig.apiKey, equals('test_grok_key_12345'));
-      expect(AIConfig.model, equals('grok-4.5'));
-      expect(AIConfig.baseUrl, equals('https://api.x.ai/v1'));
-      expect(AIConfig.hasApiKey, isTrue);
+      expect(ApiConfig.apiKey, equals('test_grok_key_12345'));
+      expect(ApiConfig.model, equals('grok-beta'));
+      expect(ApiConfig.baseUrl, equals('https://api.x.ai/v1'));
+      expect(ApiConfig.hasApiKey, isTrue);
 
       // Clean up test config
-      AIConfig.setConfig(apiKey: '', model: 'grok-4.5', baseUrl: 'https://api.x.ai/v1');
+      ApiConfig.setConfig(apiKey: '', model: 'grok-beta', baseUrl: 'https://api.x.ai/v1');
     });
 
     test('4. Complete reset flow restarts state and clears persistence cleanly', () async {
