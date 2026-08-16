@@ -65,7 +65,7 @@ class AIDebugLog {
 
 /// The CreateDiff AI Studio Service.
 ///
-/// Communicates directly with xAI Grok (e.g. `grok-4.5`) Responses API.
+/// Communicates directly with AI providers (xAI Grok / Groq) via standard OpenAI-compatible Chat Completions.
 /// Strictly distinguishes every success and failure state with zero silent fake fallbacks.
 class AIService {
   AIService._();
@@ -73,7 +73,7 @@ class AIService {
   static AIDebugLog? _lastDebugLog;
   static AIDebugLog? get lastDebugLog => _lastDebugLog;
 
-  /// Dedicated CreateDiff Studio System Prompt for xAI Grok.
+  /// Dedicated CreateDiff Studio System Prompt.
   static String buildSystemPrompt({required CreatorProfile profile}) {
     final buffer = StringBuffer();
     buffer.writeln('You are the core AI Content Engine for CreateDiff — a premium mobile creator and design studio.');
@@ -146,7 +146,37 @@ class AIService {
     return buffer.toString();
   }
 
-  /// Generates a personalized content pack using real xAI Grok.
+  /// Extracts the real human-readable error message from an API response body.
+  static String _extractServerErrorMessage(String responseBody, int statusCode) {
+    try {
+      final parsed = jsonDecode(responseBody);
+      if (parsed is Map<String, dynamic>) {
+        // OpenAI / xAI / Groq error envelope: {"error": {"message": "...", "type": "...", "code": "..."}}
+        if (parsed['error'] is Map) {
+          final errorObj = parsed['error'] as Map<String, dynamic>;
+          final msg = errorObj['message']?.toString();
+          if (msg != null && msg.isNotEmpty) {
+            return msg;
+          }
+        }
+        // Direct string error: {"error": "..."}
+        if (parsed['error'] is String && (parsed['error'] as String).isNotEmpty) {
+          return parsed['error'] as String;
+        }
+        // Direct message: {"message": "..."}
+        if (parsed['message'] is String && (parsed['message'] as String).isNotEmpty) {
+          return parsed['message'] as String;
+        }
+      }
+    } catch (_) {}
+
+    if (responseBody.trim().isNotEmpty) {
+      return 'HTTP $statusCode: ${responseBody.trim()}';
+    }
+    return 'HTTP $statusCode (Empty response from server)';
+  }
+
+  /// Generates a personalized content pack using real AI API.
   /// Throws [AIServiceException] on any failure — never silently generates mock content.
   static Future<GeneratedContent> generateContent({
     required String platform,
@@ -159,18 +189,22 @@ class AIService {
   }) async {
     final stopwatch = Stopwatch()..start();
 
-    // 1. Verify API Key is configured
+    final provider = AIConfig.providerName;
+    final model = AIConfig.model;
+    final endpoint = '${AIConfig.baseUrl}/chat/completions';
+
+    // 1. Verify API Key
     if (!AIConfig.hasApiKey) {
       if (kDebugMode) {
-        debugPrint('[CreateDiff Grok AI] Error: Grok API Key is missing. Launch with --dart-define=GROK_API_KEY=your_key');
+        debugPrint('[CreateDiff AI] Error: API Key is missing. Launch with --dart-define=GROK_API_KEY=your_key');
       }
 
       _lastDebugLog = AIDebugLog(
-        provider: 'xAI Grok',
-        model: AIConfig.model,
+        provider: provider,
+        model: model,
         timestamp: DateTime.now(),
         status: AIGenerationStatus.missingApiKey,
-        errorMessage: 'Missing GROK_API_KEY compile-time flag or dart-define',
+        errorMessage: 'Missing GROK_API_KEY compile-time define',
         durationMs: 0,
         promptLength: 0,
         responseLength: 0,
@@ -178,7 +212,7 @@ class AIService {
 
       throw const AIServiceException(
         status: AIGenerationStatus.missingApiKey,
-        message: 'Grok API Key is not configured. Please launch the app with: flutter run --dart-define=GROK_API_KEY=your_key',
+        message: 'API Key is not configured. Please launch the app with: flutter run --dart-define=GROK_API_KEY=your_key',
       );
     }
 
@@ -196,19 +230,25 @@ class AIService {
 
     final totalPromptLength = systemPrompt.length + userPrompt.length;
 
+    // Debug logging for request dispatch (NEVER logs API key)
     if (kDebugMode) {
-      debugPrint('[CreateDiff Grok AI] Sending request to ${AIConfig.baseUrl}/chat/completions (Model: ${AIConfig.model})');
+      debugPrint('==================== [CreateDiff AI Request] ====================');
+      debugPrint('[CreateDiff AI] Provider: $provider');
+      debugPrint('[CreateDiff AI] Model: $model');
+      debugPrint('[CreateDiff AI] Endpoint: $endpoint');
+      debugPrint('[CreateDiff AI] Prompt Length: $totalPromptLength chars');
+      debugPrint('================================================================');
     }
 
     try {
-      final uri = Uri.parse('${AIConfig.baseUrl}/chat/completions');
+      final uri = Uri.parse(endpoint);
       final request = await client.postUrl(uri);
 
       request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
       request.headers.set(HttpHeaders.authorizationHeader, 'Bearer ${AIConfig.apiKey}');
 
       final payload = {
-        'model': AIConfig.model,
+        'model': model,
         'temperature': 0.7,
         'messages': [
           {'role': 'system', 'content': systemPrompt},
@@ -225,8 +265,13 @@ class AIService {
       final responseBody = await response.transform(utf8.decoder).join();
       final statusCode = response.statusCode;
 
+      // Debug logging for response
       if (kDebugMode) {
-        debugPrint('[CreateDiff Grok AI] Response received: Status $statusCode in ${stopwatch.elapsedMilliseconds}ms');
+        debugPrint('==================== [CreateDiff AI Response] ====================');
+        debugPrint('[CreateDiff AI] HTTP Status: $statusCode');
+        debugPrint('[CreateDiff AI] Latency: ${stopwatch.elapsedMilliseconds} ms');
+        debugPrint('[CreateDiff AI] Response Body: $responseBody');
+        debugPrint('================================================================');
       }
 
       if (statusCode == 200) {
@@ -241,8 +286,8 @@ class AIService {
             final parsed = _parseStructuredContent(contentStr);
             if (parsed != null) {
               _lastDebugLog = AIDebugLog(
-                provider: 'xAI Grok',
-                model: AIConfig.model,
+                provider: provider,
+                model: model,
                 timestamp: DateTime.now(),
                 status: AIGenerationStatus.success,
                 statusCode: 200,
@@ -255,106 +300,95 @@ class AIService {
           }
         }
 
+        final parseError = 'Malformed JSON or missing required fields in AI response';
+        if (kDebugMode) {
+          debugPrint('[CreateDiff AI] Parsed Error: $parseError');
+        }
+
         _lastDebugLog = AIDebugLog(
-          provider: 'xAI Grok',
-          model: AIConfig.model,
+          provider: provider,
+          model: model,
           timestamp: DateTime.now(),
           status: AIGenerationStatus.invalidResponse,
           statusCode: 200,
-          errorMessage: 'Malformed JSON or missing required fields in Grok response',
+          errorMessage: parseError,
           durationMs: stopwatch.elapsedMilliseconds,
           promptLength: totalPromptLength,
           responseLength: responseBody.length,
         );
         throw AIServiceException(
           status: AIGenerationStatus.invalidResponse,
-          message: 'Grok returned an unexpected output format. Please try again.',
+          message: 'The AI model returned an unexpected output format. Please try again.',
           statusCode: 200,
           rawResponse: responseBody,
         );
-      } else if (statusCode == 401 || statusCode == 403) {
-        _lastDebugLog = AIDebugLog(
-          provider: 'xAI Grok',
-          model: AIConfig.model,
-          timestamp: DateTime.now(),
-          status: AIGenerationStatus.invalidApiKey,
-          statusCode: statusCode,
-          errorMessage: 'Authentication failed. Check GROK_API_KEY validity.',
-          durationMs: stopwatch.elapsedMilliseconds,
-          promptLength: totalPromptLength,
-          responseLength: responseBody.length,
-        );
-        throw AIServiceException(
-          status: AIGenerationStatus.invalidApiKey,
-          message: 'Authentication error: Your Grok API key is invalid or unauthorized.',
-          statusCode: statusCode,
-        );
-      } else if (statusCode == 429) {
-        _lastDebugLog = AIDebugLog(
-          provider: 'xAI Grok',
-          model: AIConfig.model,
-          timestamp: DateTime.now(),
-          status: AIGenerationStatus.rateLimited,
-          statusCode: statusCode,
-          errorMessage: 'xAI Grok rate limit reached',
-          durationMs: stopwatch.elapsedMilliseconds,
-          promptLength: totalPromptLength,
-          responseLength: responseBody.length,
-        );
-        throw AIServiceException(
-          status: AIGenerationStatus.rateLimited,
-          message: 'Rate limit reached on xAI Grok. Please wait a few seconds before trying again.',
-          statusCode: statusCode,
-        );
       } else {
+        final serverError = _extractServerErrorMessage(responseBody, statusCode);
+
+        if (kDebugMode) {
+          debugPrint('[CreateDiff AI] Parsed Error: $serverError');
+        }
+
+        AIGenerationStatus failureStatus;
+        if (statusCode == 401 || statusCode == 403) {
+          failureStatus = AIGenerationStatus.invalidApiKey;
+        } else if (statusCode == 429) {
+          failureStatus = AIGenerationStatus.rateLimited;
+        } else {
+          failureStatus = AIGenerationStatus.serverError;
+        }
+
         _lastDebugLog = AIDebugLog(
-          provider: 'xAI Grok',
-          model: AIConfig.model,
+          provider: provider,
+          model: model,
           timestamp: DateTime.now(),
-          status: AIGenerationStatus.serverError,
+          status: failureStatus,
           statusCode: statusCode,
-          errorMessage: 'xAI Grok server returned error code $statusCode',
+          errorMessage: serverError,
           durationMs: stopwatch.elapsedMilliseconds,
           promptLength: totalPromptLength,
           responseLength: responseBody.length,
         );
+
         throw AIServiceException(
-          status: AIGenerationStatus.serverError,
-          message: 'xAI Grok service encountered an error (Status $statusCode). Please try again.',
+          status: failureStatus,
+          message: serverError,
           statusCode: statusCode,
           rawResponse: responseBody,
         );
       }
     } on SocketException catch (e) {
       stopwatch.stop();
+      final networkError = 'Network connection failed: ${e.message}';
       if (kDebugMode) {
-        debugPrint('[CreateDiff Grok AI] SocketException: ${e.message}');
+        debugPrint('[CreateDiff AI] Parsed Error: $networkError');
       }
       _lastDebugLog = AIDebugLog(
-        provider: 'xAI Grok',
-        model: AIConfig.model,
+        provider: provider,
+        model: model,
         timestamp: DateTime.now(),
         status: AIGenerationStatus.networkError,
-        errorMessage: 'Network socket exception: ${e.message}',
+        errorMessage: networkError,
         durationMs: stopwatch.elapsedMilliseconds,
         promptLength: totalPromptLength,
         responseLength: 0,
       );
-      throw const AIServiceException(
+      throw AIServiceException(
         status: AIGenerationStatus.networkError,
-        message: 'Network connection failed. Please check your internet connection and try again.',
+        message: networkError,
       );
     } on TimeoutException {
       stopwatch.stop();
+      final timeoutError = 'Request timed out after 35 seconds';
       if (kDebugMode) {
-        debugPrint('[CreateDiff Grok AI] Request timed out after 35 seconds');
+        debugPrint('[CreateDiff AI] Parsed Error: $timeoutError');
       }
       _lastDebugLog = AIDebugLog(
-        provider: 'xAI Grok',
-        model: AIConfig.model,
+        provider: provider,
+        model: model,
         timestamp: DateTime.now(),
         status: AIGenerationStatus.networkError,
-        errorMessage: 'Request timed out after 35 seconds',
+        errorMessage: timeoutError,
         durationMs: stopwatch.elapsedMilliseconds,
         promptLength: totalPromptLength,
         responseLength: 0,
@@ -366,22 +400,23 @@ class AIService {
     } catch (e) {
       if (e is AIServiceException) rethrow;
       stopwatch.stop();
+      final unknownError = e.toString();
       if (kDebugMode) {
-        debugPrint('[CreateDiff Grok AI] Unexpected error: $e');
+        debugPrint('[CreateDiff AI] Parsed Error: $unknownError');
       }
       _lastDebugLog = AIDebugLog(
-        provider: 'xAI Grok',
-        model: AIConfig.model,
+        provider: provider,
+        model: model,
         timestamp: DateTime.now(),
         status: AIGenerationStatus.unknownError,
-        errorMessage: e.toString(),
+        errorMessage: unknownError,
         durationMs: stopwatch.elapsedMilliseconds,
         promptLength: totalPromptLength,
         responseLength: 0,
       );
       throw AIServiceException(
         status: AIGenerationStatus.unknownError,
-        message: 'An unexpected error occurred: ${e.toString()}',
+        message: unknownError,
       );
     } finally {
       client.close();
