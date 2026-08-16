@@ -132,40 +132,47 @@ class AppTheme {
 
   static TextTheme _buildTextTheme(TextTheme base, Color primary, Color secondary, Color muted) {
     return base.copyWith(
-      // Hero headline: 32-36px SemiBold
+      // Display: 36px Bold
       displayLarge: base.displayLarge?.copyWith(
         color: primary,
-        fontSize: 34,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.8,
-        height: 1.18,
+        fontSize: 36,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -1.0,
+        height: 1.15,
       ),
       displayMedium: base.displayMedium?.copyWith(
         color: primary,
         fontSize: 28,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.6,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.8,
+        height: 1.2,
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        color: primary,
+        fontSize: 26,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.7,
         height: 1.22,
       ),
-      // Section titles: 22-24px Bold
+      // Section titles: 20-22px Bold
       headlineMedium: base.headlineMedium?.copyWith(
         color: primary,
-        fontSize: 23,
+        fontSize: 22,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.4,
+        letterSpacing: -0.5,
         height: 1.25,
       ),
       headlineSmall: base.headlineSmall?.copyWith(
         color: primary,
-        fontSize: 19,
+        fontSize: 20,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
+        letterSpacing: -0.4,
         height: 1.28,
       ),
       titleMedium: base.titleMedium?.copyWith(
         color: primary,
         fontSize: 16,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         letterSpacing: -0.2,
         height: 1.35,
       ),
@@ -175,7 +182,7 @@ class AppTheme {
         fontWeight: FontWeight.w600,
         letterSpacing: -0.1,
       ),
-      // Body: 15-17px Regular
+      // Body: 14-16px Regular
       bodyLarge: base.bodyLarge?.copyWith(
         color: primary,
         fontSize: 16,
@@ -184,34 +191,34 @@ class AppTheme {
       ),
       bodyMedium: base.bodyMedium?.copyWith(
         color: secondary,
-        fontSize: 14.5,
+        fontSize: 14,
         fontWeight: FontWeight.w400,
         height: 1.45,
       ),
       bodySmall: base.bodySmall?.copyWith(
         color: secondary,
-        fontSize: 12.5,
-        fontWeight: FontWeight.w400,
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
         height: 1.35,
       ),
-      // Metadata & Labels: 12-14px Medium with enhanced letter spacing on small caps
+      // Metadata & Labels: 11-14px Medium/Bold with letter spacing
       labelLarge: base.labelLarge?.copyWith(
         color: primary,
-        fontSize: 13.5,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.2,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.1,
       ),
       labelMedium: base.labelMedium?.copyWith(
         color: secondary,
         fontSize: 12,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.4,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.3,
       ),
       labelSmall: base.labelSmall?.copyWith(
         color: muted,
-        fontSize: 10.5,
+        fontSize: 11,
         fontWeight: FontWeight.w700,
-        letterSpacing: 1.4, // Increased letter spacing for small uppercase labels
+        letterSpacing: 1.2,
       ),
     );
   }
