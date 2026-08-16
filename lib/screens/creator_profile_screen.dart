@@ -41,8 +41,8 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   String _secondaryLang = 'Manglish';
   String _emojiUsage = 'moderate';
   String _ctaStyle = 'Direct';
-  Color _primaryColor = const Color(0xFFC9D6FF);
-  final Color _secondaryColor = const Color(0xFFAFC4FF);
+  Color _primaryColor = CDColors.brand;
+  final Color _secondaryColor = CDColors.lavender;
 
   final List<String> _niches = [
     'Technology',
@@ -93,13 +93,13 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   ];
 
   final List<Color> _brandColors = [
-    const Color(0xFFC9D6FF), // Primary Ice Blue
-    const Color(0xFFA0B9FF), // Soft Sky Blue
+    CDColors.brand, // Official Blue-Violet (#4F43F9)
+    const Color(0xFF7066FF), // Luminous Lavender Blue
     const Color(0xFF00B894), // Mint Green
     const Color(0xFFE4405F), // Crimson
     const Color(0xFF0984E3), // Electric Blue
     const Color(0xFFE84393), // Pink
-    const Color(0xFFFDCB6E), // Amber
+    const Color(0xFFFFA502), // Amber
     const Color(0xFF2D3436), // Graphite
   ];
 

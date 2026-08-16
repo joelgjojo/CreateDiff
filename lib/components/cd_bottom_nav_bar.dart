@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// A floating frosted glass bottom navigation bar with Snowfall Hush / Ice-Blue styling.
+/// A floating frosted glass bottom navigation bar with official CreateDiff brand styling.
 class CDBottomNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTabChanged;
@@ -21,7 +21,7 @@ class CDBottomNavBar extends StatelessWidget {
     final glassBorder = isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle;
     final glassFill = isDark
         ? const Color(0xFF0D1017).withValues(alpha: 0.88)
-        : const Color(0xFFF1F4F8).withValues(alpha: 0.90);
+        : const Color(0xFFF4F6FB).withValues(alpha: 0.92);
 
     return SafeArea(
       top: false,
@@ -39,7 +39,7 @@ class CDBottomNavBar extends StatelessWidget {
               ),
               if (isDark)
                 BoxShadow(
-                  color: const Color(0xFFC9D6FF).withValues(alpha: 0.06),
+                  color: CDColors.brand.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, -2),
                 ),
@@ -143,16 +143,12 @@ class CDBottomNavBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? (isDark
-                          ? const Color(0xFFC9D6FF).withValues(alpha: 0.14)
-                          : const Color(0xFF4A69BD).withValues(alpha: 0.12))
+                      ? CDColors.brand.withValues(alpha: isDark ? 0.16 : 0.10)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(CDRadius.pill),
                   border: isSelected
                       ? Border.all(
-                          color: isDark
-                              ? const Color(0xFFC9D6FF).withValues(alpha: 0.28)
-                              : const Color(0xFF4A69BD).withValues(alpha: 0.20),
+                          color: CDColors.brand.withValues(alpha: isDark ? 0.30 : 0.20),
                           width: 0.8,
                         )
                       : null,
@@ -200,42 +196,24 @@ class CDBottomNavBar extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                gradient: isDark
-                    ? const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFFDCE5FF),
-                          Color(0xFFC9D6FF),
-                        ],
-                      )
-                    : const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF5A7BC7),
-                          Color(0xFF4A69BD),
-                        ],
-                      ),
+                gradient: CDColors.brandGradient,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isDark ? Colors.white.withValues(alpha: 0.40) : Colors.white.withValues(alpha: 0.20),
+                  color: Colors.white.withValues(alpha: isDark ? 0.30 : 0.20),
                   width: 1.0,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: isDark
-                        ? const Color(0xFFC9D6FF).withValues(alpha: 0.25)
-                        : const Color(0xFF4A69BD).withValues(alpha: 0.20),
-                    blurRadius: 10,
+                    color: CDColors.brand.withValues(alpha: 0.30),
+                    blurRadius: 12,
                     offset: const Offset(0, 3),
                   ),
                 ],
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.add_rounded,
                 size: 24,
-                color: isDark ? const Color(0xFF080A0F) : Colors.white,
+                color: Colors.white,
               ),
             ),
           ),

@@ -8,6 +8,7 @@ import '../components/cd_primary_button.dart';
 import '../components/cd_loading_state.dart';
 import '../components/cd_atmospheric_background.dart';
 import 'content_result_screen.dart';
+import 'debug_panel_screen.dart';
 
 /// Guided 2-step studio creation flow with frosted glass cards and generation overlay.
 class CreateScreen extends StatefulWidget {
@@ -119,21 +120,40 @@ class _CreateScreenState extends State<CreateScreen> {
     FocusScope.of(context).unfocus();
 
     final appState = AppState.instance;
-    await appState.generateContentPack(
+    final project = await appState.generateContentPack(
       platform: _selectedPlatform!,
       contentType: _selectedContentType!,
       idea: idea,
       tone: _toneController.text.trim(),
     );
 
-    if (mounted && appState.currentProject != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => ContentResultScreen(
-            project: appState.currentProject!,
+    if (mounted) {
+      if (project != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => ContentResultScreen(
+              project: project,
+            ),
           ),
-        ),
-      );
+        );
+      } else if (appState.lastError != null) {
+        // Show error snackbar / dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(appState.lastError!.message),
+            backgroundColor: CDColors.error,
+            action: SnackBarAction(
+              label: 'Debug',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
+                );
+              },
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -145,6 +165,7 @@ class _CreateScreenState extends State<CreateScreen> {
       listenable: appState,
       builder: (context, _) {
         final isGenerating = appState.isGenerating;
+        final error = appState.lastError;
 
         return Scaffold(
           backgroundColor: Colors.transparent,
@@ -173,6 +194,17 @@ class _CreateScreenState extends State<CreateScreen> {
                                 color: CDColors.textPrimary(context),
                               ),
                         ),
+                        actions: [
+                          IconButton(
+                            icon: const Icon(Icons.bug_report_outlined, size: 20),
+                            tooltip: 'Debug Panel',
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
+                              );
+                            },
+                          ),
+                        ],
                         centerTitle: true,
                       ),
                       // Step Progress Line
@@ -183,11 +215,41 @@ class _CreateScreenState extends State<CreateScreen> {
                           child: LinearProgressIndicator(
                             value: (_currentStep + 1) / 2,
                             backgroundColor: CDColors.borderSubtle(context),
-                            valueColor: const AlwaysStoppedAnimation<Color>(CDColors.primary),
+                            valueColor: const AlwaysStoppedAnimation<Color>(CDColors.brand),
                             minHeight: 3,
                           ),
                         ),
                       ),
+                      // Error Banner if generation failed
+                      if (error != null && !isGenerating)
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(CDSpacing.lg, CDSpacing.sm, CDSpacing.lg, 0),
+                          padding: const EdgeInsets.all(CDSpacing.md),
+                          decoration: BoxDecoration(
+                            color: CDColors.error.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(CDRadius.medium),
+                            border: Border.all(
+                              color: CDColors.error.withValues(alpha: 0.35),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline_rounded, color: CDColors.error, size: 20),
+                              const SizedBox(width: CDSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  error.message,
+                                  style: const TextStyle(
+                                    color: CDColors.error,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       Expanded(
                         child: PageView(
                           controller: _pageController,
@@ -202,7 +264,7 @@ class _CreateScreenState extends State<CreateScreen> {
                   ),
                 ),
                 if (isGenerating)
-                  const CDLoadingState(currentMessage: 'Generating your studio content pack...'),
+                  CDLoadingState(currentMessage: appState.generationStep),
               ],
             ),
           ),
@@ -242,10 +304,10 @@ class _CreateScreenState extends State<CreateScreen> {
             Text(
               'Content Format',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: CDColors.textPrimary(context),
-                  ),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: CDColors.textPrimary(context),
+                ),
             ),
             const SizedBox(height: CDSpacing.md),
             GridView.builder(
@@ -291,22 +353,8 @@ class _CreateScreenState extends State<CreateScreen> {
     final isDark = CDColors.isDark(context);
 
     final glassGradient = isDark
-        ? LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.08),
-              Colors.white.withValues(alpha: 0.02),
-            ],
-          )
-        : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.92),
-              Colors.white.withValues(alpha: 0.75),
-            ],
-          );
+        ? CDColors.darkGlassGradient
+        : CDColors.lightGlassGradient;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(CDSpacing.lg),
@@ -320,7 +368,7 @@ class _CreateScreenState extends State<CreateScreen> {
               gradient: glassGradient,
               borderRadius: BorderRadius.circular(CDRadius.medium),
               border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.06),
+                color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
                 width: 1.0,
               ),
             ),
@@ -329,12 +377,12 @@ class _CreateScreenState extends State<CreateScreen> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: CDColors.primary.withValues(alpha: isDark ? 0.20 : 0.12),
+                    color: CDColors.brand.withValues(alpha: isDark ? 0.20 : 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.auto_awesome_rounded,
-                    color: CDColors.primaryLight,
+                    color: CDColors.brand,
                     size: 16,
                   ),
                 ),

@@ -193,7 +193,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 selectedColor: CDColors.primaryColor(context),
                                 labelStyle: TextStyle(
                                   color: isSelected
-                                      ? (isDark ? const Color(0xFF080A0F) : Colors.white)
+                                      ? Colors.white
                                       : CDColors.textPrimary(context),
                                   fontSize: 12,
                                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,

@@ -5,9 +5,10 @@ import 'package:share_plus/share_plus.dart';
 import '../theme/app_theme.dart';
 import '../models/content_project.dart';
 import 'cd_primary_button.dart';
+import 'cd_logo.dart';
 
 /// A frosted glass export & share sheet for copying, sharing, and reviewing content.
-class CDExportShareSheet extends StatelessWidget {
+class CDExportShareSheet extends StatefulWidget {
   final ContentProject project;
   final VoidCallback onDone;
 
@@ -33,15 +34,22 @@ class CDExportShareSheet extends StatelessWidget {
     );
   }
 
+  @override
+  State<CDExportShareSheet> createState() => _CDExportShareSheetState();
+}
+
+class _CDExportShareSheetState extends State<CDExportShareSheet> {
+  bool _includeWatermark = false;
+
   void _copyAllContent(BuildContext context) {
     AppHaptics.light();
-    final c = project.generatedContent;
+    final c = widget.project.generatedContent;
     if (c == null) return;
 
     final buffer = StringBuffer();
     buffer.writeln('═══ CREATEDIFF CONTENT PACK ═══');
-    buffer.writeln('Platform: ${project.platform} (${project.contentType})');
-    buffer.writeln('Topic: ${project.idea}');
+    buffer.writeln('Platform: ${widget.project.platform} (${widget.project.contentType})');
+    buffer.writeln('Topic: ${widget.project.idea}');
     buffer.writeln('');
 
     buffer.writeln('─── HOOKS ───');
@@ -69,6 +77,12 @@ class CDExportShareSheet extends StatelessWidget {
     if (c.coverText.isNotEmpty) {
       buffer.writeln('─── COVER TEXT ───');
       buffer.writeln(c.coverText);
+      buffer.writeln('');
+    }
+
+    if (_includeWatermark) {
+      buffer.writeln('─── BRAND ───');
+      buffer.writeln('Crafted with CreateDiff AI Studio • Zero-Prompt Engine');
     }
 
     Clipboard.setData(ClipboardData(text: buffer.toString()));
@@ -90,16 +104,20 @@ class CDExportShareSheet extends StatelessWidget {
 
   void _shareViaNative(BuildContext context) {
     AppHaptics.light();
-    final c = project.generatedContent;
+    final c = widget.project.generatedContent;
     if (c == null) return;
+
+    final watermarkText = _includeWatermark
+        ? '\n\nCrafted with CreateDiff AI Studio'
+        : '';
 
     final shareText = '''
 ${c.caption}
 
-${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
+${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}$watermarkText
 ''';
 
-    Share.share(shareText, subject: 'Content for ${project.platform}: ${project.idea}');
+    Share.share(shareText, subject: 'Content for ${widget.project.platform}: ${widget.project.idea}');
   }
 
   @override
@@ -107,9 +125,9 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
     final isDark = CDColors.isDark(context);
     final primaryColor = CDColors.primaryColor(context);
 
-    final truncatedIdea = project.idea.length > 38
-        ? '${project.idea.substring(0, 38)}...'
-        : project.idea;
+    final truncatedIdea = widget.project.idea.length > 38
+        ? '${widget.project.idea.substring(0, 38)}...'
+        : widget.project.idea;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -147,29 +165,27 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                     ),
                   ),
                   const SizedBox(height: 20.0),
-                  // Success Icon Badge with glowing ring
+                  // Success Icon Badge with Monogram
                   Container(
-                    width: 52,
-                    height: 52,
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: CDColors.success.withValues(alpha: isDark ? 0.16 : 0.12),
+                      color: CDColors.brand.withValues(alpha: isDark ? 0.16 : 0.10),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: CDColors.success.withValues(alpha: 0.40),
+                        color: CDColors.brand.withValues(alpha: 0.35),
                         width: 1.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: CDColors.success.withValues(alpha: 0.20),
-                          blurRadius: 12,
-                          offset: const Offset(0, 3),
+                          color: CDColors.brand.withValues(alpha: 0.20),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.check_rounded,
-                      color: CDColors.success,
-                      size: 28,
+                    child: const CDLogo.monogram(
+                      height: 20,
+                      colorMode: CDLogoColorMode.brand,
                     ),
                   ),
                   const SizedBox(height: 12.0),
@@ -183,14 +199,54 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${project.platform} ${project.contentType} • $truncatedIdea',
+                    '${widget.project.platform} ${widget.project.contentType} • $truncatedIdea',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 12,
                           color: CDColors.textSecondary(context),
                         ),
                   ),
-                  const SizedBox(height: 24.0),
+                  const SizedBox(height: 20.0),
+
+                  // Watermark Option Toggle
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.02),
+                      borderRadius: BorderRadius.circular(CDRadius.medium),
+                      border: Border.all(
+                        color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.branding_watermark_outlined, size: 16, color: CDColors.textSecondary(context)),
+                            const SizedBox(width: CDSpacing.sm),
+                            Text(
+                              'Include CreateDiff watermark',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: CDColors.textPrimary(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Switch.adaptive(
+                          value: _includeWatermark,
+                          activeTrackColor: CDColors.brand,
+                          onChanged: (val) {
+                            setState(() => _includeWatermark = val);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14.0),
+
                   // Action List
                   _buildActionTile(
                     context,
@@ -211,26 +267,14 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                     primaryColor: primaryColor,
                     isDark: isDark,
                   ),
-                  if (project.selectedDesignTemplate.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    _buildActionTile(
-                      context,
-                      icon: Icons.palette_outlined,
-                      title: 'Selected Design: ${project.selectedDesignTemplate}',
-                      subtitle: 'Design style: ${project.selectedDesignStyle}',
-                      onTap: () {},
-                      primaryColor: primaryColor,
-                      isDark: isDark,
-                    ),
-                  ],
-                  const SizedBox(height: 24.0),
+                  const SizedBox(height: 20.0),
                   CDPrimaryButton(
                     label: 'Done',
                     isFullWidth: true,
                     height: 50,
                     onPressed: () {
                       Navigator.of(context).pop();
-                      onDone();
+                      widget.onDone();
                     },
                   ),
                 ],

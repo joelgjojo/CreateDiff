@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// A luminous Ice-Blue primary studio CTA button.
+/// A luminous Blue-Violet primary studio CTA button.
 ///
-/// Features a #C9D6FF -> #AFC4FF gradient, deep charcoal high-contrast typography,
-/// top specular bevel line, soft blue ambient glow, and 0.97 press scale animation.
+/// Features the official #4F43F9 brand gradient, crisp typography,
+/// soft blue-violet ambient glow, and 0.96 press scale animation.
 class CDPrimaryButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -19,7 +19,7 @@ class CDPrimaryButton extends StatefulWidget {
     this.onPressed,
     this.isLoading = false,
     this.isFullWidth = false,
-    this.height = 48.0,
+    this.height = CDButton.standardHeight,
     this.icon,
   });
 
@@ -54,24 +54,7 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton> {
     final isEnabled = widget.onPressed != null && !widget.isLoading;
 
     final gradient = isEnabled
-        ? (isDark
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFDCE5FF), // Bright Luminous Ice Blue
-                  Color(0xFFC9D6FF), // Primary Ice Blue
-                  Color(0xFFAFC4FF), // Soft Blue Glow
-                ],
-              )
-            : const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF5A7BC7),
-                  Color(0xFF4A69BD),
-                ],
-              ))
+        ? CDColors.brandGradient
         : (isDark
             ? LinearGradient(
                 colors: [
@@ -86,35 +69,30 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton> {
                 ],
               ));
 
-    // In dark mode: dark charcoal text on ice-blue button for high contrast physical feel
-    final textColor = isEnabled
-        ? (isDark ? const Color(0xFF080A0F) : Colors.white)
-        : (isDark ? CDColors.darkMuted : CDColors.lightMuted);
+    const textColor = Colors.white;
 
     final buttonWidget = AnimatedScale(
-      scale: _isPressed ? 0.97 : 1.0,
+      scale: _isPressed ? CDButton.pressScale : 1.0,
       duration: CDMotion.micro,
       curve: Curves.easeInOut,
       child: AnimatedContainer(
         duration: CDMotion.micro,
-        height: widget.height,
+        height: widget.height ?? CDButton.standardHeight,
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: BorderRadius.circular(CDRadius.medium),
           border: Border.all(
             color: isEnabled
-                ? (isDark ? Colors.white.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.20))
+                ? Colors.white.withValues(alpha: isDark ? 0.20 : 0.15)
                 : Colors.transparent,
             width: 1.0,
           ),
           boxShadow: isEnabled
               ? [
                   BoxShadow(
-                    color: isDark
-                        ? const Color(0xFFC9D6FF).withValues(alpha: 0.22)
-                        : const Color(0xFF4A69BD).withValues(alpha: 0.20),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
+                    color: CDColors.brand.withValues(alpha: isDark ? 0.32 : 0.24),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
                   ),
                 ]
               : null,
@@ -132,15 +110,15 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton> {
             splashColor: Colors.white.withValues(alpha: 0.15),
             highlightColor: Colors.transparent,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 22),
               child: Center(
                 child: widget.isLoading
-                    ? SizedBox(
+                    ? const SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.2,
-                          valueColor: AlwaysStoppedAnimation<Color>(textColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : Row(
@@ -149,17 +127,17 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton> {
                         children: [
                           if (widget.icon != null) ...[
                             IconTheme(
-                              data: IconThemeData(color: textColor, size: 16),
+                              data: const IconThemeData(color: textColor, size: 16),
                               child: widget.icon!,
                             ),
                             const SizedBox(width: 8),
                           ],
                           Text(
                             widget.label,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: -0.2,
                             ),
                           ),

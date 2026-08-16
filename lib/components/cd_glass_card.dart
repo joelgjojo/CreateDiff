@@ -5,7 +5,7 @@ import '../theme/app_theme.dart';
 /// A layered frosted glass container.
 ///
 /// Combines a top specular highlight border, dual-tone translucent fill,
-/// and subtle depth shadow. Selective blur is used only when `useBlur: true`.
+/// and soft blue-violet ambient glow. Selective blur is used only when `useBlur: true`.
 class CDGlassCard extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -73,32 +73,32 @@ class _CDGlassCardState extends State<CDGlassCard> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withValues(alpha: CDColors.darkSurfaceElevated.a),
-                      Colors.white.withValues(alpha: 0.03),
+                      Colors.white.withValues(alpha: CDGlass.darkElevatedOpacity),
+                      Colors.white.withValues(alpha: 0.02),
                     ],
                   )
                 : LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withValues(alpha: CDColors.darkSurface.a),
-                      Colors.white.withValues(alpha: 0.02),
+                      Colors.white.withValues(alpha: CDGlass.darkSurfaceOpacity),
+                      Colors.white.withValues(alpha: 0.015),
                     ],
                   ))
             : (widget.elevated
-                ? LinearGradient(
+                ? const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.white,
-                      const Color(0xFFF7F9FC),
+                      Color(0xFFF7F9FC),
                     ],
                   )
                 : LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withValues(alpha: 0.85),
+                      Colors.white.withValues(alpha: CDGlass.lightSurfaceOpacity),
                       Colors.white.withValues(alpha: 0.65),
                     ],
                   )));
@@ -119,11 +119,11 @@ class _CDGlassCardState extends State<CDGlassCard> {
             blurRadius: widget.elevated ? 16 : 8,
             offset: Offset(0, widget.elevated ? 6 : 2),
           ),
-          if (isDark && widget.elevated)
+          if (widget.elevated)
             BoxShadow(
-              color: const Color(0xFFC9D6FF).withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, -1),
+              color: CDColors.brand.withValues(alpha: isDark ? 0.08 : 0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
             ),
         ],
       ),
@@ -141,7 +141,12 @@ class _CDGlassCardState extends State<CDGlassCard> {
                 decoration: BoxDecoration(
                   gradient: isDark
                       ? CDColors.specularHighlightDark
-                      : CDColors.specularHighlightLight,
+                      : LinearGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: 0.80),
+                            Colors.white.withValues(alpha: 0.0),
+                          ],
+                        ),
                 ),
               ),
             ),

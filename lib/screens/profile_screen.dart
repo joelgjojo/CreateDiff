@@ -5,7 +5,10 @@ import '../services/app_state.dart';
 import '../components/cd_secondary_button.dart';
 import '../components/cd_glass_card.dart';
 import '../components/cd_atmospheric_background.dart';
+import '../components/cd_logo.dart';
 import 'creator_profile_screen.dart';
+import 'onboarding_screen.dart';
+import 'debug_panel_screen.dart';
 
 /// The profile and studio settings screen featuring Brand Memory progressive disclosure,
 /// appearance mode selection, data reset, and studio info.
@@ -47,6 +50,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             color: CDColors.textPrimary(context),
                           ),
                     ),
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.bug_report_outlined, size: 20),
+                        tooltip: 'Developer Debug Panel',
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   Expanded(
                     child: SingleChildScrollView(
@@ -59,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // --- Brand Memory Highlight Card ---
+                          // --- Brand Memory Highlight Card with Lockup ---
                           _buildBrandMemorySection(context, profile),
                           const SizedBox(height: CDSpacing.xl),
 
@@ -345,11 +359,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: isSelected
-                  ? CDColors.primary.withValues(alpha: isDark ? 0.22 : 0.12)
+                  ? CDColors.brand.withValues(alpha: isDark ? 0.22 : 0.12)
                   : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
               borderRadius: BorderRadius.circular(CDRadius.medium),
               border: Border.all(
-                color: isSelected ? CDColors.primary : CDColors.borderSubtle(context),
+                color: isSelected ? CDColors.brand : CDColors.borderSubtle(context),
                 width: isSelected ? 1.4 : 1.0,
               ),
             ),
@@ -358,7 +372,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Icon(
                   icon,
                   size: 18,
-                  color: isSelected ? CDColors.primary : CDColors.textSecondary(context),
+                  color: isSelected ? CDColors.brand : CDColors.textSecondary(context),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -366,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                    color: isSelected ? CDColors.primary : CDColors.textPrimary(context),
+                    color: isSelected ? CDColors.brand : CDColors.textPrimary(context),
                   ),
                 ),
               ],
@@ -431,19 +445,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Center(
       child: Column(
         children: [
-          Text(
-            'CreateDiff Studio v2.0.0',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: CDColors.textSecondary(context),
-            ),
+          const CDLogo.lockup(
+            height: 22,
+            colorMode: CDLogoColorMode.adaptive,
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: CDSpacing.xs),
           Text(
-            'Zero-prompt creator workflow studio',
+            'Studio v2.0 • Powered by xAI Grok Engine',
             style: TextStyle(
               fontSize: 11,
+              fontWeight: FontWeight.w500,
               color: CDColors.textMuted(context),
             ),
           ),
@@ -463,8 +474,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: TextStyle(fontWeight: FontWeight.w800, color: CDColors.textPrimary(context)),
         ),
         content: Text(
-          'This will clear your local Brand Memory profile and all saved content creations. This action cannot be undone.',
-          style: TextStyle(color: CDColors.textSecondary(context)),
+          'This will permanently delete your Brand Memory profile, cached projects, and all generated content packs.\n\nYou will be returned to the fresh onboarding screen.',
+          style: TextStyle(color: CDColors.textSecondary(context), height: 1.4),
         ),
         actions: [
           TextButton(
@@ -475,17 +486,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(ctx).pop();
-              appState.resetAll();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Studio data reset successfully'),
-                  backgroundColor: CDColors.textPrimary(context),
-                ),
-              );
+              await appState.resetAll();
+              if (context.mounted) {
+                // Navigate cleanly to fresh onboarding and clear all route history
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                  (route) => false,
+                );
+              }
             },
-            child: const Text('Reset', style: TextStyle(color: CDColors.error, fontWeight: FontWeight.w700)),
+            child: const Text('Reset Everything', style: TextStyle(color: CDColors.error, fontWeight: FontWeight.w700)),
           ),
         ],
       ),

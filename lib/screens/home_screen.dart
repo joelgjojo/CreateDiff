@@ -7,6 +7,7 @@ import '../components/cd_brand_memory_card.dart';
 import '../components/cd_empty_state.dart';
 import '../components/cd_glass_card.dart';
 import '../components/cd_primary_button.dart';
+import '../components/cd_logo.dart';
 import 'create_screen.dart';
 import 'content_result_screen.dart';
 import 'creator_profile_screen.dart';
@@ -66,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final appState = AppState.instance;
     final isDark = CDColors.isDark(context);
-    final accentColor = CDColors.primaryColor(context);
+    final brandColor = CDColors.brand;
 
     return ListenableBuilder(
       listenable: appState,
@@ -75,7 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
         final name = profile.creatorName.isNotEmpty ? profile.creatorName : 'Creator';
         final history = appState.contentHistory;
         final greeting = _getGreeting();
-        final initials = _getInitials(name);
 
         return Scaffold(
           backgroundColor: Colors.transparent,
@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- 1. Editorial Greeting Header ---
+                  // --- 1. Editorial Greeting Header with Compact CD Monogram ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -101,26 +101,23 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             greeting.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                              color: accentColor,
-                            ),
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: brandColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             name,
                             style: Theme.of(context).textTheme.displayMedium?.copyWith(
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 26,
                                   letterSpacing: -0.6,
                                   color: CDColors.textPrimary(context),
                                 ),
                           ),
                         ],
                       ),
-                      // Creator Glowing Ring Avatar
+                      // Compact CD Monogram Brand Badge
                       Material(
                         color: Colors.transparent,
                         child: InkWell(
@@ -133,32 +130,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                           borderRadius: BorderRadius.circular(CDRadius.pill),
                           child: Container(
-                            width: 44,
-                            height: 44,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                             decoration: BoxDecoration(
-                              color: profile.primaryColor.withValues(alpha: isDark ? 0.20 : 0.12),
-                              shape: BoxShape.circle,
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.06)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(CDRadius.pill),
                               border: Border.all(
-                                color: profile.primaryColor.withValues(alpha: 0.60),
-                                width: 1.5,
+                                color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
+                                width: 1.0,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: profile.primaryColor.withValues(alpha: 0.22),
+                                  color: brandColor.withValues(alpha: isDark ? 0.18 : 0.10),
                                   blurRadius: 10,
-                                  offset: const Offset(0, 3),
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                            child: Center(
-                              child: Text(
-                                initials,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color: profile.primaryColor,
-                                ),
-                              ),
+                            child: const CDLogo.monogram(
+                              height: 18,
+                              colorMode: CDLogoColorMode.brand,
                             ),
                           ),
                         ),
@@ -178,17 +170,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFFC9D6FF).withValues(alpha: 0.16)
-                                    : const Color(0xFF4A69BD).withValues(alpha: 0.12),
+                                color: brandColor.withValues(alpha: isDark ? 0.18 : 0.12),
                                 borderRadius: BorderRadius.circular(CDRadius.small),
                               ),
-                              child: Icon(
+                              child: const Icon(
                                 Icons.auto_awesome_rounded,
                                 size: 16,
-                                color: accentColor,
+                                color: CDColors.brand,
                               ),
                             ),
                             const SizedBox(width: CDSpacing.sm),
@@ -198,21 +188,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Text(
                                     'What are we creating today?',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.2,
-                                      color: CDColors.textPrimary(context),
-                                    ),
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16.5,
+                                          letterSpacing: -0.2,
+                                          color: CDColors.textPrimary(context),
+                                        ),
                                   ),
                                   const SizedBox(height: 1),
                                   Text(
-                                    'Describe an idea, trend, topic, or simply start typing...',
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w400,
-                                      color: CDColors.textSecondary(context),
-                                    ),
+                                    'Zero prompting required • Describe any raw concept or topic',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          fontSize: 12,
+                                          color: CDColors.textSecondary(context),
+                                        ),
                                   ),
                                 ],
                               ),
@@ -225,8 +214,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Container(
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xFF080A0F).withValues(alpha: 0.55)
-                                : Colors.white.withValues(alpha: 0.85),
+                                ? const Color(0xFF080A0F).withValues(alpha: 0.60)
+                                : Colors.white.withValues(alpha: 0.90),
                             borderRadius: BorderRadius.circular(CDRadius.medium),
                             border: Border.all(
                               color: isDark ? CDColors.darkBorderSubtle : CDColors.lightBorderSubtle,
@@ -262,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           alignment: Alignment.centerRight,
                           child: CDPrimaryButton(
                             label: 'Create ✦',
-                            height: 46,
+                            height: 48,
                             onPressed: () => _handleDirectIdeaSubmit(context),
                           ),
                         ),
@@ -438,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   label,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: CDColors.textPrimary(context),
                   ),
                 ),
@@ -448,14 +437,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  String _getInitials(String name) {
-    if (name.isEmpty) return 'CD';
-    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return name.substring(0, name.length < 2 ? name.length : 2).toUpperCase();
   }
 }

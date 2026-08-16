@@ -17,6 +17,8 @@ class AppState extends ChangeNotifier {
   ContentProject? _currentProject;
   GeneratedContent? _currentGeneratedContent;
   bool _isGenerating = false;
+  AIGenerationStatus _generationStatus = AIGenerationStatus.idle;
+  AIServiceException? _lastError;
   String _generationStep = 'Understanding your idea...';
   ThemeMode _themeMode = ThemeMode.system;
   Timer? _loadingTimer;
@@ -27,6 +29,8 @@ class AppState extends ChangeNotifier {
   ContentProject? get currentProject => _currentProject;
   GeneratedContent? get currentGeneratedContent => _currentGeneratedContent;
   bool get isGenerating => _isGenerating;
+  AIGenerationStatus get generationStatus => _generationStatus;
+  AIServiceException? get lastError => _lastError;
   String get generationStep => _generationStep;
   ThemeMode get themeMode => _themeMode;
 
@@ -80,7 +84,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Content Generation Workflow ---
+  // --- Content Generation Workflow (Real Grok) ---
   Future<ContentProject?> generateContentPack({
     required String platform,
     required String contentType,
@@ -91,11 +95,12 @@ class AppState extends ChangeNotifier {
   }) async {
     if (_isGenerating) return null;
     _isGenerating = true;
-    _generationStep = 'Understanding your idea...';
+    _generationStatus = AIGenerationStatus.generating;
+    _lastError = null;
+    _generationStep = 'Connecting to Grok AI...';
     notifyListeners();
 
     try {
-      // Paced progress updates for realistic perception
       _loadingTimer?.cancel();
       _loadingTimer = _startLoadingStepTimer(platform);
 
@@ -123,16 +128,25 @@ class AppState extends ChangeNotifier {
 
       _currentProject = newProject;
       _currentGeneratedContent = content;
+      _generationStatus = AIGenerationStatus.success;
 
       // Persist to history immediately
       await StorageService.addProjectToHistory(newProject);
       _contentHistory = StorageService.getContentHistory();
 
       return newProject;
+    } on AIServiceException catch (e) {
+      _lastError = e;
+      _generationStatus = e.status;
+      return null;
     } catch (e) {
+      _lastError = AIServiceException(
+        status: AIGenerationStatus.unknownError,
+        message: e.toString(),
+      );
+      _generationStatus = AIGenerationStatus.unknownError;
       return null;
     } finally {
-      // Always cancel timer and reset generating state
       _loadingTimer?.cancel();
       _loadingTimer = null;
       _isGenerating = false;
@@ -182,7 +196,9 @@ class AppState extends ChangeNotifier {
   Future<void> regenerateHooks() async {
     if (_isGenerating || _currentProject == null || _currentGeneratedContent == null) return;
     _isGenerating = true;
-    _generationStep = 'Crafting fresh hooks...';
+    _generationStatus = AIGenerationStatus.generating;
+    _lastError = null;
+    _generationStep = 'Crafting fresh hooks with Grok...';
     notifyListeners();
 
     try {
@@ -206,10 +222,18 @@ class AppState extends ChangeNotifier {
         generatedContent: _currentGeneratedContent,
       );
       _currentProject = updatedProj;
+      _generationStatus = AIGenerationStatus.success;
       await StorageService.addProjectToHistory(updatedProj);
       _contentHistory = StorageService.getContentHistory();
+    } on AIServiceException catch (e) {
+      _lastError = e;
+      _generationStatus = e.status;
     } catch (e) {
-      // Error recovery — hooks remain unchanged
+      _lastError = AIServiceException(
+        status: AIGenerationStatus.unknownError,
+        message: e.toString(),
+      );
+      _generationStatus = AIGenerationStatus.unknownError;
     } finally {
       _loadingTimer?.cancel();
       _loadingTimer = null;
@@ -250,21 +274,23 @@ class AppState extends ChangeNotifier {
     _currentProject = null;
     _currentGeneratedContent = null;
     _isGenerating = false;
+    _generationStatus = AIGenerationStatus.idle;
+    _lastError = null;
     _themeMode = ThemeMode.system;
     notifyListeners();
   }
 
   Timer _startLoadingStepTimer(String platform) {
     final steps = [
-      'Understanding your idea...',
+      'Sending to Grok AI...',
       'Finding the strongest angle...',
       'Adapting to your brand voice...',
-      'Structuring the content...',
+      'Structuring hooks & caption...',
       'Formatting for $platform...',
-      'Polishing the final pack...',
+      'Polishing your content pack...',
     ];
     int stepIdx = 0;
-    return Timer.periodic(const Duration(milliseconds: 800), (t) {
+    return Timer.periodic(const Duration(milliseconds: 900), (t) {
       stepIdx = (stepIdx + 1) % steps.length;
       _generationStep = steps[stepIdx];
       notifyListeners();

@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'cd_logo.dart';
 
 /// A calm, luminous generation overlay with breathing ambient pulses,
-/// frosted glass backdrop, and rotating studio milestone messages.
+/// frosted glass backdrop, official animated CD Monogram, and rotating studio milestone messages.
 class CDLoadingState extends StatefulWidget {
   final String? currentMessage;
 
@@ -28,10 +29,10 @@ class _CDLoadingStateState extends State<CDLoadingState>
 
   final List<String> _rotatingMessages = const [
     'Finding the strongest angle...',
+    'Shaping the content structure...',
     'Adapting to your brand voice...',
-    'Structuring your hooks & caption...',
-    'Curating strategic hashtags...',
-    'Polishing your personalized pack...',
+    'Optimizing for your platform...',
+    'Finishing your content pack...',
   ];
 
   @override
@@ -42,11 +43,11 @@ class _CDLoadingStateState extends State<CDLoadingState>
       duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
 
-    _scaleAnimation = Tween<double>(begin: 0.90, end: 1.10).animate(
+    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.08).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutCubic),
     );
 
-    _glowAnimation = Tween<double>(begin: 0.35, end: 0.85).animate(
+    _glowAnimation = Tween<double>(begin: 0.40, end: 0.90).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutCubic),
     );
 
@@ -70,7 +71,6 @@ class _CDLoadingStateState extends State<CDLoadingState>
   Widget build(BuildContext context) {
     final isDark = CDColors.isDark(context);
     final displayedMessage = widget.currentMessage ?? _rotatingMessages[_messageIndex];
-    final accentColor = CDColors.primaryColor(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -80,7 +80,7 @@ class _CDLoadingStateState extends State<CDLoadingState>
           sigmaY: CDGlass.heavyBlurSigma,
         ),
         child: Container(
-          color: (isDark ? const Color(0xFF080A0F) : const Color(0xFFF1F4F8))
+          color: (isDark ? const Color(0xFF080A0F) : const Color(0xFFF4F6FB))
               .withValues(alpha: 0.88),
           width: double.infinity,
           height: double.infinity,
@@ -88,7 +88,7 @@ class _CDLoadingStateState extends State<CDLoadingState>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Luminous Breathing Orb Centerpiece
+              // Luminous Breathing Orb Centerpiece with Official CD Monogram
               AnimatedBuilder(
                 animation: _pulseController,
                 builder: (context, child) {
@@ -97,14 +97,14 @@ class _CDLoadingStateState extends State<CDLoadingState>
                     children: [
                       // Diffused Outer Glow
                       Container(
-                        width: 120 * _scaleAnimation.value,
-                        height: 120 * _scaleAnimation.value,
+                        width: 130 * _scaleAnimation.value,
+                        height: 130 * _scaleAnimation.value,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              const Color(0xFFC9D6FF).withValues(alpha: 0.22 * _glowAnimation.value),
-                              const Color(0xFFA0B9FF).withValues(alpha: 0.08 * _glowAnimation.value),
+                              CDColors.brand.withValues(alpha: 0.28 * _glowAnimation.value),
+                              CDColors.primaryLight.withValues(alpha: 0.08 * _glowAnimation.value),
                               Colors.transparent,
                             ],
                           ),
@@ -112,8 +112,8 @@ class _CDLoadingStateState extends State<CDLoadingState>
                       ),
                       // Frosted Glass Orb Ring
                       Container(
-                        width: 72,
-                        height: 72,
+                        width: 76,
+                        height: 76,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isDark
@@ -122,22 +122,21 @@ class _CDLoadingStateState extends State<CDLoadingState>
                           border: Border.all(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.25)
-                                : Colors.black.withValues(alpha: 0.08),
+                                : CDColors.brand.withValues(alpha: 0.15),
                             width: 1.2,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFC9D6FF).withValues(alpha: isDark ? 0.22 : 0.12),
-                              blurRadius: 20,
+                              color: CDColors.brand.withValues(alpha: isDark ? 0.30 : 0.18),
+                              blurRadius: 22,
                               offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: Center(
-                          child: Icon(
-                            Icons.auto_awesome_rounded,
-                            size: 26,
-                            color: accentColor,
+                          child: CDLogo.monogram(
+                            height: 24,
+                            colorMode: isDark ? CDLogoColorMode.white : CDLogoColorMode.brand,
                           ),
                         ),
                       ),
@@ -149,13 +148,12 @@ class _CDLoadingStateState extends State<CDLoadingState>
               Text(
                 'Creating Your Studio Pack',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: -0.4,
                       color: CDColors.textPrimary(context),
                     ),
               ),
-              const SizedBox(height: CDSpacing.sm),
+              const SizedBox(height: CDSpacing.xs),
               AnimatedSwitcher(
                 duration: CDMotion.standard,
                 child: Text(
@@ -164,7 +162,7 @@ class _CDLoadingStateState extends State<CDLoadingState>
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: CDColors.textSecondary(context),
-                        fontSize: 14,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.w500,
                       ),
                 ),

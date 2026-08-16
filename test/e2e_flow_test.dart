@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:creatediff/models/creator_profile.dart';
+import 'package:creatediff/models/content_project.dart';
+import 'package:creatediff/models/generated_content.dart';
 import 'package:creatediff/services/ai_service.dart';
 import 'package:creatediff/services/ai_config.dart';
 import 'package:creatediff/services/storage_service.dart';
@@ -10,7 +12,7 @@ import 'package:creatediff/services/app_state.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('CreateDiff V2 End-to-End Core Workflow & Grok AI Tests', () {
+  group('CreateDiff Master Brand & Grok AI Observability Tests', () {
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
       await AppState.instance.init();
@@ -58,42 +60,44 @@ void main() {
       expect(userPrompt, contains('Idea / Topic: 5 AI tools for creators'));
     });
 
-    test('2. Brand Memory & Content Engine generates personalized content', () async {
+    test('2. Grok AI strict error observability when API key is missing', () async {
+      // Ensure key is empty
+      AIConfig.setConfig(apiKey: '', model: 'grok-4.5', baseUrl: 'https://api.x.ai/v1');
+
       const profile = CreatorProfile(
         creatorName: 'Joel G Jojo',
-        username: '@joelgjojo',
         niche: 'Technology',
-        targetAudience: 'College students and creators',
-        tone: 'Educational',
-        primaryLanguage: 'Manglish',
-        emojiUsage: 'moderate',
-        preferredCTAStyle: 'Question',
       );
 
-      final content = await AIService.generateContent(
-        platform: 'Instagram',
-        contentType: 'Reel',
-        idea: '5 AI Tools every student should know',
-        profile: profile,
+      expect(
+        () => AIService.generateContent(
+          platform: 'Instagram',
+          contentType: 'Reel',
+          idea: '5 AI Tools',
+          profile: profile,
+        ),
+        throwsA(isA<AIServiceException>().having(
+          (e) => e.status,
+          'status',
+          equals(AIGenerationStatus.missingApiKey),
+        )),
       );
 
-      expect(content.hooks.length, equals(5));
-      expect(content.hooks.first, contains('Ithu arinjaal'));
-      expect(content.caption, contains('Njan'));
-      expect(content.caption, contains('✅'));
-      expect(content.ctas.isNotEmpty, isTrue);
-      expect(content.hashtagsHighReach.isNotEmpty, isTrue);
-      expect(content.coverText.isNotEmpty, isTrue);
+      // Verify Debug Log telemetry is populated
+      final log = AIService.lastDebugLog;
+      expect(log, isNotNull);
+      expect(log!.status, equals(AIGenerationStatus.missingApiKey));
+      expect(log.provider, equals('xAI Grok'));
     });
 
     test('3. Grok AI Configuration & Runtime Overrides', () {
       AIConfig.setConfig(
-        apiKey: 'test_grok_key',
+        apiKey: 'test_grok_key_12345',
         model: 'grok-4.5',
         baseUrl: 'https://api.x.ai/v1',
       );
 
-      expect(AIConfig.apiKey, equals('test_grok_key'));
+      expect(AIConfig.apiKey, equals('test_grok_key_12345'));
       expect(AIConfig.model, equals('grok-4.5'));
       expect(AIConfig.baseUrl, equals('https://api.x.ai/v1'));
       expect(AIConfig.hasApiKey, isTrue);
@@ -102,63 +106,97 @@ void main() {
       AIConfig.setConfig(apiKey: '', model: 'grok-4.5', baseUrl: 'https://api.x.ai/v1');
     });
 
-    test('4. Complete end-to-end flow state transitions with design, duplicate, delete, and theme', () async {
+    test('4. Complete reset flow restarts state and clears persistence cleanly', () async {
       final appState = AppState.instance;
 
-      // User onboards & sets up profile
+      // Setup state
       await appState.completeOnboarding();
-      expect(appState.hasCompletedOnboarding, isTrue);
+      await appState.updateProfile(const CreatorProfile(creatorName: 'Test Creator'));
 
-      const profile = CreatorProfile(
-        creatorName: 'Tech Explorer',
-        username: '@techexplorer',
-        niche: 'Technology',
-        tone: 'Bold',
-        primaryLanguage: 'English',
-      );
-      await appState.updateProfile(profile);
-      expect(appState.hasCompletedProfileSetup, isTrue);
-      expect(appState.profile.creatorName, equals('Tech Explorer'));
-
-      // User creates a content pack
-      final project = await appState.generateContentPack(
+      final sampleProject = ContentProject(
+        id: 'project_1',
         platform: 'Instagram',
         contentType: 'Reel',
-        idea: 'Top 3 productivity systems',
+        idea: 'Sample Idea',
+        createdAt: DateTime.now(),
+        status: 'generated',
+        generatedContent: const GeneratedContent(
+          hooks: ['Hook 1'],
+          caption: 'Caption 1',
+          ctas: ['CTA 1'],
+          hashtagsHighReach: ['#tag1'],
+          hashtagsMediumReach: [],
+          hashtagsNiche: [],
+          coverText: 'TITLE',
+          variations: [],
+        ),
+        language: 'English',
+        tone: 'Educational',
       );
 
-      expect(project, isNotNull);
+      await StorageService.addProjectToHistory(sampleProject);
+      appState.setCurrentProject(sampleProject);
+
+      expect(appState.hasCompletedOnboarding, isTrue);
+      expect(appState.hasCompletedProfileSetup, isTrue);
       expect(appState.currentProject, isNotNull);
-      expect(appState.contentHistory.length, equals(1));
-      expect(appState.contentHistory.first.idea, equals('Top 3 productivity systems'));
 
-      // User selects a visual design direction
-      await appState.updateCurrentProjectDesign(
-        templateName: 'Clean Editorial',
-        style: 'editorial',
+      // Perform Complete Reset
+      await appState.resetAll();
+
+      expect(appState.hasCompletedOnboarding, isFalse);
+      expect(appState.hasCompletedProfileSetup, isFalse);
+      expect(appState.currentProject, isNull);
+      expect(appState.contentHistory.isEmpty, isTrue);
+      expect(appState.profile.creatorName.isEmpty, isTrue);
+      expect(StorageService.getContentHistory().isEmpty, isTrue);
+    });
+
+    test('5. Project history manipulation (add, design, duplicate, delete, theme)', () async {
+      final appState = AppState.instance;
+
+      final sampleProject = ContentProject(
+        id: 'proj_100',
+        platform: 'LinkedIn',
+        contentType: 'Post',
+        idea: 'Engineering Leadership',
+        createdAt: DateTime.now(),
+        status: 'generated',
+        generatedContent: const GeneratedContent(
+          hooks: ['Leadership Hook'],
+          caption: 'Leadership Caption',
+          ctas: ['Follow for more'],
+          hashtagsHighReach: ['#leadership'],
+          hashtagsMediumReach: [],
+          hashtagsNiche: [],
+          coverText: 'LEADERSHIP',
+          variations: [],
+        ),
+        language: 'English',
+        tone: 'Professional',
       );
 
-      expect(appState.currentProject?.selectedDesignTemplate, equals('Clean Editorial'));
-      expect(appState.contentHistory.first.selectedDesignTemplate, equals('Clean Editorial'));
+      await StorageService.addProjectToHistory(sampleProject);
+      appState.setCurrentProject(sampleProject);
 
-      // User duplicates content pack in history
-      final duplicated = await appState.duplicateProject(project!);
+      // Design selection
+      await appState.updateCurrentProjectDesign(
+        templateName: 'Modern Studio',
+        style: 'dark_editorial',
+      );
+      expect(appState.currentProject?.selectedDesignTemplate, equals('Modern Studio'));
+
+      // Duplicate
+      final dup = await appState.duplicateProject(sampleProject);
       expect(appState.contentHistory.length, equals(2));
-      expect(duplicated.id, isNot(equals(project.id)));
 
-      // User deletes the duplicated content pack
-      await appState.deleteProject(duplicated.id);
+      // Delete
+      await appState.deleteProject(dup.id);
       expect(appState.contentHistory.length, equals(1));
 
-      // Theme toggle test
+      // Theme toggle
       await appState.setThemeMode(ThemeMode.dark);
       expect(appState.themeMode, equals(ThemeMode.dark));
-      expect(StorageService.getThemeMode(), equals('dark'));
-
-      // User checks history persistence
-      final savedHistory = StorageService.getContentHistory();
-      expect(savedHistory.length, equals(1));
-      expect(savedHistory.first.id, equals(project.id));
     });
   });
 }

@@ -4,6 +4,7 @@ import '../services/app_state.dart';
 import '../components/cd_onboarding_slide.dart';
 import '../components/cd_primary_button.dart';
 import '../components/cd_atmospheric_background.dart';
+import '../components/cd_logo.dart';
 import 'creator_profile_screen.dart';
 
 /// Atmospheric onboarding flow introducing the studio value proposition.
@@ -23,20 +24,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     {
       'icon': Icons.auto_awesome_rounded,
       'title': 'Welcome to CreateDiff',
-      'desc': 'Your personal studio that turns single ideas into complete, publish-ready content packs.',
-      'color': CDColors.primaryLight,
+      'desc': 'Your AI creative studio that turns raw concepts into complete, publish-ready social packs.',
+      'color': CDColors.brand,
     },
     {
       'icon': Icons.psychology_rounded,
       'title': 'Brand Memory Engine',
-      'desc': 'Set your niche, voice, and style once. Every generation is tailored specifically to you.',
-      'color': CDColors.icyBlue,
+      'desc': 'Set your niche, voice, and visual identity once. Every generation is tailored specifically to you.',
+      'color': CDColors.brand,
     },
     {
       'icon': Icons.bolt_rounded,
       'title': 'Zero-Prompt Creation',
-      'desc': 'No complex prompt engineering required. Type a raw idea, and we handle the craft.',
-      'color': CDColors.success,
+      'desc': 'No complex prompt engineering required. Type a natural idea, and we craft hooks, captions, and layouts.',
+      'color': CDColors.brand,
     },
   ];
 
@@ -80,6 +81,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: SafeArea(
           child: Column(
             children: [
+              // Top Brand Lockup Header
+              Padding(
+                padding: const EdgeInsets.only(top: CDSpacing.lg),
+                child: const CDLogo.lockup(
+                  height: 24,
+                  colorMode: CDLogoColorMode.adaptive,
+                ),
+              ),
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
@@ -117,7 +126,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           width: _currentPage == index ? 24 : 6,
                           decoration: BoxDecoration(
                             color: _currentPage == index
-                                ? CDColors.primary
+                                ? CDColors.brand
                                 : (isDark ? CDColors.darkMuted : CDColors.lightMuted).withValues(alpha: 0.35),
                             borderRadius: BorderRadius.circular(CDRadius.pill),
                           ),
