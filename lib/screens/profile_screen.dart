@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/creator_profile.dart';
 import '../services/app_state.dart';
-import '../components/cd_glass_card.dart';
 import '../components/cd_secondary_button.dart';
 import 'creator_profile_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isMemoryExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
     final appState = AppState.instance;
 
     return ListenableBuilder(
@@ -21,6 +25,7 @@ class ProfileScreen extends StatelessWidget {
         final profile = appState.profile;
 
         return Scaffold(
+          backgroundColor: CDColors.background(context),
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -29,34 +34,34 @@ class ProfileScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 20,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                    color: CDColors.textPrimary(context),
                   ),
             ),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.only(
-              left: AppSpacing.xl,
-              right: AppSpacing.xl,
-              top: AppSpacing.sm,
-              bottom: 96,
+              left: CDSpacing.xl,
+              right: CDSpacing.xl,
+              top: CDSpacing.sm,
+              bottom: CDSpacing.navBarClearance,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // --- Brand Memory Highlight Card ---
-                _buildBrandMemorySection(context, profile, isDark, primaryColor),
-                const SizedBox(height: AppSpacing.xl),
+                _buildBrandMemorySection(context, profile),
+                const SizedBox(height: CDSpacing.xl),
 
                 // --- Appearance & Theme ---
-                _buildAppearanceSection(context, appState, isDark, primaryColor),
-                const SizedBox(height: AppSpacing.xl),
+                _buildAppearanceSection(context, appState),
+                const SizedBox(height: CDSpacing.xl),
 
                 // --- Studio Data Management ---
-                _buildDataManagementSection(context, appState, isDark),
-                const SizedBox(height: AppSpacing.xl),
+                _buildDataManagementSection(context, appState),
+                const SizedBox(height: CDSpacing.xl),
 
                 // --- About CreateDiff ---
-                _buildAboutSection(context, isDark),
+                _buildAboutSection(context),
               ],
             ),
           ),
@@ -65,16 +70,17 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBrandMemorySection(
-    BuildContext context,
-    CreatorProfile profile,
-    bool isDark,
-    Color primaryColor,
-  ) {
+  Widget _buildBrandMemorySection(BuildContext context, CreatorProfile profile) {
     final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Creator Identity';
     final handle = profile.handle.isNotEmpty ? profile.handle : '@handle';
 
-    return CDGlassCard(
+    return Container(
+      padding: const EdgeInsets.all(CDSpacing.lg),
+      decoration: BoxDecoration(
+        color: CDColors.surface(context),
+        borderRadius: CDRadius.rLarge,
+        border: Border.all(color: CDColors.borderSubtle(context), width: 1.0),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -102,7 +108,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.md),
+                  const SizedBox(width: CDSpacing.md),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -111,13 +117,13 @@ class ProfileScreen extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
                               fontSize: 15,
-                              color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                              color: CDColors.textPrimary(context),
                             ),
                       ),
                       Text(
                         handle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                              color: CDColors.textSecondary(context),
                               fontSize: 12,
                             ),
                       ),
@@ -128,41 +134,75 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
-                  borderRadius: AppRadius.rPill,
+                  color: CDColors.elevated(context),
+                  borderRadius: CDRadius.rPill,
                 ),
-                child: Text(
+                child: const Text(
                   'ACTIVE',
                   style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.success,
+                    color: CDColors.success,
                     letterSpacing: 0.5,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          const Divider(height: 1),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'BRAND MEMORY PARAMETERS',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
-              letterSpacing: 0.6,
+          const SizedBox(height: CDSpacing.md),
+          Divider(height: 1, color: CDColors.borderSubtle(context)),
+          const SizedBox(height: CDSpacing.md),
+          
+          InkWell(
+            onTap: () {
+              AppHaptics.selection();
+              setState(() => _isMemoryExpanded = !_isMemoryExpanded);
+            },
+            borderRadius: CDRadius.rSmall,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'BRAND MEMORY PARAMETERS',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: CDColors.textSecondary(context),
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                  Icon(
+                    _isMemoryExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                    size: 16,
+                    color: CDColors.textSecondary(context),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          _buildMemoryRow('Niche & Domain', profile.niche.isNotEmpty ? profile.niche : 'General Creator', isDark),
-          _buildMemoryRow('Target Audience', profile.targetAudience.isNotEmpty ? profile.targetAudience : 'General', isDark),
-          _buildMemoryRow('Languages', profile.primaryLanguage.isNotEmpty ? profile.primaryLanguage : 'English', isDark),
-          _buildMemoryRow('Tone of Voice', profile.tone.isNotEmpty ? profile.tone : 'Educational', isDark),
-          _buildMemoryRow('CTA Preference', profile.preferredCTAStyle.isNotEmpty ? profile.preferredCTAStyle : 'Direct', isDark),
-          _buildMemoryRow('Emoji Usage', profile.emojiUsage.toUpperCase(), isDark),
-          const SizedBox(height: AppSpacing.md),
+          
+          AnimatedCrossFade(
+            firstChild: const SizedBox(height: CDSpacing.xs, width: double.infinity),
+            secondChild: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: CDSpacing.sm),
+                _buildMemoryRow('Niche & Domain', profile.niche.isNotEmpty ? profile.niche : 'General Creator'),
+                _buildMemoryRow('Target Audience', profile.targetAudience.isNotEmpty ? profile.targetAudience : 'General'),
+                _buildMemoryRow('Languages', profile.primaryLanguage.isNotEmpty ? profile.primaryLanguage : 'English'),
+                _buildMemoryRow('Tone of Voice', profile.tone.isNotEmpty ? profile.tone : 'Educational'),
+                _buildMemoryRow('CTA Preference', profile.preferredCTAStyle.isNotEmpty ? profile.preferredCTAStyle : 'Direct'),
+                _buildMemoryRow('Emoji Usage', profile.emojiUsage.toUpperCase()),
+                const SizedBox(height: CDSpacing.md),
+              ],
+            ),
+            crossFadeState: _isMemoryExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            duration: CDMotion.standard,
+          ),
+          
+          const SizedBox(height: CDSpacing.sm),
           CDSecondaryButton(
             label: 'Edit Brand Memory',
             isFullWidth: true,
@@ -181,7 +221,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMemoryRow(String label, String value, bool isDark) {
+  Widget _buildMemoryRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3.0),
       child: Row(
@@ -191,7 +231,7 @@ class ProfileScreen extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              color: CDColors.textSecondary(context),
             ),
           ),
           Text(
@@ -199,7 +239,7 @@ class ProfileScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+              color: CDColors.textPrimary(context),
             ),
           ),
         ],
@@ -207,13 +247,14 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppearanceSection(
-    BuildContext context,
-    AppState appState,
-    bool isDark,
-    Color primaryColor,
-  ) {
-    return CDGlassCard(
+  Widget _buildAppearanceSection(BuildContext context, AppState appState) {
+    return Container(
+      padding: const EdgeInsets.all(CDSpacing.lg),
+      decoration: BoxDecoration(
+        color: CDColors.surface(context),
+        borderRadius: CDRadius.rLarge,
+        border: Border.all(color: CDColors.borderSubtle(context), width: 1.0),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -222,9 +263,10 @@ class ProfileScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
+                  color: CDColors.textPrimary(context),
                 ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: CDSpacing.md),
           Row(
             children: [
               _buildThemeOption(
@@ -233,28 +275,22 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.brightness_auto_rounded,
                 isSelected: appState.themeMode == ThemeMode.system,
                 onTap: () => appState.setThemeMode(ThemeMode.system),
-                isDark: isDark,
-                primaryColor: primaryColor,
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: CDSpacing.sm),
               _buildThemeOption(
                 context,
                 label: 'Dark',
                 icon: Icons.dark_mode_rounded,
                 isSelected: appState.themeMode == ThemeMode.dark,
                 onTap: () => appState.setThemeMode(ThemeMode.dark),
-                isDark: isDark,
-                primaryColor: primaryColor,
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: CDSpacing.sm),
               _buildThemeOption(
                 context,
                 label: 'Light',
                 icon: Icons.light_mode_rounded,
                 isSelected: appState.themeMode == ThemeMode.light,
                 onTap: () => appState.setThemeMode(ThemeMode.light),
-                isDark: isDark,
-                primaryColor: primaryColor,
               ),
             ],
           ),
@@ -269,8 +305,6 @@ class ProfileScreen extends StatelessWidget {
     required IconData icon,
     required bool isSelected,
     required VoidCallback onTap,
-    required bool isDark,
-    required Color primaryColor,
   }) {
     return Expanded(
       child: Material(
@@ -280,18 +314,16 @@ class ProfileScreen extends StatelessWidget {
             AppHaptics.selection();
             onTap();
           },
-          borderRadius: AppRadius.rMedium,
+          borderRadius: CDRadius.rMedium,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: isSelected
-                  ? primaryColor.withValues(alpha: 0.14)
-                  : (isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface),
-              borderRadius: AppRadius.rMedium,
+                  ? CDColors.primary.withValues(alpha: 0.14)
+                  : CDColors.elevated(context),
+              borderRadius: CDRadius.rMedium,
               border: Border.all(
-                color: isSelected
-                    ? primaryColor
-                    : (isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle),
+                color: isSelected ? CDColors.primary : CDColors.borderSubtle(context),
                 width: 1.2,
               ),
             ),
@@ -300,9 +332,7 @@ class ProfileScreen extends StatelessWidget {
                 Icon(
                   icon,
                   size: 18,
-                  color: isSelected
-                      ? primaryColor
-                      : (isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText),
+                  color: isSelected ? CDColors.primary : CDColors.textSecondary(context),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -310,9 +340,7 @@ class ProfileScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected
-                        ? primaryColor
-                        : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                    color: isSelected ? CDColors.primary : CDColors.textPrimary(context),
                   ),
                 ),
               ],
@@ -323,8 +351,14 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDataManagementSection(BuildContext context, AppState appState, bool isDark) {
-    return CDGlassCard(
+  Widget _buildDataManagementSection(BuildContext context, AppState appState) {
+    return Container(
+      padding: const EdgeInsets.all(CDSpacing.lg),
+      decoration: BoxDecoration(
+        color: CDColors.surface(context),
+        borderRadius: CDRadius.rLarge,
+        border: Border.all(color: CDColors.borderSubtle(context), width: 1.0),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -333,17 +367,18 @@ class ProfileScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
+                  color: CDColors.textPrimary(context),
                 ),
           ),
           const SizedBox(height: 4),
           Text(
             'All your profile data and content history are stored securely on this device.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                  color: CDColors.textSecondary(context),
                   fontSize: 12,
                 ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: CDSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -352,13 +387,13 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                  color: CDColors.textPrimary(context),
                 ),
               ),
               TextButton(
                 onPressed: () => _confirmReset(context, appState),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.error,
+                  foregroundColor: CDColors.error,
                   padding: EdgeInsets.zero,
                   minimumSize: Size.zero,
                 ),
@@ -371,7 +406,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAboutSection(BuildContext context, bool isDark) {
+  Widget _buildAboutSection(BuildContext context) {
     return Center(
       child: Column(
         children: [
@@ -380,7 +415,7 @@ class ProfileScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+              color: CDColors.textSecondary(context),
             ),
           ),
           const SizedBox(height: 2),
@@ -388,7 +423,7 @@ class ProfileScreen extends StatelessWidget {
             'Zero-prompt creator workflow software',
             style: TextStyle(
               fontSize: 11,
-              color: isDark ? AppColors.darkTertiaryText : AppColors.lightTertiaryText,
+              color: CDColors.textMuted(context),
             ),
           ),
         ],
@@ -400,24 +435,35 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reset Studio Data?'),
-        content: const Text(
+        backgroundColor: CDColors.surface(context),
+        title: Text(
+          'Reset Studio Data?',
+          style: TextStyle(color: CDColors.textPrimary(context)),
+        ),
+        content: Text(
           'This will clear your local Brand Memory profile and all saved content creations. This action cannot be undone.',
+          style: TextStyle(color: CDColors.textSecondary(context)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: CDColors.textPrimary(context)),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
               appState.resetAll();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Studio data reset successfully')),
+                SnackBar(
+                  content: const Text('Studio data reset successfully'),
+                  backgroundColor: CDColors.textPrimary(context),
+                ),
               );
             },
-            child: const Text('Reset', style: TextStyle(color: AppColors.error)),
+            child: const Text('Reset', style: TextStyle(color: CDColors.error)),
           ),
         ],
       ),

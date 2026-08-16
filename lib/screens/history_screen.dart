@@ -54,13 +54,49 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Future<void> _deleteProject(ContentProject project) async {
     AppHaptics.light();
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: CDColors.surface(context),
+          title: Text(
+            'Delete Content Pack',
+            style: TextStyle(color: CDColors.textPrimary(context)),
+          ),
+          content: Text(
+            'Are you sure you want to delete this content pack? This action cannot be undone.',
+            style: TextStyle(color: CDColors.textSecondary(context)),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: CDColors.textPrimary(context)),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: CDColors.error),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
     await AppState.instance.deleteProject(project.id);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Content pack deleted'),
-          duration: Duration(milliseconds: 1400),
+        SnackBar(
+          content: const Text('Content pack deleted'),
+          duration: const Duration(milliseconds: 1400),
           behavior: SnackBarBehavior.floating,
+          backgroundColor: CDColors.textPrimary(context),
         ),
       );
     }
@@ -68,8 +104,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
     final appState = AppState.instance;
 
     return ListenableBuilder(
@@ -79,6 +113,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         final filtered = _getFilteredHistory(allHistory);
 
         return Scaffold(
+          backgroundColor: CDColors.background(context),
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -87,26 +122,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 20,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                    color: CDColors.textPrimary(context),
                   ),
             ),
             actions: [
               if (allHistory.isNotEmpty)
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.lg),
+                    padding: const EdgeInsets.only(right: CDSpacing.lg),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
-                        borderRadius: AppRadius.rPill,
+                        color: CDColors.elevated(context),
+                        borderRadius: CDRadius.rPill,
                       ),
                       child: Text(
                         '${allHistory.length} creations',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                          color: CDColors.textSecondary(context),
                         ),
                       ),
                     ),
@@ -120,14 +155,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
               // Filter Chips
               if (allHistory.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xs),
+                  padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl, vertical: CDSpacing.xs),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: _filters.map((f) {
                         final isSelected = _selectedPlatformFilter == f;
                         return Padding(
-                          padding: const EdgeInsets.only(right: AppSpacing.sm),
+                          padding: const EdgeInsets.only(right: CDSpacing.sm),
                           child: ChoiceChip(
                             label: Text(f),
                             selected: isSelected,
@@ -135,14 +170,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               AppHaptics.selection();
                               setState(() => _selectedPlatformFilter = f);
                             },
-                            selectedColor: primaryColor,
+                            selectedColor: CDColors.primary,
                             labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                              color: isSelected ? Colors.white : CDColors.textPrimary(context),
                               fontSize: 12,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                             ),
-                            backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
-                            shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
+                            backgroundColor: CDColors.surface(context),
+                            shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+                            side: BorderSide(
+                              color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+                            ),
                           ),
                         );
                       }).toList(),
@@ -168,16 +206,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.only(
-                          left: AppSpacing.xl,
-                          right: AppSpacing.xl,
-                          top: AppSpacing.md,
-                          bottom: 96,
+                          left: CDSpacing.xl,
+                          right: CDSpacing.xl,
+                          top: CDSpacing.md,
+                          bottom: CDSpacing.navBarClearance,
                         ),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final project = filtered[index];
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            padding: const EdgeInsets.only(bottom: CDSpacing.sm),
                             child: CDRecentContentCard(
                               project: project,
                               onTap: () => _openProject(project),

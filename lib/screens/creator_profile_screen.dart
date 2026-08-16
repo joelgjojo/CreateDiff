@@ -170,7 +170,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
-            transitionDuration: const Duration(milliseconds: 300),
+            transitionDuration: CDMotion.screen,
           ),
         );
       } else {
@@ -179,7 +179,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
           const SnackBar(
             content: Text('Brand Memory updated successfully!'),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.success,
+            backgroundColor: CDColors.success,
           ),
         );
       }
@@ -188,16 +188,14 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
-
     return Scaffold(
+      backgroundColor: CDColors.background(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: _currentStep > 0
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded),
+                icon: Icon(Icons.arrow_back_rounded, color: CDColors.textPrimary(context)),
                 onPressed: () {
                   AppHaptics.selection();
                   setState(() => _currentStep--);
@@ -206,7 +204,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             : (widget.isInitialSetup
                 ? null
                 : IconButton(
-                    icon: const Icon(Icons.close_rounded),
+                    icon: Icon(Icons.close_rounded, color: CDColors.textPrimary(context)),
                     onPressed: () => Navigator.of(context).pop(),
                   )),
         title: Column(
@@ -216,12 +214,15 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               'Brand Memory',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                    color: CDColors.textPrimary(context),
                   ),
             ),
             Text(
               'Step ${_currentStep + 1} of 5',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: 11,
+                color: CDColors.textSecondary(context),
+              ),
             ),
           ],
         ),
@@ -232,7 +233,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               child: Text(
                 'Skip',
                 style: TextStyle(
-                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                  color: CDColors.textSecondary(context),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -241,14 +242,14 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+            padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl),
             child: ClipRRect(
-              borderRadius: AppRadius.rPill,
+              borderRadius: CDRadius.rPill,
               child: LinearProgressIndicator(
                 value: (_currentStep + 1) / 5,
                 minHeight: 3,
-                backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
-                valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                backgroundColor: CDColors.elevated(context),
+                valueColor: AlwaysStoppedAnimation<Color>(CDColors.primary),
               ),
             ),
           ),
@@ -259,12 +260,12 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: _buildStepContent(isDark, primaryColor),
+                padding: const EdgeInsets.all(CDSpacing.xl),
+                child: _buildStepContent(),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+              padding: const EdgeInsets.all(CDSpacing.xl),
               child: CDPrimaryButton(
                 label: _currentStep < 4 ? 'Continue →' : (widget.isInitialSetup ? 'Complete Setup ✦' : 'Save Brand Changes'),
                 isFullWidth: true,
@@ -277,56 +278,62 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     );
   }
 
-  Widget _buildStepContent(bool isDark, Color primaryColor) {
+  Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
-        return _buildStep0Identity(isDark, primaryColor);
+        return _buildStep0Identity();
       case 1:
-        return _buildStep1AudienceTone(isDark, primaryColor);
+        return _buildStep1AudienceTone();
       case 2:
-        return _buildStep2Language(isDark, primaryColor);
+        return _buildStep2Language();
       case 3:
-        return _buildStep3BrandColors(isDark, primaryColor);
+        return _buildStep3BrandColors();
       case 4:
       default:
-        return _buildStep4Socials(isDark, primaryColor);
+        return _buildStep4Socials();
     }
   }
 
-  Widget _buildStep0Identity(bool isDark, Color primaryColor) {
+  Widget _buildStep0Identity() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Who are you creating for?',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           'CreateDiff will use this identity to tailor all future content packs.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: CDSpacing.xxl),
         CDTextInput(
           label: 'Creator / Business Name',
           hint: 'e.g., TechWithJoel or Artisan Bakery',
           controller: _nameController,
           isRequired: true,
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         CDTextInput(
           label: 'Username / Handle',
           hint: '@yourbrand',
           controller: _usernameController,
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         Text(
           'Select your niche',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: CDColors.textPrimary(context),
+              ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: CDSpacing.sm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -339,14 +346,17 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 AppHaptics.selection();
                 setState(() => _niche = n);
               },
-              selectedColor: primaryColor,
+              selectedColor: CDColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
+              backgroundColor: CDColors.surface(context),
+              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+              ),
             );
           }).toList(),
         ),
@@ -354,34 +364,40 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     );
   }
 
-  Widget _buildStep1AudienceTone(bool isDark, Color primaryColor) {
+  Widget _buildStep1AudienceTone() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Target Audience & Voice',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           'Help CreateDiff match your unique personality and audience expectations.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: CDSpacing.xxl),
         CDTextInput(
           label: 'Who is your target audience?',
           hint: 'e.g., College students, freelancers, foodies in Kerala...',
           controller: _audienceController,
           maxLines: 2,
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         Text(
           'Choose your default tone',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: CDColors.textPrimary(context),
+              ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: CDSpacing.sm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -394,18 +410,21 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 AppHaptics.selection();
                 setState(() => _tone = t);
               },
-              selectedColor: primaryColor,
+              selectedColor: CDColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
+              backgroundColor: CDColors.surface(context),
+              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+              ),
             );
           }).toList(),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         CDTextInput(
           label: 'Content Style / Description',
           hint: 'e.g., Short-form educational with actionable takeaways',
@@ -416,27 +435,33 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     );
   }
 
-  Widget _buildStep2Language(bool isDark, Color primaryColor) {
+  Widget _buildStep2Language() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Language & Expression',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           'Support for regional languages and custom emoji density.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: CDSpacing.xxl),
         Text(
           'Primary Language',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: CDColors.textPrimary(context),
+              ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: CDSpacing.sm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -449,23 +474,29 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 AppHaptics.selection();
                 setState(() => _primaryLang = l);
               },
-              selectedColor: primaryColor,
+              selectedColor: CDColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
+              backgroundColor: CDColors.surface(context),
+              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+              ),
             );
           }).toList(),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         Text(
           'Emoji Usage in Captions',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: CDColors.textPrimary(context),
+              ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: CDSpacing.sm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -478,14 +509,17 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 AppHaptics.selection();
                 setState(() => _emojiUsage = e);
               },
-              selectedColor: primaryColor,
+              selectedColor: CDColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
+              backgroundColor: CDColors.surface(context),
+              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+              ),
             );
           }).toList(),
         ),
@@ -493,34 +527,40 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     );
   }
 
-  Widget _buildStep3BrandColors(bool isDark, Color primaryColor) {
+  Widget _buildStep3BrandColors() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Brand Identity & Aesthetics',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           'These colors will be automatically applied to your visual designs.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: CDSpacing.xxl),
         CDTextInput(
           label: 'Brand One-Liner Description',
           hint: 'What makes your content or business special?',
           controller: _brandDescController,
           maxLines: 3,
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         Text(
           'Call to Action (CTA) Preference',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: CDColors.textPrimary(context),
+              ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: CDSpacing.sm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -533,23 +573,29 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 AppHaptics.selection();
                 setState(() => _ctaStyle = cta);
               },
-              selectedColor: primaryColor,
+              selectedColor: CDColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                color: isSelected ? Colors.white : CDColors.textPrimary(context),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
-              backgroundColor: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.rPill),
+              backgroundColor: CDColors.surface(context),
+              shape: RoundedRectangleBorder(borderRadius: CDRadius.rPill),
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+              ),
             );
           }).toList(),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         Text(
           'Brand Accent Color',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: CDColors.textPrimary(context),
+              ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: CDSpacing.sm),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: _brandColors.map((color) {
@@ -560,15 +606,15 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 setState(() => _primaryColor = color);
               },
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
+                duration: CDMotion.micro,
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
                   color: color,
                   shape: BoxShape.circle,
                   border: isSelected
-                      ? Border.all(color: isDark ? Colors.white : Colors.black, width: 2.5)
-                      : Border.all(color: Colors.white38, width: 1),
+                      ? Border.all(color: CDColors.isDark(context) ? Colors.white : Colors.black, width: 2.5)
+                      : Border.all(color: CDColors.borderSubtle(context), width: 1),
                 ),
                 child: isSelected
                     ? const Icon(Icons.check, size: 16, color: Colors.white)
@@ -581,41 +627,44 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     );
   }
 
-  Widget _buildStep4Socials(bool isDark, Color primaryColor) {
+  Widget _buildStep4Socials() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Social Channels (Optional)',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           'Add your handles so they can be embedded in descriptions and visuals.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                color: CDColors.textSecondary(context),
               ),
         ),
-        const SizedBox(height: AppSpacing.xl2),
+        const SizedBox(height: CDSpacing.xxl),
         CDTextInput(
           label: 'Instagram Handle',
           hint: '@yourinstagram',
           controller: _instagramController,
-          prefixIcon: const Icon(Icons.camera_alt_outlined, size: 18),
+          prefixIcon: Icon(Icons.camera_alt_outlined, size: 18, color: CDColors.textSecondary(context)),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         CDTextInput(
           label: 'YouTube Channel',
           hint: '@youryoutube',
           controller: _youtubeController,
-          prefixIcon: const Icon(Icons.play_circle_outline_rounded, size: 18),
+          prefixIcon: Icon(Icons.play_circle_outline_rounded, size: 18, color: CDColors.textSecondary(context)),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: CDSpacing.lg),
         CDTextInput(
           label: 'Website URL',
           hint: 'https://yoursite.com',
           controller: _websiteController,
-          prefixIcon: const Icon(Icons.language_rounded, size: 18),
+          prefixIcon: Icon(Icons.language_rounded, size: 18, color: CDColors.textSecondary(context)),
         ),
       ],
     );

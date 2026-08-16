@@ -15,10 +15,9 @@ class CDPlatformSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
-    final unselectedBg = isDark ? AppColors.darkSurface1 : AppColors.lightSecondarySurface;
-    final unselectedText = isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+    final primaryColor = CDColors.primary;
+    final unselectedBg = CDColors.surface(context);
+    final unselectedText = CDColors.textSecondary(context);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -26,7 +25,7 @@ class CDPlatformSelector extends StatelessWidget {
         children: platforms.map((platform) {
           final isSelected = selectedPlatform.toLowerCase() == platform.toLowerCase();
           return Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            padding: const EdgeInsets.only(right: CDSpacing.sm),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
@@ -34,34 +33,34 @@ class CDPlatformSelector extends StatelessWidget {
                   AppHaptics.selection();
                   onPlatformSelected(platform);
                 },
-                borderRadius: AppRadius.rPill,
+                borderRadius: CDRadius.rPill,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
+                  duration: CDMotion.micro,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
+                    horizontal: CDSpacing.md,
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? primaryColor : unselectedBg,
-                    borderRadius: AppRadius.rPill,
+                    color: isSelected ? primaryColor.withValues(alpha: 0.12) : unselectedBg,
+                    borderRadius: CDRadius.rPill,
                     border: Border.all(
                       color: isSelected
                           ? primaryColor
-                          : (isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle),
+                          : CDColors.borderSubtle(context),
                       width: 1,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _getPlatformIcon(platform, isSelected ? Colors.white : unselectedText),
+                      _getPlatformIcon(platform, isSelected ? primaryColor : unselectedText),
                       const SizedBox(width: 5),
                       Text(
                         platform,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                          color: isSelected ? Colors.white : unselectedText,
+                          color: isSelected ? primaryColor : unselectedText,
                         ),
                       ),
                     ],

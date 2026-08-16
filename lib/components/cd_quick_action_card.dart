@@ -17,9 +17,8 @@ class CDQuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
-    final border = isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle;
+    final cardBg = CDColors.surface(context);
+    final border = CDColors.borderSubtle(context);
 
     return Material(
       color: Colors.transparent,
@@ -28,12 +27,12 @@ class CDQuickActionCard extends StatelessWidget {
           AppHaptics.selection();
           onTap();
         },
-        borderRadius: AppRadius.rMedium,
+        borderRadius: CDRadius.rMedium,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           decoration: BoxDecoration(
             color: cardBg,
-            borderRadius: AppRadius.rMedium,
+            borderRadius: CDRadius.rMedium,
             border: Border.all(color: border, width: 1.0),
           ),
           child: Row(
@@ -44,7 +43,7 @@ class CDQuickActionCard extends StatelessWidget {
                 height: 26,
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.12),
-                  borderRadius: AppRadius.rSmall,
+                  borderRadius: CDRadius.rSmall,
                 ),
                 child: Icon(
                   icon,
@@ -58,7 +57,7 @@ class CDQuickActionCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
-                      color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                      color: CDColors.textPrimary(context),
                     ),
               ),
             ],

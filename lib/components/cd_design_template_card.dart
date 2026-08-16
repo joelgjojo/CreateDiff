@@ -21,11 +21,11 @@ class CDDesignTemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
+    final isDark = CDColors.isDark(context);
+    final primaryColor = CDColors.primary;
     final border = isSelected
         ? primaryColor
-        : (isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle);
+        : CDColors.borderSubtle(context);
 
     final displayTitle = coverText.isNotEmpty ? coverText : 'READY TO PUBLISH';
 
@@ -36,11 +36,11 @@ class CDDesignTemplateCard extends StatelessWidget {
           AppHaptics.selection();
           onSelect();
         },
-        borderRadius: AppRadius.rLarge,
+        borderRadius: CDRadius.rLarge,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           decoration: BoxDecoration(
-            borderRadius: AppRadius.rLarge,
+            borderRadius: CDRadius.rLarge,
             border: Border.all(
               color: border,
               width: isSelected ? 2.0 : 1.0,
@@ -56,7 +56,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                 : null,
           ),
           child: ClipRRect(
-            borderRadius: AppRadius.rLarge,
+            borderRadius: CDRadius.rLarge,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -64,14 +64,14 @@ class CDDesignTemplateCard extends StatelessWidget {
                 Expanded(
                   child: Container(
                     decoration: _buildTemplateDecoration(template.id, profile, isDark),
-                    padding: const EdgeInsets.all(AppSpacing.md),
+                    padding: const EdgeInsets.all(CDSpacing.md),
                     child: _buildTemplateContent(template.id, displayTitle, profile, isDark),
                   ),
                 ),
                 // Bottom Metadata Info Bar
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  color: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
+                  color: CDColors.surface(context),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -83,7 +83,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                              color: CDColors.textPrimary(context),
                             ),
                           ),
                           Text(
@@ -93,7 +93,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: isSelected
                                   ? primaryColor
-                                  : (isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText),
+                                  : CDColors.textSecondary(context),
                               letterSpacing: 0.4,
                             ),
                           ),
@@ -103,7 +103,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(3),
                           decoration: const BoxDecoration(
-                            color: AppColors.primary,
+                            color: CDColors.primary,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.check, size: 12, color: Colors.white),
@@ -177,7 +177,7 @@ class CDDesignTemplateCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.22),
-                borderRadius: AppRadius.rSmall,
+                borderRadius: CDRadius.rSmall,
               ),
               child: Text(
                 brandName.toUpperCase(),
@@ -324,7 +324,7 @@ class CDDesignTemplateCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.amber.withValues(alpha: 0.4), width: 0.8),
-                borderRadius: AppRadius.rSmall,
+                borderRadius: CDRadius.rSmall,
               ),
               child: Text(
                 'CURATED',
@@ -350,7 +350,7 @@ class CDDesignTemplateCard extends StatelessWidget {
         );
 
       case 'soft_modern':
-        final textColor = isDark ? Colors.white : const Color(0xFF1E1B32);
+        final textColorModern = isDark ? Colors.white : const Color(0xFF1E1B32);
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,7 +364,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                 ),
                 Text(
                   brandName,
-                  style: TextStyle(fontSize: 7, color: textColor.withValues(alpha: 0.5)),
+                  style: TextStyle(fontSize: 7, color: textColorModern.withValues(alpha: 0.5)),
                 ),
               ],
             ),
@@ -373,7 +373,7 @@ class CDDesignTemplateCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
-                color: textColor,
+                color: textColorModern,
                 height: 1.18,
                 letterSpacing: -0.2,
               ),
@@ -381,7 +381,7 @@ class CDDesignTemplateCard extends StatelessWidget {
             Container(
               height: 3,
               width: 18,
-              decoration: BoxDecoration(color: accent, borderRadius: AppRadius.rPill),
+              decoration: BoxDecoration(color: accent, borderRadius: CDRadius.rPill),
             ),
           ],
         );
@@ -391,9 +391,9 @@ class CDDesignTemplateCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'ISSUE // 2026',
-              style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: Colors.white54, letterSpacing: 0.5),
+              style: TextStyle(fontSize: 7, fontWeight: FontWeight.w700, color: Colors.white54, letterSpacing: 0.5),
             ),
             Text(
               text.toUpperCase(),
@@ -414,7 +414,7 @@ class CDDesignTemplateCard extends StatelessWidget {
 
       case 'clean_editorial':
       default:
-        final textColor = isDark ? Colors.white : const Color(0xFF17171B);
+        final textColorClean = isDark ? Colors.white : const Color(0xFF17171B);
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +428,7 @@ class CDDesignTemplateCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
-                color: textColor,
+                color: textColorClean,
                 height: 1.2,
                 letterSpacing: -0.2,
               ),
@@ -439,7 +439,7 @@ class CDDesignTemplateCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   'READ MORE',
-                  style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColor.withValues(alpha: 0.5)),
+                  style: TextStyle(fontSize: 7, fontWeight: FontWeight.w600, color: textColorClean.withValues(alpha: 0.5)),
                 ),
               ],
             ),

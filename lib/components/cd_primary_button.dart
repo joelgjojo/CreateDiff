@@ -7,7 +7,7 @@ class CDPrimaryButton extends StatefulWidget {
   final Widget? icon;
   final bool isLoading;
   final bool isFullWidth;
-  final double height;
+  final double? height;
   final Color? backgroundColor;
   final Color? textColor;
 
@@ -18,7 +18,7 @@ class CDPrimaryButton extends StatefulWidget {
     this.icon,
     this.isLoading = false,
     this.isFullWidth = false,
-    this.height = 52.0,
+    this.height,
     this.backgroundColor,
     this.textColor,
   });
@@ -37,10 +37,10 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 90),
+      duration: CDMotion.micro,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: CDButton.pressScale).animate(
+      CurvedAnimation(parent: _controller, curve: CDMotion.defaultCurve),
     );
   }
 
@@ -53,8 +53,9 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
   @override
   Widget build(BuildContext context) {
     final isEnabled = widget.onPressed != null && !widget.isLoading;
-    final btnColor = widget.backgroundColor ?? AppColors.primary;
+    final btnColor = widget.backgroundColor ?? CDColors.primary;
     final txtColor = widget.textColor ?? Colors.white;
+    final height = widget.height ?? CDButton.standardHeight;
 
     Widget content = Row(
       mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
@@ -72,7 +73,7 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
         else ...[
           if (widget.icon != null) ...[
             widget.icon!,
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: CDSpacing.sm),
           ],
           Text(
             widget.label,
@@ -94,22 +95,22 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
         child: child,
       ),
       child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 150),
+        duration: CDMotion.micro,
         opacity: isEnabled ? 1.0 : 0.45,
         child: Container(
-          height: widget.height,
+          height: height,
           constraints: BoxConstraints(
             minWidth: widget.isFullWidth ? double.infinity : 110,
           ),
           decoration: BoxDecoration(
             color: btnColor,
-            borderRadius: AppRadius.rMedium,
+            borderRadius: CDRadius.rMedium,
             boxShadow: isEnabled
                 ? [
                     BoxShadow(
-                      color: btnColor.withValues(alpha: 0.28),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ]
                 : [],
@@ -132,9 +133,9 @@ class _CDPrimaryButtonState extends State<CDPrimaryButton>
               onTapCancel: () {
                 if (isEnabled) _controller.reverse();
               },
-              borderRadius: AppRadius.rMedium,
+              borderRadius: CDRadius.rMedium,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl),
                 child: Center(child: content),
               ),
             ),

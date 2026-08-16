@@ -75,13 +75,13 @@ class CDExportShareSheet extends StatelessWidget {
         content: Row(
           children: [
             Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
-            SizedBox(width: AppSpacing.sm),
+            SizedBox(width: CDSpacing.sm),
             Text('Complete content pack copied to clipboard!'),
           ],
         ),
         duration: Duration(milliseconds: 2000),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.success,
+        backgroundColor: CDColors.success,
       ),
     );
   }
@@ -102,9 +102,8 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
-    final primaryColor = AppColors.primary;
+    final bg = CDColors.surface(context);
+    final primaryColor = CDColors.primary;
 
     final truncatedIdea = project.idea.length > 38
         ? '${project.idea.substring(0, 38)}...'
@@ -118,7 +117,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
+          padding: const EdgeInsets.symmetric(horizontal: CDSpacing.xl, vertical: CDSpacing.md),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -127,32 +126,32 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white24 : Colors.black12,
-                  borderRadius: AppRadius.rPill,
+                  color: CDColors.isDark(context) ? Colors.white24 : Colors.black12,
+                  borderRadius: CDRadius.rPill,
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: CDSpacing.lg),
               // Success Icon Badge
               Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.12),
+                  color: CDColors.success.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.check_rounded,
-                  color: AppColors.success,
+                  color: CDColors.success,
                   size: 26,
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: CDSpacing.sm),
               Text(
                 'Ready to Publish',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: 18,
-                      color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                      color: CDColors.textPrimary(context),
                     ),
               ),
               const SizedBox(height: 2),
@@ -161,10 +160,10 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontSize: 12,
-                      color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                      color: CDColors.textSecondary(context),
                     ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: CDSpacing.xl),
               // Action List
               _buildActionTile(
                 context,
@@ -172,7 +171,6 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                 title: 'Copy All Content',
                 subtitle: 'Hooks, caption, CTAs, and hashtags in one click',
                 onTap: () => _copyAllContent(context),
-                isDark: isDark,
                 primaryColor: primaryColor,
               ),
               const Divider(height: 1),
@@ -182,7 +180,6 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                 title: 'Share Directly',
                 subtitle: 'Send to Instagram, Notes, or WhatsApp',
                 onTap: () => _shareViaNative(context),
-                isDark: isDark,
                 primaryColor: primaryColor,
               ),
               if (project.selectedDesignTemplate.isNotEmpty) ...[
@@ -201,11 +198,10 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                       ),
                     );
                   },
-                  isDark: isDark,
                   primaryColor: primaryColor,
                 ),
               ],
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: CDSpacing.xl),
               CDPrimaryButton(
                 label: 'Done & Return to Studio',
                 isFullWidth: true,
@@ -214,7 +210,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                   onDone();
                 },
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: CDSpacing.sm),
             ],
           ),
         ),
@@ -228,7 +224,6 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-    required bool isDark,
     required Color primaryColor,
   }) {
     return Material(
@@ -238,21 +233,21 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
           AppHaptics.selection();
           onTap();
         },
-        borderRadius: AppRadius.rMedium,
+        borderRadius: CDRadius.rMedium,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: CDSpacing.xs),
           child: Row(
             children: [
               Container(
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
-                  borderRadius: AppRadius.rMedium,
+                  color: CDColors.elevated(context),
+                  borderRadius: CDRadius.rMedium,
                 ),
                 child: Icon(icon, size: 18, color: primaryColor),
               ),
-              const SizedBox(width: AppSpacing.md),
+              const SizedBox(width: CDSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,7 +257,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
-                            color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                            color: CDColors.textPrimary(context),
                           ),
                     ),
                     const SizedBox(height: 2),
@@ -270,7 +265,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
                       subtitle,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontSize: 11,
-                            color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                            color: CDColors.textSecondary(context),
                           ),
                     ),
                   ],
@@ -279,7 +274,7 @@ ${c.hashtagsHighReach.join(' ')} ${c.hashtagsMediumReach.join(' ')}
               Icon(
                 Icons.chevron_right_rounded,
                 size: 16,
-                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                color: CDColors.textSecondary(context),
               ),
             ],
           ),

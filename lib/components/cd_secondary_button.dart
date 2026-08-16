@@ -6,7 +6,7 @@ class CDSecondaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Widget? icon;
   final bool isFullWidth;
-  final double height;
+  final double? height;
 
   const CDSecondaryButton({
     super.key,
@@ -14,24 +14,24 @@ class CDSecondaryButton extends StatelessWidget {
     this.onPressed,
     this.icon,
     this.isFullWidth = false,
-    this.height = 52.0,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface;
-    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final textColor = isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText;
+    final bg = CDColors.surface(context);
+    final border = CDColors.border(context);
+    final textColor = CDColors.textPrimary(context);
+    final buttonHeight = height ?? CDButton.standardHeight;
 
     return Container(
-      height: height,
+      height: buttonHeight,
       constraints: BoxConstraints(
         minWidth: isFullWidth ? double.infinity : 96,
       ),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: AppRadius.rMedium,
+        borderRadius: CDRadius.rMedium,
         border: Border.all(color: border, width: 1),
       ),
       child: Material(
@@ -43,16 +43,16 @@ class CDSecondaryButton extends StatelessWidget {
                   onPressed!();
                 }
               : null,
-          borderRadius: AppRadius.rMedium,
+          borderRadius: CDRadius.rMedium,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
             child: Row(
               mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (icon != null) ...[
                   icon!,
-                  const SizedBox(width: AppSpacing.xs),
+                  const SizedBox(width: CDSpacing.xs),
                 ],
                 Text(
                   label,

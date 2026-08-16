@@ -1,6 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../screens/create_screen.dart';
 
 class CDBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -14,24 +14,28 @@ class CDBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
-    final glassBg = isDark ? AppColors.glassDarkBg : AppColors.glassLightBg;
-    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final inactiveColor = isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
+    final primaryColor = CDColors.primary;
+    // Remove BackdropFilter, use semi-opaque solid background instead
+    final isDark = CDColors.isDark(context);
+    final bgColor = isDark 
+        ? CDColors.darkSurface.withValues(alpha: 0.95) 
+        : CDColors.lightSurface.withValues(alpha: 0.95);
+    final border = CDColors.border(context);
+    final inactiveColor = CDColors.textSecondary(context);
 
     return SafeArea(
+      bottom: true,
       child: Padding(
         padding: const EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          bottom: AppSpacing.xs,
+          left: CDSpacing.lg,
+          right: CDSpacing.lg,
+          bottom: CDSpacing.xs,
         ),
         child: Container(
           height: 58,
           decoration: BoxDecoration(
-            color: glassBg,
-            borderRadius: AppRadius.rXl,
+            color: bgColor,
+            borderRadius: CDRadius.rPill,
             border: Border.all(color: border, width: 1.0),
             boxShadow: [
               BoxShadow(
@@ -43,51 +47,55 @@ class CDBottomNavBar extends StatelessWidget {
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: AppRadius.rXl,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildTab(
-                    index: 0,
-                    icon: Icons.home_outlined,
-                    activeIcon: Icons.home_rounded,
-                    label: 'Home',
-                    activeColor: primaryColor,
-                    inactiveColor: inactiveColor,
-                  ),
-                  _buildCreateTab(
-                    activeColor: primaryColor,
-                  ),
-                  _buildTab(
-                    index: 2,
-                    icon: Icons.palette_outlined,
-                    activeIcon: Icons.palette_rounded,
-                    label: 'Designs',
-                    activeColor: primaryColor,
-                    inactiveColor: inactiveColor,
-                  ),
-                  _buildTab(
-                    index: 3,
-                    icon: Icons.history_rounded,
-                    activeIcon: Icons.history_rounded,
-                    label: 'History',
-                    activeColor: primaryColor,
-                    inactiveColor: inactiveColor,
-                  ),
-                  _buildTab(
-                    index: 4,
-                    icon: Icons.person_outline_rounded,
-                    activeIcon: Icons.person_rounded,
-                    label: 'Profile',
-                    activeColor: primaryColor,
-                    inactiveColor: inactiveColor,
-                  ),
-                ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildTab(
+                index: 0,
+                icon: Icons.home_outlined,
+                activeIcon: Icons.home_rounded,
+                label: 'Home',
+                activeColor: primaryColor,
+                inactiveColor: inactiveColor,
+                onTabChanged: onTabChanged,
+                selectedIndex: selectedIndex,
               ),
-            ),
+              _buildCreateTab(
+                context: context,
+                activeColor: primaryColor,
+                selectedIndex: selectedIndex,
+              ),
+              _buildTab(
+                index: 2,
+                icon: Icons.palette_outlined,
+                activeIcon: Icons.palette_rounded,
+                label: 'Designs',
+                activeColor: primaryColor,
+                inactiveColor: inactiveColor,
+                onTabChanged: onTabChanged,
+                selectedIndex: selectedIndex,
+              ),
+              _buildTab(
+                index: 3,
+                icon: Icons.history_rounded,
+                activeIcon: Icons.history_rounded,
+                label: 'History',
+                activeColor: primaryColor,
+                inactiveColor: inactiveColor,
+                onTabChanged: onTabChanged,
+                selectedIndex: selectedIndex,
+              ),
+              _buildTab(
+                index: 4,
+                icon: Icons.person_outline_rounded,
+                activeIcon: Icons.person_rounded,
+                label: 'Profile',
+                activeColor: primaryColor,
+                inactiveColor: inactiveColor,
+                onTabChanged: onTabChanged,
+                selectedIndex: selectedIndex,
+              ),
+            ],
           ),
         ),
       ),
@@ -101,6 +109,8 @@ class CDBottomNavBar extends StatelessWidget {
     required String label,
     required Color activeColor,
     required Color inactiveColor,
+    required ValueChanged<int> onTabChanged,
+    required int selectedIndex,
   }) {
     final isSelected = selectedIndex == index;
     return Expanded(
@@ -111,7 +121,7 @@ class CDBottomNavBar extends StatelessWidget {
             AppHaptics.selection();
             onTabChanged(index);
           },
-          borderRadius: AppRadius.rLarge,
+          borderRadius: CDRadius.rPill,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -137,7 +147,11 @@ class CDBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildCreateTab({required Color activeColor}) {
+  Widget _buildCreateTab({
+    required BuildContext context,
+    required Color activeColor,
+    required int selectedIndex,
+  }) {
     final isSelected = selectedIndex == 1;
     return Expanded(
       child: Material(
@@ -145,9 +159,12 @@ class CDBottomNavBar extends StatelessWidget {
         child: InkWell(
           onTap: () {
             AppHaptics.light();
-            onTabChanged(1);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CreateScreen()),
+            );
           },
-          borderRadius: AppRadius.rLarge,
+          borderRadius: CDRadius.rPill,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -155,7 +172,7 @@ class CDBottomNavBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                 decoration: BoxDecoration(
                   color: isSelected ? activeColor : activeColor.withValues(alpha: 0.12),
-                  borderRadius: AppRadius.rPill,
+                  borderRadius: CDRadius.rPill,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

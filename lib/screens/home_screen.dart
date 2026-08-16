@@ -48,8 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (text.isEmpty) {
       _openCreate(context);
     } else {
-      final defaultPlatform = AppState.instance.profile.primaryLanguage.isNotEmpty ? 'Instagram' : 'Instagram';
-      _openCreate(context, platform: defaultPlatform, idea: text);
+      _openCreate(context, idea: text);
     }
   }
 
@@ -61,177 +60,135 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
     final appState = AppState.instance;
 
     return ListenableBuilder(
       listenable: appState,
       builder: (context, _) {
         final profile = appState.profile;
+        final name = profile.creatorName.isNotEmpty ? profile.creatorName : 'Creator';
         final history = appState.contentHistory;
-        final name = profile.creatorName.isNotEmpty ? profile.creatorName.split(' ')[0] : 'Creator';
+        final greeting = _getGreeting();
+        
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Scaffold(
+          backgroundColor: CDColors.surface(context),
           body: SafeArea(
             bottom: false,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.xl,
-                right: AppSpacing.xl,
-                top: AppSpacing.md,
-                bottom: 96, // Bottom nav clearance
+              padding: const EdgeInsets.fromLTRB(
+                CDSpacing.md,
+                CDSpacing.lg,
+                CDSpacing.md,
+                CDSpacing.navBarClearance + CDSpacing.lg,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- 1. Top Header & Profile Status ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${_getGreeting()}, $name',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 22,
-                                  letterSpacing: -0.4,
-                                  color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
-                                ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'What are you creating today?',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
-                                  fontSize: 13,
-                                ),
-                          ),
-                        ],
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          AppHaptics.selection();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const CreatorProfileScreen(isInitialSetup: false),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: profile.primaryColor.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: profile.primaryColor.withValues(alpha: 0.35), width: 1.2),
-                          ),
-                          child: Center(
-                            child: Text(
-                              name.isNotEmpty ? name[0].toUpperCase() : 'C',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: profile.primaryColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                  // --- 1. Header ---
+                  Text(
+                    greeting,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? CDColors.darkMuted : CDColors.lightMuted,
+                    ),
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: CDSpacing.xs),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: CDSpacing.xl),
 
-                  // --- 2. Primary Creation Entry Surface ---
+                  // --- 2. Hero Creation Surface ---
                   Container(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface1 : AppColors.lightSurface,
-                      borderRadius: AppRadius.rLarge,
+                      color: CDColors.elevated(context),
+                      borderRadius: BorderRadius.circular(CDRadius.large),
                       border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        width: 1.0,
+                        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: isDark
-                              ? Colors.black.withValues(alpha: 0.25)
-                              : Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 12,
-                          offset: const Offset(0, 3),
-                        ),
+                          color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        )
                       ],
                     ),
+                    padding: const EdgeInsets.all(CDSpacing.md),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle,
-                              ),
+                            Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 20,
+                              color: CDColors.primary,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: CDSpacing.sm),
                             Text(
-                              'IDEA → CONTENT PACK',
+                              'What are we creating today?',
                               style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: primaryColor,
-                                letterSpacing: 0.8,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : Colors.black,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                        TextField(
-                          controller: _quickIdeaController,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
-                              ),
-                          decoration: InputDecoration(
-                            hintText: 'e.g. 5 AI tools every student should know...',
-                            hintStyle: TextStyle(
-                              color: isDark ? AppColors.darkTertiaryText : AppColors.lightTertiaryText,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
+                        const SizedBox(height: CDSpacing.md),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(CDRadius.medium),
+                            border: Border.all(
+                              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
                             ),
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 4),
                           ),
-                          onSubmitted: (_) => _handleDirectIdeaSubmit(context),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Zero prompting required',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontSize: 11,
-                                    color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
-                                  ),
+                          child: TextField(
+                            controller: _quickIdeaController,
+                            minLines: 3,
+                            maxLines: 5,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: isDark ? Colors.white : Colors.black,
                             ),
+                            decoration: InputDecoration(
+                              hintText: 'Describe an idea, trend, or topic...',
+                              hintStyle: TextStyle(
+                                color: isDark ? CDColors.darkMuted : CDColors.lightMuted,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.all(CDSpacing.md),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: CDSpacing.md),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () => _handleDirectIdeaSubmit(context),
-                                borderRadius: AppRadius.rMedium,
+                                borderRadius: BorderRadius.circular(CDRadius.pill),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: CDSpacing.lg,
+                                    vertical: CDSpacing.sm,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: AppRadius.rMedium,
+                                    color: CDColors.primary,
+                                    borderRadius: BorderRadius.circular(CDRadius.pill),
                                   ),
                                   child: const Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -240,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         'Create ✦',
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 13,
+                                          fontSize: 15,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
@@ -254,60 +211,54 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: CDSpacing.xl),
 
-                  // --- 3. Quick Create Shortcuts (Editorial compact layout) ---
+                  // --- 3. Quick Create Shortcuts ---
                   const CDSectionHeader(title: 'Quick Shortcuts'),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
                     child: Row(
                       children: [
                         _buildShortcutChip(
                           context,
                           label: 'Reel',
                           icon: Icons.movie_filter_rounded,
-                          color: AppColors.instagram,
+                          color: CDColors.instagram,
                           onTap: () => _openCreate(context, platform: 'Instagram', contentType: 'Reel'),
                         ),
                         _buildShortcutChip(
                           context,
                           label: 'Post',
                           icon: Icons.grid_on_rounded,
-                          color: AppColors.instagram,
+                          color: CDColors.instagram,
                           onTap: () => _openCreate(context, platform: 'Instagram', contentType: 'Post'),
                         ),
                         _buildShortcutChip(
                           context,
                           label: 'Story',
                           icon: Icons.amp_stories_rounded,
-                          color: AppColors.instagram,
+                          color: CDColors.instagram,
                           onTap: () => _openCreate(context, platform: 'Instagram', contentType: 'Story'),
-                        ),
-                        _buildShortcutChip(
-                          context,
-                          label: 'Carousel',
-                          icon: Icons.view_carousel_rounded,
-                          color: AppColors.instagram,
-                          onTap: () => _openCreate(context, platform: 'Instagram', contentType: 'Carousel'),
                         ),
                         _buildShortcutChip(
                           context,
                           label: 'YouTube',
                           icon: Icons.play_circle_fill_rounded,
-                          color: AppColors.youtube,
+                          color: CDColors.youtube,
                           onTap: () => _openCreate(context, platform: 'YouTube', contentType: 'Video'),
                         ),
                         _buildShortcutChip(
                           context,
                           label: 'LinkedIn',
                           icon: Icons.work_rounded,
-                          color: AppColors.linkedin,
+                          color: CDColors.linkedin,
                           onTap: () => _openCreate(context, platform: 'LinkedIn', contentType: 'Post'),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: CDSpacing.xl),
 
                   // --- 4. Recent Creations ---
                   CDSectionHeader(
@@ -327,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Column(
                       children: history.take(3).map((project) {
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                          padding: const EdgeInsets.only(bottom: CDSpacing.sm),
                           child: CDRecentContentCard(
                             project: project,
                             onTap: () {
@@ -342,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }).toList(),
                     ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: CDSpacing.xl),
 
                   // --- 5. Brand Memory Summary ---
                   const CDSectionHeader(title: 'Brand Memory'),
@@ -373,11 +324,9 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
-    final border = isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle;
-
+    
     return Padding(
-      padding: const EdgeInsets.only(right: AppSpacing.sm),
+      padding: const EdgeInsets.only(right: CDSpacing.sm),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -385,25 +334,27 @@ class _HomeScreenState extends State<HomeScreen> {
             AppHaptics.selection();
             onTap();
           },
-          borderRadius: AppRadius.rMedium,
+          borderRadius: BorderRadius.circular(CDRadius.medium),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: bg,
-              borderRadius: AppRadius.rMedium,
-              border: Border.all(color: border, width: 1.0),
+              color: CDColors.elevated(context),
+              borderRadius: BorderRadius.circular(CDRadius.medium),
+              border: Border.all(
+                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 15, color: color),
-                const SizedBox(width: 6),
+                Icon(icon, size: 16, color: color),
+                const SizedBox(width: 8),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                    color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
               ],

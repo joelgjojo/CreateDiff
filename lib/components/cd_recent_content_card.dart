@@ -18,9 +18,8 @@ class CDRecentContentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
-    final border = isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle;
+    final cardBg = CDColors.surface(context);
+    final border = CDColors.borderSubtle(context);
 
     final platformColor = _getPlatformColor(project.platform);
     final relativeTime = _formatRelativeDate(project.createdAt);
@@ -32,12 +31,12 @@ class CDRecentContentCard extends StatelessWidget {
           AppHaptics.light();
           onTap();
         },
-        borderRadius: AppRadius.rLarge,
+        borderRadius: CDRadius.rLarge,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: CDSpacing.md, vertical: 12),
           decoration: BoxDecoration(
             color: cardBg,
-            borderRadius: AppRadius.rLarge,
+            borderRadius: CDRadius.rLarge,
             border: Border.all(color: border, width: 1.0),
           ),
           child: Row(
@@ -47,7 +46,7 @@ class CDRecentContentCard extends StatelessWidget {
                 height: 38,
                 decoration: BoxDecoration(
                   color: platformColor.withValues(alpha: 0.12),
-                  borderRadius: AppRadius.rMedium,
+                  borderRadius: CDRadius.rMedium,
                 ),
                 child: Icon(
                   _getPlatformIcon(project.platform),
@@ -55,7 +54,7 @@ class CDRecentContentCard extends StatelessWidget {
                   size: 18,
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              const SizedBox(width: CDSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,7 +75,7 @@ class CDRecentContentCard extends StatelessWidget {
                           '• $relativeTime',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 fontSize: 11,
-                                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                                color: CDColors.textSecondary(context),
                               ),
                         ),
                       ],
@@ -89,7 +88,7 @@ class CDRecentContentCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
-                            color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                            color: CDColors.textPrimary(context),
                           ),
                     ),
                   ],
@@ -100,7 +99,7 @@ class CDRecentContentCard extends StatelessWidget {
                   icon: Icon(
                     Icons.more_vert_rounded,
                     size: 18,
-                    color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                    color: CDColors.textSecondary(context),
                   ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 32),
@@ -125,9 +124,9 @@ class CDRecentContentCard extends StatelessWidget {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                            Icon(Icons.delete_outline_rounded, size: 16, color: CDColors.error),
                             SizedBox(width: 8),
-                            Text('Delete', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                            Text('Delete', style: TextStyle(fontSize: 13, color: CDColors.error)),
                           ],
                         ),
                       ),
@@ -137,7 +136,7 @@ class CDRecentContentCard extends StatelessWidget {
                 Icon(
                   Icons.chevron_right_rounded,
                   size: 18,
-                  color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                  color: CDColors.textSecondary(context),
                 ),
             ],
           ),
@@ -149,13 +148,13 @@ class CDRecentContentCard extends StatelessWidget {
   Color _getPlatformColor(String platform) {
     switch (platform.toLowerCase()) {
       case 'instagram':
-        return AppColors.instagram;
+        return CDColors.instagram;
       case 'youtube':
-        return AppColors.youtube;
+        return CDColors.youtube;
       case 'linkedin':
-        return AppColors.linkedin;
+        return CDColors.linkedin;
       default:
-        return AppColors.primary;
+        return CDColors.primary;
     }
   }
 

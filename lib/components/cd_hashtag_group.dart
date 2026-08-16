@@ -31,7 +31,7 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
         content: Row(
           children: [
             const Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: CDSpacing.sm),
             Text('${widget.label} hashtags copied'),
           ],
         ),
@@ -47,9 +47,8 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
-    final chipBg = isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface;
+    final primaryColor = CDColors.primary;
+    final chipBg = CDColors.elevated(context);
 
     if (widget.hashtags.isEmpty) return const SizedBox.shrink();
 
@@ -73,14 +72,14 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
                   '(${widget.hashtags.length})',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontSize: 11,
-                        color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                        color: CDColors.textSecondary(context),
                       ),
                 ),
               ],
             ),
             InkWell(
               onTap: _copyAll,
-              borderRadius: AppRadius.rSmall,
+              borderRadius: CDRadius.rSmall,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 child: Row(
@@ -88,7 +87,7 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
                     Icon(
                       _copied ? Icons.check_rounded : Icons.content_copy_rounded,
                       size: 12,
-                      color: _copied ? AppColors.success : primaryColor,
+                      color: _copied ? CDColors.success : primaryColor,
                     ),
                     const SizedBox(width: 3),
                     Text(
@@ -96,7 +95,7 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: _copied ? AppColors.success : primaryColor,
+                        color: _copied ? CDColors.success : primaryColor,
                       ),
                     ),
                   ],
@@ -115,9 +114,9 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
               decoration: BoxDecoration(
                 color: chipBg,
-                borderRadius: AppRadius.rPill,
+                borderRadius: CDRadius.rPill,
                 border: Border.all(
-                  color: isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle,
+                  color: CDColors.borderSubtle(context),
                   width: 0.8,
                 ),
               ),
@@ -126,7 +125,7 @@ class _CDHashtagGroupState extends State<CDHashtagGroup> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                  color: CDColors.textPrimary(context),
                 ),
               ),
             );

@@ -4,6 +4,7 @@ import '../services/app_state.dart';
 import 'onboarding_screen.dart';
 import 'creator_profile_screen.dart';
 import 'main_shell.dart';
+import 'package:flutter/services.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -23,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: CDMotion.emphasis,
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -59,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen>
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 300),
+        transitionDuration: CDMotion.screen,
       ),
     );
   }
@@ -73,9 +74,14 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
+    final primaryColor = CDColors.primary;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+    );
 
     return Scaffold(
+      backgroundColor: CDColors.surface(context),
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -88,8 +94,8 @@ class _SplashScreenState extends State<SplashScreen>
                   width: 68,
                   height: 68,
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
-                    borderRadius: AppRadius.rXl,
+                    color: CDColors.elevated(context),
+                    borderRadius: BorderRadius.circular(CDRadius.large),
                     border: Border.all(
                       color: primaryColor.withValues(alpha: 0.4),
                       width: 1.5,
@@ -107,23 +113,23 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: CDSpacing.xl),
                 Text(
                   'CreateDiff',
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.8,
-                        color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                        color: isDark ? Colors.white : Colors.black,
                       ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: CDSpacing.xs),
                 Text(
                   'IDEA → READY-TO-POST CONTENT',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.5,
-                    color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                    color: isDark ? CDColors.darkMuted : CDColors.lightMuted,
                   ),
                 ),
               ],

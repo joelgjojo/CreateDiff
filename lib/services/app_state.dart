@@ -17,8 +17,8 @@ class AppState extends ChangeNotifier {
   GeneratedContent? _currentGeneratedContent;
   bool _isGenerating = false;
   String _generationStep = 'Understanding your idea...';
-  int _selectedNavIndex = 0;
   ThemeMode _themeMode = ThemeMode.system;
+  Timer? _loadingTimer;
 
   // Getters
   CreatorProfile get profile => _profile;
@@ -27,7 +27,6 @@ class AppState extends ChangeNotifier {
   GeneratedContent? get currentGeneratedContent => _currentGeneratedContent;
   bool get isGenerating => _isGenerating;
   String get generationStep => _generationStep;
-  int get selectedNavIndex => _selectedNavIndex;
   ThemeMode get themeMode => _themeMode;
 
   bool get hasCompletedOnboarding => StorageService.hasCompletedOnboarding;
@@ -69,14 +68,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Navigation Action ---
-  void setSelectedNavIndex(int index) {
-    if (_selectedNavIndex != index) {
-      _selectedNavIndex = index;
-      notifyListeners();
-    }
-  }
-
   // --- Theme Mode ---
   Future<void> setThemeMode(ThemeMode mode) async {
     _themeMode = mode;
@@ -102,7 +93,8 @@ class AppState extends ChangeNotifier {
 
     try {
       // Paced progress updates for realistic perception
-      final timer = _startLoadingStepTimer(platform);
+      _loadingTimer?.cancel();
+      _loadingTimer = _startLoadingStepTimer(platform);
 
       final content = await AIService.generateContent(
         platform: platform,
@@ -113,8 +105,6 @@ class AppState extends ChangeNotifier {
         overrideLanguage: language,
         overrideLength: length,
       );
-
-      timer.cancel();
 
       final newProject = ContentProject(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -135,19 +125,38 @@ class AppState extends ChangeNotifier {
       await StorageService.addProjectToHistory(newProject);
       _contentHistory = StorageService.getContentHistory();
 
-      _isGenerating = false;
-      notifyListeners();
       return newProject;
     } catch (e) {
+      return null;
+    } finally {
+      // Always cancel timer and reset generating state
+      _loadingTimer?.cancel();
+      _loadingTimer = null;
       _isGenerating = false;
       notifyListeners();
-      return null;
     }
   }
 
   void setCurrentProject(ContentProject project) {
     _currentProject = project;
     _currentGeneratedContent = project.generatedContent;
+    notifyListeners();
+  }
+
+  /// Update caption text on the current project and persist
+  Future<void> updateCurrentProjectCaption(String newCaption) async {
+    if (_currentProject == null || _currentGeneratedContent == null) return;
+
+    _currentGeneratedContent = _currentGeneratedContent!.copyWith(
+      caption: newCaption,
+    );
+    final updated = _currentProject!.copyWith(
+      generatedContent: _currentGeneratedContent,
+    );
+    _currentProject = updated;
+
+    await StorageService.addProjectToHistory(updated);
+    _contentHistory = StorageService.getContentHistory();
     notifyListeners();
   }
 
@@ -173,30 +182,37 @@ class AppState extends ChangeNotifier {
     _generationStep = 'Crafting fresh hooks...';
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 1000));
+    try {
+      _loadingTimer?.cancel();
+      _loadingTimer = _startLoadingStepTimer(_currentProject!.platform);
 
-    final newContent = await AIService.generateContent(
-      platform: _currentProject!.platform,
-      contentType: _currentProject!.contentType,
-      idea: _currentProject!.idea,
-      profile: _profile,
-      overrideTone: _currentProject!.tone,
-      overrideLanguage: _currentProject!.language,
-    );
+      final newContent = await AIService.generateContent(
+        platform: _currentProject!.platform,
+        contentType: _currentProject!.contentType,
+        idea: _currentProject!.idea,
+        profile: _profile,
+        overrideTone: _currentProject!.tone,
+        overrideLanguage: _currentProject!.language,
+      );
 
-    _currentGeneratedContent = _currentGeneratedContent!.copyWith(
-      hooks: newContent.hooks,
-    );
+      _currentGeneratedContent = _currentGeneratedContent!.copyWith(
+        hooks: newContent.hooks,
+      );
 
-    final updatedProj = _currentProject!.copyWith(
-      generatedContent: _currentGeneratedContent,
-    );
-    _currentProject = updatedProj;
-    await StorageService.addProjectToHistory(updatedProj);
-    _contentHistory = StorageService.getContentHistory();
-
-    _isGenerating = false;
-    notifyListeners();
+      final updatedProj = _currentProject!.copyWith(
+        generatedContent: _currentGeneratedContent,
+      );
+      _currentProject = updatedProj;
+      await StorageService.addProjectToHistory(updatedProj);
+      _contentHistory = StorageService.getContentHistory();
+    } catch (e) {
+      // Error recovery — hooks remain unchanged
+    } finally {
+      _loadingTimer?.cancel();
+      _loadingTimer = null;
+      _isGenerating = false;
+      notifyListeners();
+    }
   }
 
   Future<void> deleteProject(String projectId) async {
@@ -223,12 +239,14 @@ class AppState extends ChangeNotifier {
 
   // --- Reset All Data ---
   Future<void> resetAll() async {
+    _loadingTimer?.cancel();
+    _loadingTimer = null;
     await StorageService.clearAll();
     _profile = const CreatorProfile();
     _contentHistory = [];
     _currentProject = null;
     _currentGeneratedContent = null;
-    _selectedNavIndex = 0;
+    _isGenerating = false;
     _themeMode = ThemeMode.system;
     notifyListeners();
   }
@@ -236,13 +254,14 @@ class AppState extends ChangeNotifier {
   Timer _startLoadingStepTimer(String platform) {
     final steps = [
       'Understanding your idea...',
-      'Adapting to your audience...',
-      'Writing the hooks...',
+      'Finding the strongest angle...',
+      'Adapting to your brand voice...',
+      'Structuring the content...',
       'Formatting for $platform...',
-      'Applying your brand voice...',
+      'Polishing the final pack...',
     ];
     int stepIdx = 0;
-    return Timer.periodic(const Duration(milliseconds: 650), (t) {
+    return Timer.periodic(const Duration(milliseconds: 800), (t) {
       stepIdx = (stepIdx + 1) % steps.length;
       _generationStep = steps[stepIdx];
       notifyListeners();

@@ -35,7 +35,7 @@ class _CDHookCardState extends State<CDHookCard> {
         content: Row(
           children: [
             const Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: CDSpacing.sm),
             Text('Hook #${widget.index} copied'),
           ],
         ),
@@ -51,20 +51,20 @@ class _CDHookCardState extends State<CDHookCard> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
-    final textColor = isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText;
-    final numBg = isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface;
+    final isDark = CDColors.isDark(context);
+    final primaryColor = CDColors.primary;
+    final textColor = CDColors.textPrimary(context);
+    final numBg = CDColors.elevated(context);
 
     if (widget.isPrimary) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(CDSpacing.md),
         decoration: BoxDecoration(
           color: isDark
               ? primaryColor.withValues(alpha: 0.10)
               : primaryColor.withValues(alpha: 0.06),
-          borderRadius: AppRadius.rMedium,
+          borderRadius: CDRadius.rMedium,
           border: Border.all(
             color: primaryColor.withValues(alpha: 0.35),
             width: 1.2,
@@ -80,7 +80,7 @@ class _CDHookCardState extends State<CDHookCard> {
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                   decoration: BoxDecoration(
                     color: primaryColor,
-                    borderRadius: AppRadius.rSmall,
+                    borderRadius: CDRadius.rSmall,
                   ),
                   child: const Text(
                     'PRIMARY HOOK',
@@ -103,8 +103,8 @@ class _CDHookCardState extends State<CDHookCard> {
                           key: ValueKey(_copied),
                           size: 15,
                           color: _copied
-                              ? AppColors.success
-                              : (isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText),
+                              ? CDColors.success
+                              : CDColors.textSecondary(context),
                         ),
                       ),
                       tooltip: 'Copy Hook',
@@ -118,7 +118,7 @@ class _CDHookCardState extends State<CDHookCard> {
                         size: 17,
                         color: _isSaved
                             ? primaryColor
-                            : (isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText),
+                            : CDColors.textSecondary(context),
                       ),
                       tooltip: 'Save Hook',
                       constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
@@ -166,11 +166,11 @@ class _CDHookCardState extends State<CDHookCard> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                color: CDColors.textSecondary(context),
               ),
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
+          const SizedBox(width: CDSpacing.md),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 2.0),
@@ -184,7 +184,7 @@ class _CDHookCardState extends State<CDHookCard> {
               ),
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: CDSpacing.sm),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -196,8 +196,8 @@ class _CDHookCardState extends State<CDHookCard> {
                     key: ValueKey(_copied),
                     size: 15,
                     color: _copied
-                        ? AppColors.success
-                        : (isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText),
+                        ? CDColors.success
+                        : CDColors.textSecondary(context),
                   ),
                 ),
                 tooltip: 'Copy Hook',
@@ -211,7 +211,7 @@ class _CDHookCardState extends State<CDHookCard> {
                   size: 17,
                   color: _isSaved
                       ? primaryColor
-                      : (isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText),
+                      : CDColors.textSecondary(context),
                 ),
                 tooltip: 'Save Hook',
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 28),

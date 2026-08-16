@@ -18,34 +18,32 @@ class CDErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl2),
+        padding: const EdgeInsets.all(CDSpacing.xxl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.all(CDSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.12),
+                color: CDColors.error.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline_rounded,
                 size: 28,
-                color: AppColors.error,
+                color: CDColors.error,
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: CDSpacing.md),
             Text(
               title,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                    color: CDColors.textPrimary(context),
                   ),
             ),
             const SizedBox(height: 4),
@@ -53,11 +51,11 @@ class CDErrorState extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                    color: CDColors.textSecondary(context),
                   ),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: CDSpacing.xl),
               CDPrimaryButton(
                 label: retryLabel ?? 'Try Again',
                 height: 44,

@@ -19,15 +19,12 @@ class CDContentTypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
-    final cardBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
-    final selectedBg = isDark
-        ? AppColors.primary.withValues(alpha: 0.12)
-        : AppColors.primary.withValues(alpha: 0.08);
+    final primaryColor = CDColors.primary;
+    final cardBg = CDColors.surface(context);
+    final selectedBg = primaryColor.withValues(alpha: 0.12);
     final border = isSelected
         ? primaryColor
-        : (isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle);
+        : CDColors.borderSubtle(context);
 
     return Material(
       color: Colors.transparent,
@@ -36,14 +33,14 @@ class CDContentTypeCard extends StatelessWidget {
           AppHaptics.selection();
           onTap();
         },
-        borderRadius: AppRadius.rLarge,
+        borderRadius: CDRadius.rLarge,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.all(AppSpacing.md),
+          duration: CDMotion.micro,
+          curve: CDMotion.defaultCurve,
+          padding: const EdgeInsets.all(CDSpacing.md),
           decoration: BoxDecoration(
             color: isSelected ? selectedBg : cardBg,
-            borderRadius: AppRadius.rLarge,
+            borderRadius: CDRadius.rLarge,
             border: Border.all(
               color: border,
               width: isSelected ? 1.6 : 1.0,
@@ -61,26 +58,26 @@ class CDContentTypeCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? primaryColor.withValues(alpha: 0.15)
-                          : (isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface),
-                      borderRadius: AppRadius.rMedium,
+                          : CDColors.elevated(context),
+                      borderRadius: CDRadius.rMedium,
                     ),
                     child: Icon(
                       icon,
                       size: 18,
                       color: isSelected
                           ? primaryColor
-                          : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                          : CDColors.textPrimary(context),
                     ),
                   ),
                   if (isSelected)
                     const Icon(
                       Icons.check_circle_rounded,
                       size: 16,
-                      color: AppColors.primary,
+                      color: CDColors.primary,
                     ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: CDSpacing.sm),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -91,7 +88,7 @@ class CDContentTypeCard extends StatelessWidget {
                           fontSize: 13,
                           color: isSelected
                               ? primaryColor
-                              : (isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText),
+                              : CDColors.textPrimary(context),
                         ),
                   ),
                   const SizedBox(height: 2),
@@ -102,6 +99,7 @@ class CDContentTypeCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 11,
                           height: 1.25,
+                          color: CDColors.textSecondary(context),
                         ),
                   ),
                 ],

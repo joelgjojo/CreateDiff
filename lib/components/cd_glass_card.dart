@@ -28,19 +28,13 @@ class CDGlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final r = borderRadius ?? AppRadius.large;
+    final r = borderRadius ?? CDRadius.large;
 
-    final defaultBg = isDark
-        ? (elevated ? AppColors.darkSurface2 : AppColors.darkSurface1)
-        : (elevated ? AppColors.lightSurface : AppColors.lightSurface);
-
-    final defaultBorder = isDark
-        ? (elevated ? AppColors.darkBorder : AppColors.darkBorderSubtle)
-        : (elevated ? AppColors.lightBorder : AppColors.lightBorderSubtle);
+    final defaultBg = elevated ? CDColors.elevated(context) : CDColors.surface(context);
+    final defaultBorder = elevated ? CDColors.border(context) : CDColors.borderSubtle(context);
 
     Widget cardContent = Padding(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
+      padding: padding ?? const EdgeInsets.all(CDSpacing.lg),
       child: child,
     );
 
@@ -48,11 +42,13 @@ class CDGlassCard extends StatelessWidget {
       cardContent = ClipRRect(
         borderRadius: BorderRadius.circular(r),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: CDGlass.blurSigma, sigmaY: CDGlass.blurSigma),
           child: cardContent,
         ),
       );
     }
+
+    final isDark = CDColors.isDark(context);
 
     final card = Container(
       margin: margin,
@@ -61,16 +57,16 @@ class CDGlassCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(r),
         border: Border.all(
           color: borderColor ?? defaultBorder,
-          width: 1.0,
+          width: CDGlass.borderWidth,
         ),
         boxShadow: elevated
             ? [
                 BoxShadow(
                   color: isDark
-                      ? Colors.black.withValues(alpha: 0.25)
-                      : Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 12,
-                  offset: const Offset(0, 3),
+                      ? Colors.black.withValues(alpha: CDGlass.shadowOpacity)
+                      : Colors.black.withValues(alpha: CDGlass.lightShadowOpacity),
+                  blurRadius: CDGlass.shadowBlur,
+                  offset: CDGlass.shadowOffset,
                 ),
               ]
             : null,

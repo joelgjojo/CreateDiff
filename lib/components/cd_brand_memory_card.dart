@@ -15,10 +15,9 @@ class CDBrandMemoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = AppColors.primary;
-    final cardBg = isDark ? AppColors.darkSurface1 : AppColors.lightSurface;
-    final border = isDark ? AppColors.darkBorderSubtle : AppColors.lightBorderSubtle;
+    final primaryColor = CDColors.primary;
+    final cardBg = CDColors.surface(context);
+    final border = CDColors.borderSubtle(context);
 
     final creatorName = profile.creatorName.isNotEmpty ? profile.creatorName : 'Your Creator Identity';
     final niche = profile.niche.isNotEmpty ? profile.niche : 'General';
@@ -34,12 +33,12 @@ class CDBrandMemoryCard extends StatelessWidget {
           AppHaptics.selection();
           onTap();
         },
-        borderRadius: AppRadius.rLarge,
+        borderRadius: CDRadius.rLarge,
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(CDSpacing.md),
           decoration: BoxDecoration(
             color: cardBg,
-            borderRadius: AppRadius.rLarge,
+            borderRadius: CDRadius.rLarge,
             border: Border.all(color: border, width: 1.0),
           ),
           child: Row(
@@ -63,7 +62,7 @@ class CDBrandMemoryCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              const SizedBox(width: CDSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +74,7 @@ class CDBrandMemoryCard extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
-                                color: isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                                color: CDColors.textPrimary(context),
                               ),
                         ),
                         const SizedBox(width: 6),
@@ -94,7 +93,7 @@ class CDBrandMemoryCard extends StatelessWidget {
                       '$niche • $tone • $language',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontSize: 11,
-                            color: isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText,
+                            color: CDColors.textSecondary(context),
                           ),
                     ),
                   ],
@@ -103,8 +102,8 @@ class CDBrandMemoryCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface2 : AppColors.lightSecondarySurface,
-                  borderRadius: AppRadius.rPill,
+                  color: CDColors.elevated(context),
+                  borderRadius: CDRadius.rPill,
                 ),
                 child: Text(
                   'Edit',
