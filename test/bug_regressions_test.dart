@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:creatediff/config/api_config.dart';
+import 'package:creatediff/models/creator_profile.dart';
 import 'package:creatediff/models/content_project.dart';
 import 'package:creatediff/models/generated_content.dart';
 import 'package:creatediff/services/app_state.dart';
+import 'package:creatediff/services/grok_service.dart';
 import 'package:creatediff/components/cd_export_share_sheet.dart';
 import 'package:creatediff/components/cd_bottom_nav_bar.dart';
 import 'package:creatediff/screens/content_result_screen.dart';
@@ -138,6 +140,30 @@ void main() {
 
       expect(find.text('Developer Debug Panel'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    test('Part 2: Prompt engineering includes language guidelines and platform rules', () {
+      const profile = CreatorProfile(
+        creatorName: 'Joel G Jojo',
+        primaryLanguage: 'Manglish',
+        niche: 'Technology',
+      );
+
+      final systemPrompt = GrokService.buildSystemPrompt(profile: profile);
+      expect(systemPrompt, contains('LANGUAGE & REGIONAL RULES'));
+      expect(systemPrompt, contains('Manglish'));
+      expect(systemPrompt, contains('PLATFORM & FORMAT INTELLIGENCE'));
+      expect(systemPrompt, contains('HASHTAG STRATEGY (STRICT CATEGORIES)'));
+
+      final userPrompt = GrokService.buildUserPrompt(
+        platform: 'YouTube',
+        contentType: 'Short',
+        idea: '5 hidden Mac tips',
+        overrideLength: 'Under 60 seconds',
+      );
+      expect(userPrompt, contains('Platform: YouTube'));
+      expect(userPrompt, contains('Format: Short'));
+      expect(userPrompt, contains('Length Preference: Under 60 seconds'));
     });
   });
 }

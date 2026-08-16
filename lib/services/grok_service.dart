@@ -97,16 +97,36 @@ class GrokService {
     buffer.writeln('• Preferred CTA Style: ${profile.preferredCTAStyle.isNotEmpty ? profile.preferredCTAStyle : "Direct"}');
     buffer.writeln('• Emoji Density: ${profile.emojiUsage.isNotEmpty ? profile.emojiUsage : "moderate"}');
     buffer.writeln('');
-    buffer.writeln('=== STRICT INSTRUCTIONS ===');
+    buffer.writeln('=== LANGUAGE & REGIONAL RULES ===');
+    buffer.writeln('• If Primary Language is "Manglish": Write in English script blended naturally with Malayalam vocabulary and modern Kerala creator slang (e.g. "Nammal", "Machane", "Scene", "Kidu", "Poli", "Set aayi"). Keep it authentic, energetic, and relatable.');
+    buffer.writeln('• If Primary Language is "Malayalam": Write in native Malayalam script (മലയാളം) with fluent, natural phrasing suited for social media.');
+    buffer.writeln('• If Primary Language is "Hindi" or "Hinglish": Use conversational Hindi/Hinglish with modern creator terminology.');
+    buffer.writeln('• If Primary Language is "Tamil" / "Telugu": Use natural, culturally resonant phrasing.');
+    buffer.writeln('• If Primary Language is "English": Use modern, punchy creator English with active verbs, conversational flow, and zero corporate jargon.');
+    buffer.writeln('');
+    buffer.writeln('=== PLATFORM & FORMAT INTELLIGENCE ===');
+    buffer.writeln('• Instagram Reel: Fast-paced hooks (visual + audio cues in first 3s), punchy caption with white space, and engagement prompt.');
+    buffer.writeln('• Instagram Carousel / Post: Slide-by-slide value breakdown, educational nuggets, and a save/share CTA.');
+    buffer.writeln('• Instagram Story: Interactive poll/question ideas and quick conversational hooks.');
+    buffer.writeln('• YouTube Short: Immediate intrigue, continuous pacing, and loop-friendly structure.');
+    buffer.writeln('• YouTube Video: Comprehensive outline with chapter structure, value delivery, and SEO-friendly description.');
+    buffer.writeln('• LinkedIn Post / Article: Strong 1-2 line opening hook, insight-dense bullet points, double line breaks, and conversation-starter CTA.');
+    buffer.writeln('');
+    buffer.writeln('=== HASHTAG STRATEGY (STRICT CATEGORIES) ===');
+    buffer.writeln('• hashtagsHighReach: Exactly 5 broad discovery tags (1M+ reach, high volume).');
+    buffer.writeln('• hashtagsMediumReach: Exactly 4 category/industry-specific tags (50K–1M reach).');
+    buffer.writeln('• hashtagsNiche: Exactly 3 community/hyper-targeted tags (<50K reach).');
+    buffer.writeln('');
+    buffer.writeln('=== STRICT OUTPUT INSTRUCTIONS ===');
     buffer.writeln('1. Deliver output exclusively in valid, parseable JSON format.');
     buffer.writeln('2. Do not wrap the JSON with markdown code blocks (no ```json or ```). Return raw JSON.');
     buffer.writeln('3. Provide exactly 5 distinct, high-impact hooks covering curiosity, contrarian, blueprint, story, and question angles.');
-    buffer.writeln('4. Provide a full formatted caption with line breaks, value points, and a strong ending.');
+    buffer.writeln('4. Provide a full formatted caption with clean line breaks, value points, and a strong ending.');
     buffer.writeln('5. Provide 3 action-oriented CTAs aligned with the creator\'s CTA style.');
     buffer.writeln('6. Segment hashtags into 3 reach tiers: high reach (broad discovery), medium reach (niche/topic), and niche/community (highly targeted).');
     buffer.writeln('7. Provide a punchy, high-contrast Cover Text (3-5 uppercase words) suitable for visual design slides.');
     buffer.writeln('8. Provide 3 creative format variations (e.g. Standard, High-Engagement, Story Framework).');
-    buffer.writeln('9. Respect the specified language and regional dialect (e.g., Manglish should blend English & Malayalam naturally).');
+    buffer.writeln('9. Respect the specified language and regional dialect.');
     buffer.writeln('10. Do NOT invent fictional personal brand facts not given in the Creator Brand Memory.');
     buffer.writeln('');
     buffer.writeln('=== REQUIRED JSON SCHEMA ===');
@@ -130,6 +150,7 @@ class GrokService {
     required String idea,
     String? overrideTone,
     String? overrideLanguage,
+    String? overrideLength,
   }) {
     final buffer = StringBuffer();
     buffer.writeln('Platform: $platform');
@@ -140,6 +161,9 @@ class GrokService {
     }
     if (overrideLanguage != null && overrideLanguage.isNotEmpty) {
       buffer.writeln('Language Override: $overrideLanguage');
+    }
+    if (overrideLength != null && overrideLength.isNotEmpty) {
+      buffer.writeln('Length Preference: $overrideLength');
     }
     buffer.writeln('');
     buffer.writeln('Generate the complete structured JSON content pack now:');
@@ -330,9 +354,24 @@ class GrokService {
             rawServerError.toLowerCase().contains('invalid api key') ||
             rawServerError.toLowerCase().contains('invalid-api-key');
 
-        final userFacingMessage = isAuthFailure
-            ? 'Invalid xAI API key. Check your xAI console key.'
-            : rawServerError;
+        String userFacingMessage;
+        if (isAuthFailure) {
+          userFacingMessage = 'Invalid xAI API key. Check your xAI console key.';
+        } else if (statusCode == 429) {
+          final retryAfter = response.headers.value('retry-after');
+          if (retryAfter != null && retryAfter.trim().isNotEmpty) {
+            final seconds = int.tryParse(retryAfter.trim());
+            if (seconds != null && seconds > 0) {
+              userFacingMessage = 'Rate limit exceeded. Try again in $seconds seconds.';
+            } else {
+              userFacingMessage = 'Rate limit reached. Please wait a moment before generating again.';
+            }
+          } else {
+            userFacingMessage = 'Rate limit reached. Please wait a moment before generating again.';
+          }
+        } else {
+          userFacingMessage = rawServerError;
+        }
 
         if (kDebugMode) {
           debugPrint('[CreateDiff Grok AI] Parsed Error: $userFacingMessage (Server: $rawServerError)');
@@ -404,7 +443,7 @@ class GrokService {
       );
       throw const GrokServiceException(
         status: GrokGenerationStatus.networkError,
-        message: 'The AI generation request timed out. Please check your internet connection.',
+        message: 'The AI generation request timed out. Tap to retry.',
       );
     } catch (e) {
       if (e is GrokServiceException) rethrow;
