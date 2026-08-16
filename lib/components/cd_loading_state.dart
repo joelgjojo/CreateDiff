@@ -28,11 +28,10 @@ class _CDLoadingStateState extends State<CDLoadingState>
   Timer? _messageTimer;
 
   final List<String> _rotatingMessages = const [
+    'Connecting to Grok AI...',
     'Finding the strongest angle...',
-    'Shaping the content structure...',
     'Adapting to your brand voice...',
-    'Optimizing for your platform...',
-    'Finishing your content pack...',
+    'Polishing your content pack...',
   ];
 
   @override
@@ -40,10 +39,10 @@ class _CDLoadingStateState extends State<CDLoadingState>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: true);
 
-    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.08).animate(
+    _scaleAnimation = Tween<double>(begin: 0.94, end: 1.06).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutCubic),
     );
 
@@ -51,7 +50,7 @@ class _CDLoadingStateState extends State<CDLoadingState>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutCubic),
     );
 
-    _messageTimer = Timer.periodic(const Duration(milliseconds: 1400), (_) {
+    _messageTimer = Timer.periodic(const Duration(milliseconds: 1200), (_) {
       if (mounted) {
         setState(() {
           _messageIndex = (_messageIndex + 1) % _rotatingMessages.length;
@@ -166,6 +165,26 @@ class _CDLoadingStateState extends State<CDLoadingState>
                         fontWeight: FontWeight.w500,
                       ),
                 ),
+              ),
+              const SizedBox(height: CDSpacing.lg),
+              // 4-Stage Progress Dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_rotatingMessages.length, (idx) {
+                  final isActive = idx == _messageIndex;
+                  return AnimatedContainer(
+                    duration: CDMotion.standard,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: isActive ? 20 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? CDColors.brand
+                          : (isDark ? Colors.white24 : Colors.black12),
+                      borderRadius: BorderRadius.circular(CDRadius.pill),
+                    ),
+                  );
+                }),
               ),
             ],
           ),
