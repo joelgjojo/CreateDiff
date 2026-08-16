@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../models/creator_profile.dart';
 import '../models/generated_content.dart';
 import 'ai_config.dart';
@@ -158,21 +159,26 @@ class AIService {
   }) async {
     final stopwatch = Stopwatch()..start();
 
-    // 1. Verify API Key
+    // 1. Verify API Key is configured
     if (!AIConfig.hasApiKey) {
+      if (kDebugMode) {
+        debugPrint('[CreateDiff Grok AI] Error: Grok API Key is missing. Launch with --dart-define=GROK_API_KEY=your_key');
+      }
+
       _lastDebugLog = AIDebugLog(
         provider: 'xAI Grok',
         model: AIConfig.model,
         timestamp: DateTime.now(),
         status: AIGenerationStatus.missingApiKey,
-        errorMessage: 'Missing XAI_API_KEY environment variable or dart-define',
+        errorMessage: 'Missing GROK_API_KEY compile-time flag or dart-define',
         durationMs: 0,
         promptLength: 0,
         responseLength: 0,
       );
+
       throw const AIServiceException(
         status: AIGenerationStatus.missingApiKey,
-        message: 'xAI API Key is not configured. Please add XAI_API_KEY to your .env or launch flags.',
+        message: 'Grok API Key is not configured. Please launch the app with: flutter run --dart-define=GROK_API_KEY=your_key',
       );
     }
 
@@ -189,6 +195,10 @@ class AIService {
     );
 
     final totalPromptLength = systemPrompt.length + userPrompt.length;
+
+    if (kDebugMode) {
+      debugPrint('[CreateDiff Grok AI] Sending request to ${AIConfig.baseUrl}/chat/completions (Model: ${AIConfig.model})');
+    }
 
     try {
       final uri = Uri.parse('${AIConfig.baseUrl}/chat/completions');
@@ -214,6 +224,10 @@ class AIService {
 
       final responseBody = await response.transform(utf8.decoder).join();
       final statusCode = response.statusCode;
+
+      if (kDebugMode) {
+        debugPrint('[CreateDiff Grok AI] Response received: Status $statusCode in ${stopwatch.elapsedMilliseconds}ms');
+      }
 
       if (statusCode == 200) {
         final jsonMap = jsonDecode(responseBody) as Map<String, dynamic>;
@@ -254,7 +268,7 @@ class AIService {
         );
         throw AIServiceException(
           status: AIGenerationStatus.invalidResponse,
-          message: 'The AI model returned an unexpected output format. Please try again.',
+          message: 'Grok returned an unexpected output format. Please try again.',
           statusCode: 200,
           rawResponse: responseBody,
         );
@@ -265,14 +279,14 @@ class AIService {
           timestamp: DateTime.now(),
           status: AIGenerationStatus.invalidApiKey,
           statusCode: statusCode,
-          errorMessage: 'Authentication failed. Check API key validity.',
+          errorMessage: 'Authentication failed. Check GROK_API_KEY validity.',
           durationMs: stopwatch.elapsedMilliseconds,
           promptLength: totalPromptLength,
           responseLength: responseBody.length,
         );
         throw AIServiceException(
           status: AIGenerationStatus.invalidApiKey,
-          message: 'Authentication error: Your xAI API key is invalid or unauthorized.',
+          message: 'Authentication error: Your Grok API key is invalid or unauthorized.',
           statusCode: statusCode,
         );
       } else if (statusCode == 429) {
@@ -282,14 +296,14 @@ class AIService {
           timestamp: DateTime.now(),
           status: AIGenerationStatus.rateLimited,
           statusCode: statusCode,
-          errorMessage: 'xAI Rate limit exceeded',
+          errorMessage: 'xAI Grok rate limit reached',
           durationMs: stopwatch.elapsedMilliseconds,
           promptLength: totalPromptLength,
           responseLength: responseBody.length,
         );
         throw AIServiceException(
           status: AIGenerationStatus.rateLimited,
-          message: 'Rate limit reached on xAI. Please wait a few seconds before trying again.',
+          message: 'Rate limit reached on xAI Grok. Please wait a few seconds before trying again.',
           statusCode: statusCode,
         );
       } else {
@@ -299,20 +313,23 @@ class AIService {
           timestamp: DateTime.now(),
           status: AIGenerationStatus.serverError,
           statusCode: statusCode,
-          errorMessage: 'xAI server returned error code $statusCode',
+          errorMessage: 'xAI Grok server returned error code $statusCode',
           durationMs: stopwatch.elapsedMilliseconds,
           promptLength: totalPromptLength,
           responseLength: responseBody.length,
         );
         throw AIServiceException(
           status: AIGenerationStatus.serverError,
-          message: 'xAI service encountered an error (Status $statusCode). Please try again.',
+          message: 'xAI Grok service encountered an error (Status $statusCode). Please try again.',
           statusCode: statusCode,
           rawResponse: responseBody,
         );
       }
     } on SocketException catch (e) {
       stopwatch.stop();
+      if (kDebugMode) {
+        debugPrint('[CreateDiff Grok AI] SocketException: ${e.message}');
+      }
       _lastDebugLog = AIDebugLog(
         provider: 'xAI Grok',
         model: AIConfig.model,
@@ -323,12 +340,15 @@ class AIService {
         promptLength: totalPromptLength,
         responseLength: 0,
       );
-      throw AIServiceException(
+      throw const AIServiceException(
         status: AIGenerationStatus.networkError,
         message: 'Network connection failed. Please check your internet connection and try again.',
       );
     } on TimeoutException {
       stopwatch.stop();
+      if (kDebugMode) {
+        debugPrint('[CreateDiff Grok AI] Request timed out after 35 seconds');
+      }
       _lastDebugLog = AIDebugLog(
         provider: 'xAI Grok',
         model: AIConfig.model,
@@ -346,6 +366,9 @@ class AIService {
     } catch (e) {
       if (e is AIServiceException) rethrow;
       stopwatch.stop();
+      if (kDebugMode) {
+        debugPrint('[CreateDiff Grok AI] Unexpected error: $e');
+      }
       _lastDebugLog = AIDebugLog(
         provider: 'xAI Grok',
         model: AIConfig.model,
