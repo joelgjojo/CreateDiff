@@ -70,7 +70,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ),
           content: Text(
-            'Are you sure you want to delete this content pack? This action cannot be undone.',
+            'Remove this creation from your active archive? You can immediately undo this action.',
             style: TextStyle(color: CDColors.textSecondary(context)),
           ),
           actions: <Widget>[
@@ -95,14 +95,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     if (confirm != true) return;
 
-    await AppState.instance.deleteProject(project.id);
+    await AppState.instance.softDeleteProject(project.id);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Content pack deleted'),
-          duration: const Duration(milliseconds: 1400),
+          content: const Text('Content pack removed'),
+          duration: const Duration(milliseconds: 3500),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: CDColors.textPrimary(context),
+          action: SnackBarAction(
+            label: 'Undo',
+            textColor: CDColors.brandHighlight,
+            onPressed: () async {
+              await AppState.instance.restoreProject(project.id);
+            },
+          ),
         ),
       );
     }

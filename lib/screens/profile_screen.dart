@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 import '../models/creator_profile.dart';
 import '../services/app_state.dart';
@@ -411,6 +412,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: CDSpacing.md),
           Row(
+            children: [
+              Expanded(
+                child: CDSecondaryButton(
+                  label: 'Export Memory',
+                  height: 40,
+                  icon: const Icon(Icons.upload_rounded, size: 14),
+                  onPressed: () => _exportBrandMemory(context, appState),
+                ),
+              ),
+              const SizedBox(width: CDSpacing.sm),
+              Expanded(
+                child: CDSecondaryButton(
+                  label: 'Import Memory',
+                  height: 40,
+                  icon: const Icon(Icons.download_rounded, size: 14),
+                  onPressed: () => _importBrandMemory(context, appState),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: CDSpacing.md),
+          Divider(height: 1, color: CDColors.borderSubtle(context)),
+          const SizedBox(height: CDSpacing.sm),
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -431,6 +456,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: const Text('Reset All Data', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _exportBrandMemory(BuildContext context, AppState appState) {
+    AppHaptics.light();
+    final jsonStr = appState.exportProfileBackup();
+    Clipboard.setData(ClipboardData(text: jsonStr));
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: CDColors.surface(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.large)),
+        title: Text(
+          'Brand Memory Exported',
+          style: TextStyle(fontWeight: FontWeight.w800, color: CDColors.textPrimary(context)),
+        ),
+        content: Text(
+          'Your complete Brand Memory profile JSON has been copied to your clipboard. You can paste it in notes or send it to another device.',
+          style: TextStyle(color: CDColors.textSecondary(context), height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Done', style: TextStyle(color: CDColors.primaryColor(context), fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _importBrandMemory(BuildContext context, AppState appState) {
+    AppHaptics.light();
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: CDColors.surface(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.large)),
+        title: Text(
+          'Import Brand Memory',
+          style: TextStyle(fontWeight: FontWeight.w800, color: CDColors.textPrimary(context)),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Paste your exported CreateDiff profile JSON below to restore your Brand Memory:',
+                style: TextStyle(color: CDColors.textSecondary(context), fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 6,
+                style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                decoration: InputDecoration(
+                  hintText: '{\n  "profile": {\n    "creatorName": "..."\n  }\n}',
+                  filled: true,
+                  fillColor: CDColors.isDark(context) ? Colors.black38 : Colors.grey.shade100,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  contentPadding: const EdgeInsets.all(10),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Cancel', style: TextStyle(color: CDColors.textSecondary(context))),
+          ),
+          TextButton(
+            onPressed: () async {
+              final result = await appState.importProfileBackup(controller.text.trim());
+              if (ctx.mounted) Navigator.of(ctx).pop();
+              if (context.mounted) {
+                if (result.isValid) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Brand Memory successfully restored! ✦'),
+                      backgroundColor: CDColors.success,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(result.errorMessage ?? 'Import failed.'),
+                      backgroundColor: CDColors.error,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text('Import & Restore', style: TextStyle(color: CDColors.primaryColor(context), fontWeight: FontWeight.w700)),
           ),
         ],
       ),

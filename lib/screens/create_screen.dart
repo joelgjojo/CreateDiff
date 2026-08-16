@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../theme/app_theme.dart';
 import '../services/app_state.dart';
+import '../services/input_validator.dart';
 import '../components/cd_platform_selector.dart';
 import '../components/cd_content_type_card.dart';
 import '../components/cd_text_input.dart';
@@ -115,7 +116,19 @@ class _CreateScreenState extends State<CreateScreen> {
 
   Future<void> _handleGenerate() async {
     final idea = _ideaController.text.trim();
-    if (idea.isEmpty) return;
+    final validation = InputValidator.validateIdea(idea);
+    if (!validation.isValid) {
+      AppHaptics.light();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(validation.errorMessage ?? 'Please enter a valid idea.'),
+          backgroundColor: CDColors.error,
+          duration: const Duration(milliseconds: 2000),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     AppHaptics.selection();
     FocusScope.of(context).unfocus();

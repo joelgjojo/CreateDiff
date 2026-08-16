@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/app_state.dart';
+import '../services/input_validator.dart';
 import '../components/cd_section_header.dart';
 import '../components/cd_recent_content_card.dart';
 import '../components/cd_brand_memory_card.dart';
@@ -50,12 +51,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleDirectIdeaSubmit(BuildContext context) {
     final text = _quickIdeaController.text.trim();
-    _quickIdeaController.clear();
     if (text.isEmpty) {
       _openCreate(context);
-    } else {
-      _openCreate(context, idea: text);
+      return;
     }
+
+    final validation = InputValidator.validateIdea(text);
+    if (!validation.isValid) {
+      AppHaptics.light();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(validation.errorMessage ?? 'Please enter a valid idea.'),
+          backgroundColor: CDColors.error,
+          duration: const Duration(milliseconds: 2000),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    _quickIdeaController.clear();
+    _openCreate(context, idea: text);
   }
 
   @override

@@ -94,16 +94,26 @@ flutter build apk --debug
 ```
 Flutter Mobile App (UI / State)
          ↓
-AppState (Reactive State Manager)
+AppState (Reactive State Manager) + UsageGuard (Rate Limiting & Cost Protection)
          ↓
-AIService (Structured System Prompts & JSON Schema)
+AIService (Exponential Backoff Retry & Sanitize Layer)
          ↓
-AIConfig (Compile-time --dart-define resolution)
+AIConfig / ApiConfig (Compile-time --dart-define & .env resolution)
          ↓
-xAI Grok Responses API (/chat/completions)
+Groq / xAI Responses API (/chat/completions)
 ```
+
+---
+
+## 🔒 Security & Backend Proxy Roadmap
+
+> [!IMPORTANT]
+> **API Key Architecture Notice**:
+> - **Phase 1 (Pre-Launch & Testing)**: The API key lives client-side via `--dart-define` / `.env` / local `ApiConfig`. This is acceptable for rapid pre-launch testing with free-tier developer keys.
+> - **Phase 2 (Production Launch)**: In production mobile deployments, client-side `.env` files can be reverse-engineered from APK binaries. Before public release with real user volume, Grok/Groq API calls must move behind a server-side backend API Gateway proxy (e.g. Supabase Edge Functions / Cloudflare Workers / Node.js API) that keeps third-party provider keys 100% off user devices, attaches authenticated user tokens, and handles server-side quota enforcement.
 
 ---
 
 ## 📄 License
 Private & Proprietary — Developed for CreateDiff.
+

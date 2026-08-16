@@ -15,6 +15,7 @@ class CDColors {
   // 1. OFFICIAL BRAND ACCENT SYSTEM (#4F43F9)
   // ==========================================
   static const Color brand = Color(0xFF4F43F9); // Official Electric Blue-Violet
+  static const Color brandHighlight = Color(0xFF7066FF); // Bright Luminous Highlight
   static const Color primary = Color(0xFF4F43F9); // Canonical Primary Accent
   static const Color accent = Color(0xFF4F43F9);
   static const Color primaryLight = Color(0xFF7066FF); // Bright Luminous Blue-Violet
@@ -222,6 +223,10 @@ class CDLimits {
 /// Animation & Motion tokens
 class CDMotion {
   CDMotion._();
+
+  static const Duration fast = Duration(milliseconds: 150);
+  static const Duration normal = Duration(milliseconds: 300);
+  static const Duration premium = Duration(milliseconds: 500);
 
   static const Duration micro = Duration(milliseconds: 150);
   static const Duration standard = Duration(milliseconds: 250);
