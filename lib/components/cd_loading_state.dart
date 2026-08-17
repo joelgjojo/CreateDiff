@@ -91,19 +91,23 @@ class _CDLoadingStateState extends State<CDLoadingState>
               AnimatedBuilder(
                 animation: _pulseController,
                 builder: (context, child) {
+                  final disableAnimations = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+                  final scale = disableAnimations ? 1.0 : _scaleAnimation.value;
+                  final glow = disableAnimations ? 0.65 : _glowAnimation.value;
+
                   return Stack(
                     alignment: Alignment.center,
                     children: [
                       // Diffused Outer Glow
                       Container(
-                        width: 130 * _scaleAnimation.value,
-                        height: 130 * _scaleAnimation.value,
+                        width: 130 * scale,
+                        height: 130 * scale,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              CDColors.brand.withValues(alpha: 0.28 * _glowAnimation.value),
-                              CDColors.primaryLight.withValues(alpha: 0.08 * _glowAnimation.value),
+                              CDColors.brand.withValues(alpha: 0.28 * glow),
+                              CDColors.primaryLight.withValues(alpha: 0.08 * glow),
                               Colors.transparent,
                             ],
                           ),

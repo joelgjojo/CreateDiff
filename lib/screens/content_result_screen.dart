@@ -31,6 +31,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
   late ContentProject _currentProject;
   bool _isBookmarked = false;
   bool _isRegeneratingHooks = false;
+  bool _isRegeneratingFull = false;
 
   @override
   void initState() {
@@ -102,23 +103,108 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
   }
 
   Future<void> _regenerateHooks(AppState appState) async {
-    if (_isRegeneratingHooks) return;
+    if (_isRegeneratingHooks || _isRegeneratingFull || appState.isGenerating) return;
     AppHaptics.light();
     setState(() => _isRegeneratingHooks = true);
     try {
       await appState.regenerateHooks();
+      if (mounted) {
+        if (appState.lastError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(appState.lastError!.message),
+              backgroundColor: CDColors.error,
+              behavior: SnackBarBehavior.floating,
+              action: SnackBarAction(
+                label: 'Retry',
+                textColor: Colors.white,
+                onPressed: () => _regenerateHooks(appState),
+              ),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Hook variations refreshed! ✦'),
+              backgroundColor: CDColors.success,
+              duration: Duration(milliseconds: 1500),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to regenerate hooks'),
+          SnackBar(
+            content: const Text('Failed to regenerate hooks'),
             backgroundColor: CDColors.error,
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () => _regenerateHooks(appState),
+            ),
           ),
         );
       }
     } finally {
       if (mounted) {
         setState(() => _isRegeneratingHooks = false);
+      }
+    }
+  }
+
+  Future<void> _regenerateFullPack(AppState appState) async {
+    if (_isRegeneratingFull || _isRegeneratingHooks || appState.isGenerating) return;
+    AppHaptics.selection();
+    setState(() => _isRegeneratingFull = true);
+    try {
+      final updated = await appState.regenerateCurrentProject();
+      if (mounted) {
+        if (updated != null) {
+          setState(() => _currentProject = updated);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Studio Content Pack regenerated! ✦'),
+              backgroundColor: CDColors.success,
+              duration: Duration(milliseconds: 1600),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else if (appState.lastError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(appState.lastError!.message),
+              backgroundColor: CDColors.error,
+              behavior: SnackBarBehavior.floating,
+              action: SnackBarAction(
+                label: 'Retry',
+                textColor: Colors.white,
+                onPressed: () => _regenerateFullPack(appState),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Unable to regenerate content. Please retry.'),
+            backgroundColor: CDColors.error,
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () => _regenerateFullPack(appState),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRegeneratingFull = false);
       }
     }
   }
@@ -158,39 +244,49 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
               children: [
                 Text(
                   'Content Workspace',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
-                        fontSize: 17,
+                        fontSize: 16,
                         color: CDColors.textPrimary(context),
                       ),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      '${_currentProject.platform} ${_currentProject.contentType}',
-                      style: TextStyle(
+                Text(
+                  '${_currentProject.platform} ${_currentProject.contentType} • Tailored for $creatorName',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: accentColor,
+                        color: CDColors.textSecondary(context),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        '• Tailored for $creatorName',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontSize: 11,
-                              color: CDColors.textSecondary(context),
-                            ),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
+            bottom: (_isRegeneratingFull || _isRegeneratingHooks || appState.isGenerating)
+                ? PreferredSize(
+                    preferredSize: const Size.fromHeight(2.5),
+                    child: LinearProgressIndicator(
+                      backgroundColor: Colors.transparent,
+                      color: accentColor,
+                      minHeight: 2.5,
+                    ),
+                  )
+                : null,
             actions: [
+              IconButton(
+                icon: _isRegeneratingFull
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: accentColor),
+                      )
+                    : Icon(Icons.refresh_rounded, size: 20, color: CDColors.textPrimary(context)),
+                tooltip: 'Regenerate Pack',
+                onPressed: (_isRegeneratingFull || _isRegeneratingHooks || appState.isGenerating)
+                    ? null
+                    : () => _regenerateFullPack(appState),
+              ),
               IconButton(
                 icon: Icon(Icons.share_outlined, size: 20, color: CDColors.textPrimary(context)),
                 tooltip: 'Export & Share',
@@ -311,7 +407,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Flexible(
+              Expanded(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -328,22 +424,18 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: accentColor.withValues(alpha: isDark ? 0.16 : 0.10),
-                          borderRadius: BorderRadius.circular(CDRadius.pill),
-                        ),
-                        child: Text(
-                          '5 Angles',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: accentColor,
-                          ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: isDark ? 0.16 : 0.10),
+                        borderRadius: BorderRadius.circular(CDRadius.pill),
+                      ),
+                      child: Text(
+                        '5 Angles',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: accentColor,
                         ),
                       ),
                     ),
@@ -351,31 +443,30 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                 ),
               ),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextButton.icon(
+                  IconButton(
+                    icon: Icon(Icons.copy_all_rounded, size: 18, color: CDColors.textPrimary(context)),
+                    tooltip: 'Copy All Hooks',
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    padding: EdgeInsets.zero,
                     onPressed: () {
                       final all = generated.hooks.map((h) => '• $h').join('\n');
                       _copySection('All Hooks', all);
                     },
-                    icon: Icon(Icons.content_copy_rounded, size: 13, color: CDColors.textPrimary(context)),
-                    label: Text('Copy All', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: CDColors.textPrimary(context))),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      minimumSize: Size.zero,
-                    ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 2),
                   _isRegeneratingHooks
                       ? SizedBox(
-                          width: 28,
-                          height: 28,
+                          width: 24,
+                          height: 24,
                           child: Padding(
-                            padding: const EdgeInsets.all(6.0),
+                            padding: const EdgeInsets.all(4.0),
                             child: CircularProgressIndicator(strokeWidth: 2, color: accentColor),
                           ),
                         )
                       : IconButton(
-                          icon: Icon(Icons.refresh_rounded, size: 16, color: CDColors.textPrimary(context)),
+                          icon: Icon(Icons.refresh_rounded, size: 18, color: CDColors.textPrimary(context)),
                           tooltip: 'Regenerate Hooks',
                           constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                           padding: EdgeInsets.zero,

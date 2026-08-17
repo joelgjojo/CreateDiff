@@ -24,22 +24,24 @@ enum GrokGenerationStatus {
 /// Alias for general AI generation status
 typedef AIGenerationStatus = GrokGenerationStatus;
 
-/// Detailed exception thrown when Grok AI generation fails.
+/// Detailed exception thrown when CreateDiff AI generation fails.
 class GrokServiceException implements Exception {
   final GrokGenerationStatus status;
   final String message;
   final int? statusCode;
   final String? rawResponse;
+  final String? requestId;
 
   const GrokServiceException({
     required this.status,
     required this.message,
     this.statusCode,
     this.rawResponse,
+    this.requestId,
   });
 
   @override
-  String toString() => 'GrokServiceException($status: $message, code: $statusCode)';
+  String toString() => 'GrokServiceException($status: $message, code: $statusCode, req: $requestId)';
 }
 
 /// Observability telemetry model for developer debugging and runtime verification.
@@ -54,6 +56,7 @@ class GrokDebugLog {
   final int promptLength;
   final int responseLength;
   final int attemptCount;
+  final String? requestId;
 
   const GrokDebugLog({
     required this.provider,
@@ -66,17 +69,18 @@ class GrokDebugLog {
     required this.promptLength,
     required this.responseLength,
     this.attemptCount = 1,
+    this.requestId,
   });
 }
 
-/// Production xAI Grok API Client with Exponential Backoff & Retry Engine.
+/// Production CreateDiff API Client communicating securely with CreateDiff FastAPI Backend.
 class GrokService {
   GrokService._();
 
   static GrokDebugLog? _lastDebugLog;
   static GrokDebugLog? get lastDebugLog => _lastDebugLog;
 
-  /// Dedicated CreateDiff Studio System Prompt.
+  /// Dedicated CreateDiff Studio System Prompt (Server-side mirror & client utility).
   static String buildSystemPrompt({required CreatorProfile profile}) {
     final buffer = StringBuffer();
     buffer.writeln('You are the core AI Content Engine for CreateDiff — a premium mobile AI Creation Studio.');
@@ -176,7 +180,6 @@ class GrokService {
     return buffer.toString();
   }
 
-  /// Extracts human-readable error details from the server response payload.
   static String _extractServerErrorMessage(String responseBody, int statusCode) {
     try {
       final parsed = jsonDecode(responseBody);
@@ -201,8 +204,7 @@ class GrokService {
     return 'HTTP $statusCode (Empty response from server)';
   }
 
-  /// Dispatches generation request to Grok/Groq API with Exponential Backoff Retry.
-  /// Progressive timeouts: Attempt 1 = 10s, Attempt 2 = 20s, Attempt 3 = 35s.
+  /// Dispatches generation request to CreateDiff Backend API (`POST /api/v1/generate`).
   static Future<GeneratedContent> generateContent({
     required String platform,
     required String contentType,
@@ -213,22 +215,18 @@ class GrokService {
     String? overrideLength,
     void Function(int attempt, int maxAttempts)? onRetry,
   }) async {
-    final apiKey = ApiConfig.apiKey;
-    final baseUrl = ApiConfig.baseUrl;
-    final endpoint = baseUrl.endsWith('/chat/completions')
-        ? baseUrl
-        : (baseUrl.endsWith('/') ? '${baseUrl}chat/completions' : '$baseUrl/chat/completions');
-    final model = ApiConfig.model;
+    final backendBaseUrl = ApiConfig.backendBaseUrl.replaceAll(RegExp(r'/+$'), '');
+    final endpoint = '$backendBaseUrl/api/v1/generate';
     final provider = ApiConfig.providerName;
+    final model = ApiConfig.model;
 
-    // Strict missing API key validation
-    if (apiKey.isEmpty) {
+    if (!ApiConfig.hasApiKey || backendBaseUrl.isEmpty) {
       _lastDebugLog = GrokDebugLog(
         provider: provider,
         model: model,
         timestamp: DateTime.now(),
         status: GrokGenerationStatus.apiKeyMissing,
-        errorMessage: 'API Key not configured',
+        errorMessage: 'AI features unavailable — API not configured.',
         durationMs: 0,
         promptLength: 0,
         responseLength: 0,
@@ -239,287 +237,143 @@ class GrokService {
       );
     }
 
-    final systemPrompt = buildSystemPrompt(profile: profile);
-    final userPrompt = buildUserPrompt(
-      platform: platform,
-      contentType: contentType,
-      idea: idea,
-      overrideTone: overrideTone,
-      overrideLanguage: overrideLanguage,
-      overrideLength: overrideLength,
-    );
+    final creatorContextMap = {
+      'name': profile.creatorName,
+      'username': profile.username,
+      'niche': profile.niche,
+      'category': profile.category,
+      'targetAudience': profile.targetAudience,
+      'primaryLanguage': profile.primaryLanguage,
+      'secondaryLanguage': profile.secondaryLanguage,
+      'tone': profile.tone,
+      'contentStyle': profile.contentStyle,
+      'brandDescription': profile.brandDescription,
+      'preferredCTAStyle': profile.preferredCTAStyle,
+      'emojiUsage': profile.emojiUsage,
+    };
 
-    final totalPromptLength = systemPrompt.length + userPrompt.length;
-    final startsWithXai = apiKey.startsWith('xai-');
-    final keyLength = apiKey.length;
+    final payload = {
+      'platform': platform,
+      'contentType': contentType,
+      'idea': idea,
+      if (overrideTone != null && overrideTone.isNotEmpty) 'overrideTone': overrideTone,
+      if (overrideLanguage != null && overrideLanguage.isNotEmpty) 'overrideLanguage': overrideLanguage,
+      if (overrideLength != null && overrideLength.isNotEmpty) 'overrideLength': overrideLength,
+      'creatorContext': creatorContextMap,
+    };
 
-    // Retry settings: 3 total attempts
-    const maxAttempts = 3;
-    final timeouts = [
-      const Duration(seconds: 10),
-      const Duration(seconds: 20),
-      const Duration(seconds: 35),
-    ];
-
-    GrokServiceException? lastException;
+    final serializedPayload = jsonEncode(payload);
     final overallStopwatch = Stopwatch()..start();
 
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-      final attemptTimeout = timeouts[attempt - 1];
+    // 65-second total timeout to handle Render free-tier cold starts smoothly
+    const timeoutDuration = Duration(seconds: 65);
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 15);
+
+    try {
+      if (kDebugMode) {
+        debugPrint('==================== [CreateDiff Backend AI Request] ====================');
+        debugPrint('[CreateDiff Client] Endpoint: $endpoint');
+        debugPrint('[CreateDiff Client] Platform: $platform | Format: $contentType');
+        debugPrint('=========================================================================');
+      }
+
+      final uri = Uri.parse(endpoint);
+      final request = await client.postUrl(uri);
+
+      request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
+      request.headers.set('X-Request-ID', 'cd-mob-${DateTime.now().millisecondsSinceEpoch}');
+
+      request.add(utf8.encode(serializedPayload));
+
+      final response = await request.close().timeout(timeoutDuration);
+      final responseBody = await response.transform(utf8.decoder).join();
+      final statusCode = response.statusCode;
+      final requestId = response.headers.value('x-request-id');
 
       if (kDebugMode) {
-        debugPrint('==================== [CreateDiff Grok AI Request (Attempt $attempt/$maxAttempts)] ====================');
-        debugPrint('[CreateDiff Grok AI] Provider: $provider');
-        debugPrint('[CreateDiff Grok AI] Model: $model');
-        debugPrint('[CreateDiff Grok AI] Endpoint URL: $endpoint');
-        debugPrint('[CreateDiff Grok AI] Timeout: ${attemptTimeout.inSeconds}s');
-        debugPrint('[CreateDiff Grok AI] API Key starts with "xai-": $startsWithXai (len: $keyLength)');
-        debugPrint('======================================================================');
+        debugPrint('==================== [CreateDiff Backend AI Response] ====================');
+        debugPrint('[CreateDiff Client] HTTP Status Code: $statusCode (req: $requestId)');
+        debugPrint('==========================================================================');
       }
 
-      if (attempt > 1) {
-        onRetry?.call(attempt, maxAttempts);
-        // Exponential backoff delay: 600ms, 1200ms
-        await Future.delayed(Duration(milliseconds: 600 * (1 << (attempt - 2))));
-      }
+      if (statusCode == 200) {
+        final jsonMap = jsonDecode(responseBody) as Map<String, dynamic>;
+        final parsed = GeneratedContent.fromJson(jsonMap);
+        overallStopwatch.stop();
 
-      final client = HttpClient();
-      client.connectionTimeout = const Duration(seconds: 10);
+        _lastDebugLog = GrokDebugLog(
+          provider: provider,
+          model: model,
+          timestamp: DateTime.now(),
+          status: GrokGenerationStatus.success,
+          statusCode: 200,
+          durationMs: overallStopwatch.elapsedMilliseconds,
+          promptLength: serializedPayload.length,
+          responseLength: responseBody.length,
+          attemptCount: 1,
+          requestId: requestId,
+        );
 
-      try {
-        final uri = Uri.parse(endpoint);
-        final request = await client.postUrl(uri);
+        return parsed;
+      } else {
+        final serverErrorMsg = _extractServerErrorMessage(responseBody, statusCode);
 
-        request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
-        request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $apiKey');
-
-        final payload = {
-          'model': model,
-          'temperature': 0.7,
-          'messages': [
-            {'role': 'system', 'content': systemPrompt},
-            {'role': 'user', 'content': userPrompt},
-          ],
-          'response_format': {'type': 'json_object'},
-        };
-
-        request.add(utf8.encode(jsonEncode(payload)));
-
-        final response = await request.close().timeout(attemptTimeout);
-        final responseBody = await response.transform(utf8.decoder).join();
-        final statusCode = response.statusCode;
-
-        if (kDebugMode) {
-          debugPrint('==================== [CreateDiff Grok AI Response (Attempt $attempt)] ====================');
-          debugPrint('[CreateDiff Grok AI] HTTP Status Code: $statusCode');
-          debugPrint('[CreateDiff Grok AI] Response Body: $responseBody');
-          debugPrint('======================================================================');
-        }
-
-        if (statusCode == 200) {
-          final jsonMap = jsonDecode(responseBody) as Map<String, dynamic>;
-          final choices = jsonMap['choices'] as List<dynamic>?;
-
-          if (choices != null && choices.isNotEmpty) {
-            final message = choices.first['message'] as Map<String, dynamic>?;
-            final contentStr = message?['content'] as String?;
-
-            if (contentStr != null && contentStr.isNotEmpty) {
-              final parsed = _parseStructuredContent(contentStr);
-              if (parsed != null) {
-                overallStopwatch.stop();
-                _lastDebugLog = GrokDebugLog(
-                  provider: provider,
-                  model: model,
-                  timestamp: DateTime.now(),
-                  status: GrokGenerationStatus.success,
-                  statusCode: 200,
-                  durationMs: overallStopwatch.elapsedMilliseconds,
-                  promptLength: totalPromptLength,
-                  responseLength: responseBody.length,
-                  attemptCount: attempt,
-                );
-                return parsed;
-              }
-            }
-          }
-
+        if (statusCode == 400 || statusCode == 422) {
           throw GrokServiceException(
             status: GrokGenerationStatus.invalidResponse,
-            message: 'The AI model returned an unexpected output format. Please try again.',
-            statusCode: 200,
-            rawResponse: responseBody,
-          );
-        } else {
-          final rawServerError = _extractServerErrorMessage(responseBody, statusCode);
-          final isAuthFailure = statusCode == 401 ||
-              statusCode == 403 ||
-              rawServerError.toLowerCase().contains('incorrect api key') ||
-              rawServerError.toLowerCase().contains('invalid api key') ||
-              rawServerError.toLowerCase().contains('invalid-api-key');
-
-          if (isAuthFailure) {
-            final authMsg = provider.contains('xAI')
-                ? 'Invalid xAI API key. Check your xAI console key.'
-                : 'Invalid API configuration. Check your API key in settings.';
-            _lastDebugLog = GrokDebugLog(
-              provider: provider,
-              model: model,
-              timestamp: DateTime.now(),
-              status: GrokGenerationStatus.invalidKey,
-              statusCode: statusCode,
-              errorMessage: authMsg,
-              durationMs: overallStopwatch.elapsedMilliseconds,
-              promptLength: totalPromptLength,
-              responseLength: responseBody.length,
-              attemptCount: attempt,
-            );
-            // Do NOT retry authentication failures
-            throw GrokServiceException(
-              status: GrokGenerationStatus.invalidKey,
-              message: authMsg,
-              statusCode: statusCode,
-              rawResponse: responseBody,
-            );
-          }
-
-          if (statusCode == 429) {
-            String rateLimitMsg = 'AI service temporarily busy. Rate limit exceeded.';
-            final retryAfter = response.headers.value('retry-after');
-            if (retryAfter != null && retryAfter.trim().isNotEmpty) {
-              final seconds = int.tryParse(retryAfter.trim());
-              if (seconds != null && seconds > 0) {
-                rateLimitMsg = 'Rate limit exceeded. Try again in $seconds seconds.';
-              }
-            }
-            throw GrokServiceException(
-              status: GrokGenerationStatus.rateLimited,
-              message: rateLimitMsg,
-              statusCode: statusCode,
-              rawResponse: responseBody,
-            );
-          }
-
-          // Transient server error (500, 502, 503, 504) -> retry eligible
-          lastException = GrokServiceException(
-            status: GrokGenerationStatus.serverError,
-            message: 'AI provider temporarily unavailable. Please retry shortly.',
+            message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Invalid generation parameters. Please check your topic/idea and try again.',
             statusCode: statusCode,
             rawResponse: responseBody,
+            requestId: requestId,
           );
         }
-      } on SocketException catch (e) {
-        lastException = GrokServiceException(
-          status: GrokGenerationStatus.networkError,
-          message: 'No internet connection detected. Check your network (${e.message}).',
-        );
-      } on TimeoutException {
-        lastException = GrokServiceException(
-          status: GrokGenerationStatus.networkError,
-          message: 'AI generation timed out (${attemptTimeout.inSeconds}s). Tap to retry.',
-        );
-      } catch (e) {
-        if (e is GrokServiceException) {
-          if (e.status == GrokGenerationStatus.invalidKey ||
-              e.status == GrokGenerationStatus.apiKeyMissing ||
-              e.status == GrokGenerationStatus.rateLimited) {
-            rethrow; // Non-retryable
-          }
-          lastException = e;
-        } else {
-          lastException = GrokServiceException(
-            status: GrokGenerationStatus.unknownError,
-            message: e.toString(),
+
+        if (statusCode == 429) {
+          throw GrokServiceException(
+            status: GrokGenerationStatus.rateLimited,
+            message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Generation rate limit exceeded. Please wait a moment before trying again.',
+            statusCode: statusCode,
+            rawResponse: responseBody,
+            requestId: requestId,
           );
         }
-      } finally {
-        client.close(force: true);
-      }
-    }
 
-    overallStopwatch.stop();
-    final finalError = lastException ??
-        const GrokServiceException(
-          status: GrokGenerationStatus.unknownError,
-          message: 'Unable to generate content. Please check your connection and retry.',
-        );
-
-    _lastDebugLog = GrokDebugLog(
-      provider: provider,
-      model: model,
-      timestamp: DateTime.now(),
-      status: finalError.status,
-      statusCode: finalError.statusCode,
-      errorMessage: finalError.message,
-      durationMs: overallStopwatch.elapsedMilliseconds,
-      promptLength: totalPromptLength,
-      responseLength: 0,
-      attemptCount: maxAttempts,
-    );
-
-    throw finalError;
-  }
-
-  /// Strict parser that validates JSON keys and types against schema.
-  static GeneratedContent? _parseStructuredContent(String rawContent) {
-    try {
-      String sanitized = rawContent.trim();
-      if (sanitized.startsWith('```json')) {
-        sanitized = sanitized.substring(7);
-      } else if (sanitized.startsWith('```')) {
-        sanitized = sanitized.substring(3);
-      }
-      if (sanitized.endsWith('```')) {
-        sanitized = sanitized.substring(0, sanitized.length - 3);
-      }
-      sanitized = sanitized.trim();
-
-      final decoded = jsonDecode(sanitized);
-      if (decoded is! Map<String, dynamic>) return null;
-
-      final hooksList = _parseStringList(decoded['hooks']);
-      final caption = decoded['caption'] as String? ?? '';
-      final ctasList = _parseStringList(decoded['ctas']);
-      final coverText = decoded['coverText'] as String? ?? '';
-      final variationsList = _parseStringList(decoded['variations']);
-
-      List<String> highReach = _parseStringList(decoded['hashtagsHighReach']);
-      List<String> medReach = _parseStringList(decoded['hashtagsMediumReach']);
-      List<String> nicheReach = _parseStringList(decoded['hashtagsNiche']);
-
-      if (highReach.isEmpty && medReach.isEmpty && nicheReach.isEmpty) {
-        final legacyTags = _parseStringList(decoded['hashtags']);
-        if (legacyTags.isNotEmpty) {
-          final count = legacyTags.length;
-          highReach = legacyTags.take((count * 0.4).ceil()).toList();
-          medReach = legacyTags.skip(highReach.length).take((count * 0.35).ceil()).toList();
-          nicheReach = legacyTags.skip(highReach.length + medReach.length).toList();
+        if (statusCode == 504) {
+          throw GrokServiceException(
+            status: GrokGenerationStatus.networkError,
+            message: 'AI generation timed out. The server was busy or waking up. Please tap to retry.',
+            statusCode: statusCode,
+            rawResponse: responseBody,
+            requestId: requestId,
+          );
         }
-      }
 
-      if (hooksList.isEmpty && caption.isEmpty) {
-        return null;
+        throw GrokServiceException(
+          status: GrokGenerationStatus.serverError,
+          message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'AI service temporarily unavailable. Please retry shortly.',
+          statusCode: statusCode,
+          rawResponse: responseBody,
+          requestId: requestId,
+        );
       }
-
-      return GeneratedContent(
-        hooks: hooksList.isNotEmpty ? hooksList : ['Compelling hook for your audience'],
-        caption: caption.isNotEmpty ? caption : 'Engaging story caption...',
-        ctas: ctasList.isNotEmpty ? ctasList : ['Save this post', 'Follow for more'],
-        hashtagsHighReach: highReach,
-        hashtagsMediumReach: medReach,
-        hashtagsNiche: nicheReach,
-        coverText: coverText.isNotEmpty ? coverText : 'CONTENT TITLE',
-        variations: variationsList,
+    } on SocketException catch (e) {
+      throw GrokServiceException(
+        status: GrokGenerationStatus.networkError,
+        message: 'No internet connection detected or backend unavailable. Check your network (${e.message}).',
       );
-    } catch (_) {
-      return null;
+    } on TimeoutException {
+      throw const GrokServiceException(
+        status: GrokGenerationStatus.networkError,
+        message: 'Request timed out while connecting to the AI backend. Please tap to retry.',
+      );
+    } catch (e) {
+      if (e is GrokServiceException) rethrow;
+      throw GrokServiceException(
+        status: GrokGenerationStatus.unknownError,
+        message: e.toString(),
+      );
+    } finally {
+      client.close(force: true);
     }
-  }
-
-  static List<String> _parseStringList(dynamic value) {
-    if (value is List) {
-      return value.map((item) => item.toString().trim()).where((s) => s.isNotEmpty).toList();
-    }
-    return [];
   }
 }

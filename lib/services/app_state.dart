@@ -27,7 +27,7 @@ class AppState extends ChangeNotifier {
   String _generationStep = 'Understanding your idea...';
   ThemeMode _themeMode = ThemeMode.system;
   Timer? _loadingTimer;
-  bool _isApiConfigured = false;
+  bool _isApiConfigured = true;
   int _currentRetryAttempt = 1;
 
   // Getters
@@ -40,7 +40,7 @@ class AppState extends ChangeNotifier {
   AIServiceException? get lastError => _lastError;
   String get generationStep => _generationStep;
   ThemeMode get themeMode => _themeMode;
-  bool get isApiConfigured => _isApiConfigured;
+  bool get isApiConfigured => ApiConfig.hasApiKey;
   int get currentRetryAttempt => _currentRetryAttempt;
 
   bool get hasCompletedOnboarding => StorageService.hasCompletedOnboarding;
@@ -160,6 +160,7 @@ class AppState extends ChangeNotifier {
       return null;
     }
 
+    final reqId = ++_activeRequestId;
     _isGenerating = true;
     _generationStatus = GrokGenerationStatus.loading;
     _lastError = null;
@@ -180,12 +181,15 @@ class AppState extends ChangeNotifier {
         overrideLanguage: language,
         overrideLength: length,
         onRetry: (attempt, max) {
+          if (_activeRequestId != reqId) return;
           _currentRetryAttempt = attempt;
           _generationStep = 'Retrying with Grok AI (Attempt $attempt/$max)...';
           _generationStatus = AIGenerationStatus.retrying;
           notifyListeners();
         },
       );
+
+      if (_activeRequestId != reqId) return null;
 
       final now = DateTime.now();
       final newProject = ContentProject(
@@ -212,21 +216,27 @@ class AppState extends ChangeNotifier {
 
       return newProject;
     } on AIServiceException catch (e) {
-      _lastError = e;
-      _generationStatus = e.status;
+      if (_activeRequestId == reqId) {
+        _lastError = e;
+        _generationStatus = e.status;
+      }
       return null;
     } catch (e) {
-      _lastError = AIServiceException(
-        status: AIGenerationStatus.unknownError,
-        message: e.toString(),
-      );
-      _generationStatus = AIGenerationStatus.unknownError;
+      if (_activeRequestId == reqId) {
+        _lastError = AIServiceException(
+          status: AIGenerationStatus.unknownError,
+          message: e.toString(),
+        );
+        _generationStatus = AIGenerationStatus.unknownError;
+      }
       return null;
     } finally {
-      _loadingTimer?.cancel();
-      _loadingTimer = null;
-      _isGenerating = false;
-      notifyListeners();
+      if (_activeRequestId == reqId) {
+        _loadingTimer?.cancel();
+        _loadingTimer = null;
+        _isGenerating = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -271,6 +281,8 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  int _activeRequestId = 0;
+
   Future<void> regenerateHooks() async {
     if (_isGenerating || _currentProject == null || _currentGeneratedContent == null) return;
 
@@ -286,6 +298,7 @@ class AppState extends ChangeNotifier {
       return;
     }
 
+    final reqId = ++_activeRequestId;
     _isGenerating = true;
     _generationStatus = GrokGenerationStatus.loading;
     _lastError = null;
@@ -305,6 +318,7 @@ class AppState extends ChangeNotifier {
         overrideTone: _currentProject!.tone,
         overrideLanguage: _currentProject!.language,
         onRetry: (attempt, max) {
+          if (_activeRequestId != reqId) return;
           _currentRetryAttempt = attempt;
           _generationStep = 'Retrying with Grok AI (Attempt $attempt/$max)...';
           _generationStatus = AIGenerationStatus.retrying;
@@ -312,6 +326,9 @@ class AppState extends ChangeNotifier {
         },
       );
 
+      if (_activeRequestId != reqId) return;
+
+      // Atomically update hooks only
       _currentGeneratedContent = _currentGeneratedContent!.copyWith(
         hooks: newContent.hooks,
       );
@@ -327,19 +344,124 @@ class AppState extends ChangeNotifier {
       await StorageService.addProjectToHistory(updatedProj);
       _contentHistory = StorageService.getContentHistory();
     } on AIServiceException catch (e) {
-      _lastError = e;
-      _generationStatus = e.status;
+      if (_activeRequestId == reqId) {
+        _lastError = e;
+        _generationStatus = e.status;
+      }
     } catch (e) {
-      _lastError = AIServiceException(
-        status: AIGenerationStatus.unknownError,
-        message: e.toString(),
-      );
-      _generationStatus = AIGenerationStatus.unknownError;
+      if (_activeRequestId == reqId) {
+        _lastError = AIServiceException(
+          status: AIGenerationStatus.unknownError,
+          message: e.toString(),
+        );
+        _generationStatus = AIGenerationStatus.unknownError;
+      }
     } finally {
-      _loadingTimer?.cancel();
-      _loadingTimer = null;
-      _isGenerating = false;
+      if (_activeRequestId == reqId) {
+        _loadingTimer?.cancel();
+        _loadingTimer = null;
+        _isGenerating = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  /// Non-destructive full content pack regeneration
+  Future<ContentProject?> regenerateCurrentProject({
+    String? tone,
+    String? language,
+  }) async {
+    if (_isGenerating || _currentProject == null) return null;
+
+    final usage = UsageGuard.checkUsage();
+    if (usage.isBlocked) {
+      _lastError = AIServiceException(
+        status: AIGenerationStatus.rateLimited,
+        message: usage.message ?? 'Daily studio limit reached. Resets tomorrow.',
+      );
+      _generationStatus = AIGenerationStatus.rateLimited;
       notifyListeners();
+      return null;
+    }
+
+    if (!_isApiConfigured) {
+      _lastError = const AIServiceException(
+        status: AIGenerationStatus.apiKeyMissing,
+        message: 'AI features unavailable — API not configured.',
+      );
+      _generationStatus = AIGenerationStatus.apiKeyMissing;
+      notifyListeners();
+      return null;
+    }
+
+    final reqId = ++_activeRequestId;
+    _isGenerating = true;
+    _generationStatus = GrokGenerationStatus.loading;
+    _lastError = null;
+    _generationStep = 'Regenerating complete studio pack...';
+    _currentRetryAttempt = 1;
+    notifyListeners();
+
+    try {
+      _loadingTimer?.cancel();
+      _loadingTimer = _startLoadingStepTimer(_currentProject!.platform);
+
+      final newContent = await GrokService.generateContent(
+        platform: _currentProject!.platform,
+        contentType: _currentProject!.contentType,
+        idea: _currentProject!.idea,
+        profile: _profile,
+        overrideTone: tone ?? _currentProject!.tone,
+        overrideLanguage: language ?? _currentProject!.language,
+        onRetry: (attempt, max) {
+          if (_activeRequestId != reqId) return;
+          _currentRetryAttempt = attempt;
+          _generationStep = 'Retrying with Grok AI (Attempt $attempt/$max)...';
+          _generationStatus = AIGenerationStatus.retrying;
+          notifyListeners();
+        },
+      );
+
+      if (_activeRequestId != reqId) return null;
+
+      // Atomically replace on success
+      _currentGeneratedContent = newContent;
+      final updatedProj = _currentProject!.copyWith(
+        generatedContent: newContent,
+        tone: tone ?? _currentProject!.tone,
+        language: language ?? _currentProject!.language,
+        updatedAt: DateTime.now(),
+      );
+      _currentProject = updatedProj;
+      _generationStatus = AIGenerationStatus.success;
+
+      await UsageGuard.recordGeneration();
+      await StorageService.addProjectToHistory(updatedProj);
+      _contentHistory = StorageService.getContentHistory();
+
+      return updatedProj;
+    } on AIServiceException catch (e) {
+      if (_activeRequestId == reqId) {
+        _lastError = e;
+        _generationStatus = e.status;
+      }
+      return null;
+    } catch (e) {
+      if (_activeRequestId == reqId) {
+        _lastError = AIServiceException(
+          status: AIGenerationStatus.unknownError,
+          message: e.toString(),
+        );
+        _generationStatus = AIGenerationStatus.unknownError;
+      }
+      return null;
+    } finally {
+      if (_activeRequestId == reqId) {
+        _loadingTimer?.cancel();
+        _loadingTimer = null;
+        _isGenerating = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -400,18 +522,25 @@ class AppState extends ChangeNotifier {
   }
 
   Timer _startLoadingStepTimer(String platform) {
-    final steps = [
-      'Sending to Grok AI...',
+    final standardSteps = [
+      'Connecting to AI engine...',
       'Finding the strongest angle...',
       'Adapting to your brand voice...',
       'Structuring hooks & caption...',
       'Formatting for $platform...',
       'Polishing your content pack...',
     ];
+    int elapsedSeconds = 0;
     int stepIdx = 0;
-    return Timer.periodic(const Duration(milliseconds: 900), (t) {
-      stepIdx = (stepIdx + 1) % steps.length;
-      _generationStep = steps[stepIdx];
+    return Timer.periodic(const Duration(milliseconds: 1000), (t) {
+      elapsedSeconds++;
+      if (elapsedSeconds >= 5) {
+        // Cold start detection for free-tier / asleep instances
+        _generationStep = 'Waking up the AI engine — this can take up to a minute on first use...';
+      } else {
+        stepIdx = (stepIdx + 1) % standardSteps.length;
+        _generationStep = standardSteps[stepIdx];
+      }
       notifyListeners();
     });
   }

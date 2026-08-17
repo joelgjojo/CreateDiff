@@ -58,11 +58,18 @@ class _CreateScreenState extends State<CreateScreen> {
     ],
   };
 
+  String? _selectedLanguage;
+  bool _isSubmitting = false;
+
   @override
   void initState() {
     super.initState();
     _selectedPlatform = widget.initialPlatform;
     _selectedContentType = widget.initialContentType;
+    _selectedLanguage = AppState.instance.profile.primaryLanguage.isNotEmpty
+        ? AppState.instance.profile.primaryLanguage
+        : 'English';
+
     if (widget.initialIdea != null) {
       _ideaController.text = widget.initialIdea!;
     }
@@ -115,6 +122,9 @@ class _CreateScreenState extends State<CreateScreen> {
   }
 
   Future<void> _handleGenerate() async {
+    final appState = AppState.instance;
+    if (_isSubmitting || appState.isGenerating) return;
+
     final idea = _ideaController.text.trim();
     final validation = InputValidator.validateIdea(idea);
     if (!validation.isValid) {
@@ -130,43 +140,49 @@ class _CreateScreenState extends State<CreateScreen> {
       return;
     }
 
+    setState(() => _isSubmitting = true);
     AppHaptics.selection();
     FocusScope.of(context).unfocus();
 
-    final appState = AppState.instance;
-    final project = await appState.generateContentPack(
-      platform: _selectedPlatform!,
-      contentType: _selectedContentType!,
-      idea: idea,
-      tone: _toneController.text.trim(),
-    );
+    try {
+      final project = await appState.generateContentPack(
+        platform: _selectedPlatform ?? 'Instagram',
+        contentType: _selectedContentType ?? 'Reel',
+        idea: idea,
+        tone: _toneController.text.trim().isNotEmpty ? _toneController.text.trim() : null,
+        language: _selectedLanguage,
+      );
 
-    if (mounted) {
-      if (project != null) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => ContentResultScreen(
-              project: project,
+      if (mounted) {
+        if (project != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => ContentResultScreen(
+                project: project,
+              ),
             ),
-          ),
-        );
-      } else if (appState.lastError != null) {
-        // Show error snackbar
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(appState.lastError!.message),
-            backgroundColor: CDColors.error,
-            action: SnackBarAction(
-              label: 'Debug',
-              textColor: Colors.white,
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
-                );
-              },
+          );
+        } else if (appState.lastError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(appState.lastError!.message),
+              backgroundColor: CDColors.error,
+              action: SnackBarAction(
+                label: 'Debug',
+                textColor: Colors.white,
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const DebugPanelScreen()),
+                  );
+                },
+              ),
             ),
-          ),
-        );
+          );
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
       }
     }
   }
@@ -440,7 +456,45 @@ class _CreateScreenState extends State<CreateScreen> {
               ],
             ),
           ),
-          const SizedBox(height: CDSpacing.xl),
+          // Language Selector Chips
+          Text(
+            'Content Language & Dialect',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                  color: CDColors.textPrimary(context),
+                ),
+          ),
+          const SizedBox(height: CDSpacing.xs),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: ['English', 'Malayalam', 'Manglish', 'Hindi'].map((lang) {
+              final isSelected = _selectedLanguage == lang;
+              return ChoiceChip(
+                label: Text(lang == 'Malayalam' ? 'Malayalam (മലയാളം)' : lang),
+                selected: isSelected,
+                onSelected: (_) {
+                  AppHaptics.selection();
+                  setState(() => _selectedLanguage = lang);
+                },
+                selectedColor: CDColors.brand,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : CDColors.textPrimary(context),
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                ),
+                backgroundColor: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
+                side: BorderSide(
+                  color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: CDSpacing.lg),
 
           CDTextInput(
             controller: _ideaController,
@@ -495,10 +549,11 @@ class _CreateScreenState extends State<CreateScreen> {
           const SizedBox(height: CDSpacing.xxl),
 
           CDPrimaryButton(
-            label: 'Generate Studio Content Pack ✦',
+            label: AppState.instance.isGenerating ? 'Creating...' : 'Generate Studio Content Pack ✦',
+            isLoading: AppState.instance.isGenerating,
             isFullWidth: true,
             height: 52,
-            onPressed: _handleGenerate,
+            onPressed: AppState.instance.isGenerating ? null : _handleGenerate,
           ),
         ],
       ),

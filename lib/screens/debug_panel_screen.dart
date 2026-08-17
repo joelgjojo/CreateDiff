@@ -113,10 +113,10 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
                         ],
                       ),
                       const SizedBox(height: CDSpacing.md),
-                      _buildDebugRow('AI Provider', ApiConfig.providerName),
-                      _buildDebugRow('Model', ApiConfig.model),
-                      _buildDebugRow('Endpoint', '${ApiConfig.baseUrl}/chat/completions'),
-                      _buildDebugRow('API Key', hasKey ? 'Configured' : 'Missing'),
+                      _buildDebugRow('Architecture', 'Mobile -> FastAPI -> Groq'),
+                      _buildDebugRow('Backend Service', ApiConfig.providerName),
+                      _buildDebugRow('Backend URL', ApiConfig.backendBaseUrl),
+                      _buildDebugRow('Status', hasKey ? 'Operational' : 'Disconnected'),
                     ],
                   ),
                 ),
@@ -147,10 +147,12 @@ class _DebugPanelScreenState extends State<DebugPanelScreen> {
                         ),
                         if (lastLog.statusCode != null)
                           _buildDebugRow('HTTP Status', '${lastLog.statusCode}'),
+                        if (lastLog.requestId != null)
+                          _buildDebugRow('Request ID', lastLog.requestId!),
                         _buildDebugRow('Timestamp', lastLog.timestamp.toIso8601String()),
                         _buildDebugRow('Latency', '${lastLog.durationMs} ms'),
-                        _buildDebugRow('Prompt', '${lastLog.promptLength} characters'),
-                        _buildDebugRow('Response', '${lastLog.responseLength} characters'),
+                        _buildDebugRow('Payload Size', '${lastLog.promptLength} bytes'),
+                        _buildDebugRow('Response Size', '${lastLog.responseLength} bytes'),
                         if (lastLog.errorMessage != null) ...[
                           const SizedBox(height: CDSpacing.xs),
                           Text(

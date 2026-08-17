@@ -1,0 +1,10 @@
+from fastapi import APIRouter
+from app.api.v1.health import router as health_router
+from app.api.v1.readiness import router as readiness_router
+from app.api.v1.generate import router as generate_router
+
+api_v1_router = APIRouter()
+
+api_v1_router.include_router(health_router)
+api_v1_router.include_router(readiness_router)
+api_v1_router.include_router(generate_router)
