@@ -51,7 +51,7 @@ HOST=0.0.0.0
 PORT=8000
 
 # Server-Side Only Groq Credentials
-GROQ_API_KEY=gsk_your_groq_api_key_here
+GROQ_API_KEY=[REDACTED]
 GROQ_MODEL=openai/gpt-oss-120b
 GROQ_BASE_URL=https://api.groq.com/openai/v1
 
