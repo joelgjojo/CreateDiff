@@ -13,6 +13,7 @@ import '../components/cd_secondary_button.dart';
 import '../components/cd_export_share_sheet.dart';
 import '../components/cd_atmospheric_background.dart';
 import '../components/cd_quality_score_card.dart';
+import '../components/cd_creator_intelligence_cards.dart';
 import '../components/cd_visual_intelligence_card.dart';
 import '../components/cd_platform_content_cards.dart';
 import 'design_selection_screen.dart';
@@ -330,6 +331,19 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                             const SizedBox(height: CDSpacing.sm),
                           ],
 
+                          if (generated.creativeDirector != null) ...[
+                            CDCreativeDirectorCard(insight: generated.creativeDirector!),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+                          if (generated.contentReview != null) ...[
+                            CDContentReviewCard(review: generated.contentReview!),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+                          if (generated.repurposedContent != null) ...[
+                            CDRepurposeCard(content: generated.repurposedContent!),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+
                           // --- Section 0.6: Platform-Specific Modules ---
                           if (generated.script != null && generated.script!.isNotEmpty) ...[
                             CDReelScriptCard(
@@ -413,17 +427,21 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                       top: false,
                       child: Row(
                         children: [
-                          CDSecondaryButton(
-                            label: _isBookmarked ? 'Saved' : 'Bookmark',
-                            height: 48,
-                            icon: Icon(
-                              _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                              size: 17,
+                          Flexible(
+                            flex: 4,
+                            child: CDSecondaryButton(
+                              label: _isBookmarked ? 'Saved' : 'Bookmark',
+                              height: 48,
+                              icon: Icon(
+                                _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                                size: 17,
+                              ),
+                              onPressed: _toggleBookmark,
                             ),
-                            onPressed: _toggleBookmark,
                           ),
-                          const SizedBox(width: CDSpacing.md),
+                          const SizedBox(width: CDSpacing.sm),
                           Expanded(
+                            flex: 6,
                             child: CDPrimaryButton(
                               label: 'Use This Content ✦',
                               height: 48,

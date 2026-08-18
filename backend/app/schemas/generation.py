@@ -18,6 +18,28 @@ class CreatorContext(BaseModel):
     brand_description: Optional[str] = Field(default="", max_length=500)
     preferred_cta_style: Optional[str] = Field(default="Direct", max_length=100)
     emoji_usage: Optional[str] = Field(default="moderate", max_length=50)
+    language_profile: Optional["LanguageProfile"] = Field(default=None, alias="languageProfile")
+    creator_memory: Optional["CreatorMemory"] = Field(default=None, alias="creatorMemory")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class LanguageProfile(BaseModel):
+    language: str = Field(default="English", max_length=50)
+    preferred_style: str = Field(default="Conversational", max_length=50, alias="preferredStyle")
+    audience_type: str = Field(default="General audience", max_length=150, alias="audienceType")
+    regional_context: str = Field(default="", max_length=300, alias="regionalContext")
+    communication_tone: str = Field(default="", max_length=100, alias="communicationTone")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class CreatorMemory(BaseModel):
+    successful_patterns: List[str] = Field(default_factory=list, alias="successfulPatterns")
+    preferred_hooks: List[str] = Field(default_factory=list, alias="preferredHooks")
+    preferred_formats: List[str] = Field(default_factory=list, alias="preferredFormats")
+    avoid_patterns: List[str] = Field(default_factory=list, alias="avoidPatterns")
+    brand_rules: List[str] = Field(default_factory=list, alias="brandRules")
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -53,6 +75,10 @@ class VisualIntelligenceResponse(BaseModel):
     typography_suggestion: str = Field(default="Geometric sans-serif with tracked caps", alias="typographySuggestion")
     color_palette: List[str] = Field(default_factory=list, alias="colorPalette")
     design_mood: str = Field(default="High energy, educational, authentic", alias="designMood")
+    brand_consistency_suggestions: List[str] = Field(default_factory=list, alias="brandConsistencySuggestions")
+    visual_hierarchy: str = Field(default="Lead with the hook, then supporting proof and CTA", alias="visualHierarchy")
+    thumbnail_strategy: str = Field(default="Use one clear promise with high contrast", alias="thumbnailStrategy")
+    image_direction: str = Field(default="Use authentic creator-led imagery or product context", alias="imageDirection")
 
     model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
@@ -64,8 +90,41 @@ class QualityMetadataResponse(BaseModel):
     audience_fit: int = Field(default=86, ge=0, le=100, alias="audienceFit")
     originality: int = Field(default=84, ge=0, le=100, alias="originality")
     overall_score: int = Field(default=86, ge=0, le=100, alias="overallScore")
+    language_naturalness: int = Field(default=85, ge=0, le=100, alias="languageNaturalness")
+    cultural_relevance: int = Field(default=85, ge=0, le=100, alias="culturalRelevance")
+    regional_authenticity: int = Field(default=85, ge=0, le=100, alias="regionalAuthenticity")
     issues: List[str] = Field(default_factory=list)
     retried: bool = Field(default=False)
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+
+class CreativeDirectorInsightResponse(BaseModel):
+    audience_insight: str = Field(default="", alias="audienceInsight")
+    content_angle: str = Field(default="", alias="contentAngle")
+    story_structure: str = Field(default="", alias="storyStructure")
+    improvement_suggestion: str = Field(default="", alias="improvementSuggestion")
+    reasoning: str = Field(default="")
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+
+class ContentReviewResponse(BaseModel):
+    hook_analysis: str = Field(default="", alias="hookAnalysis")
+    clarity_analysis: str = Field(default="", alias="clarityAnalysis")
+    audience_fit: str = Field(default="", alias="audienceFit")
+    improvement_suggestions: List[str] = Field(default_factory=list, alias="improvementSuggestions")
+    disclaimer: str = Field(default="AI analysis only — not real performance prediction.")
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+
+class RepurposedContentResponse(BaseModel):
+    instagram_caption: str = Field(default="", alias="instagramCaption")
+    linkedin_post: str = Field(default="", alias="linkedinPost")
+    youtube_description: str = Field(default="", alias="youtubeDescription")
+    x_thread: List[str] = Field(default_factory=list, alias="xThread")
+    blog_outline: List[str] = Field(default_factory=list, alias="blogOutline")
 
     model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
 
@@ -90,5 +149,8 @@ class GenerationResponse(BaseModel):
     # Intelligence layers
     visual_intelligence: Optional[VisualIntelligenceResponse] = Field(default=None, alias="visualIntelligence")
     quality: Optional[QualityMetadataResponse] = Field(default=None)
+    creative_director: Optional[CreativeDirectorInsightResponse] = Field(default=None, alias="creativeDirector")
+    content_review: Optional[ContentReviewResponse] = Field(default=None, alias="contentReview")
+    repurposed_content: Optional[RepurposedContentResponse] = Field(default=None, alias="repurposedContent")
 
     model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)

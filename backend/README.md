@@ -144,13 +144,10 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ## 4. Connecting the Flutter Client
 
-In development:
-- **iOS Simulator / Desktop / Web**: `http://127.0.0.1:8000`
-- **Android Emulator**: `http://10.0.2.2:8000` (mapped automatically by `ApiConfig.defaultPlatformBackendUrl`)
-- **Physical Device**: Set `CREATE_DIFF_DEV_API_BASE_URL=http://<YOUR_MAC_LAN_IP>:8000` in the Flutter root `.env`.
-
-In production:
-- Set `CREATE_DIFF_PRODUCTION_API_BASE_URL=https://your-creatediff-api.onrender.com` in Flutter release build config.
+The Flutter mobile app connects via `AppConfig.apiBaseUrl` with:
+- **Default Production Mode**: Defaults to `https://api.creatediff.com` (works immediately on all physical devices and simulators).
+- **Custom / Cloud Deployment**: Pass `--dart-define=API_BASE_URL=https://your-creatediff-api.onrender.com`.
+- **Local Dev Server**: Pass `--dart-define=API_BASE_URL=http://localhost:8000`.
 
 ---
 

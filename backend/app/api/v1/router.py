@@ -3,6 +3,7 @@ from app.api.v1.health import router as health_router
 from app.api.v1.readiness import router as readiness_router
 from app.api.v1.generate import router as generate_router
 from app.api.v1.campaign import router as campaign_router
+from app.api.v1.profile import router as profile_router
 
 api_v1_router = APIRouter()
 
@@ -10,4 +11,4 @@ api_v1_router.include_router(health_router)
 api_v1_router.include_router(readiness_router)
 api_v1_router.include_router(generate_router)
 api_v1_router.include_router(campaign_router)
-
+api_v1_router.include_router(profile_router)

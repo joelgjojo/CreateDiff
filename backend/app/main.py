@@ -1,5 +1,7 @@
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -11,6 +13,14 @@ from app.middleware.rate_limit import RateLimitMiddleware
 from app.utils.logging import LoggingMiddleware, logger
 from app.schemas.errors import ErrorResponse, ErrorDetail
 from app.services.groq_service import GroqServiceException
+from app.services.analytics import SentryReporter
+from app.db.database import init_db
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    await init_db()
+    yield
+
 
 app = FastAPI(
     title="CreateDiff API",
@@ -18,7 +28,17 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs" if not settings.is_production else None,
     redoc_url=None,
+    lifespan=lifespan,
 )
+
+
+@app.get("/")
+def root():
+    return {
+        "name": "CreateDiff API",
+        "status": "running",
+    }
+
 
 # 1. Security & Request ID Middleware
 app.add_middleware(SecurityHeadersMiddleware)
@@ -38,6 +58,7 @@ app.add_middleware(
 
 # 3. Include API v1 Router
 app.include_router(api_v1_router, prefix="/api/v1")
+error_reporter = SentryReporter()
 
 
 # 4. Global Exception Handlers (Always structured JSON, never raw stack traces)
@@ -72,6 +93,14 @@ async def groq_service_exception_handler(request: Request, exc: GroqServiceExcep
     return response
 
 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    request_id = getattr(request.state, "request_id", None)
+    detail = exc.detail if isinstance(exc.detail, dict) else {"code": "HTTP_ERROR", "message": str(exc.detail)}
+    payload = ErrorResponse(error=ErrorDetail(code=detail.get("code", "HTTP_ERROR"), message=detail.get("message", "Request failed"), request_id=request_id))
+    return JSONResponse(status_code=exc.status_code, content=payload.model_dump(by_alias=True), headers={"X-Request-ID": request_id} if request_id else None)
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     request_id = getattr(request.state, "request_id", None)
@@ -100,7 +129,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
     request_id = getattr(request.state, "request_id", None)
-    logger.exception(f"Unhandled server error [request_id={request_id}]: {exc}")
+    logger.exception("Unhandled server error [request_id=%s, type=%s]", request_id, type(exc).__name__)
+    error_reporter.capture_exception(exc, request_id=request_id, path=str(request.url.path))
     
     error_payload = ErrorResponse(
         error=ErrorDetail(

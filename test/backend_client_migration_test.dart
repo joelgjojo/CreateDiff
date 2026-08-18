@@ -16,13 +16,10 @@ void main() {
       expect(ApiConfig.hasBackendConfigured, isTrue);
     });
 
-    test('development URL configuration keeps emulator and device addresses distinct', () {
-      expect(
-        ApiConfig.defaultAndroidEmulatorUrl,
-        equals('http://10.0.2.2:8000'),
-      );
-      expect(ApiConfig.defaultLocalUrl, equals('http://127.0.0.1:8000'));
-      expect(ApiConfig.defaultPlatformBackendUrl, isNotEmpty);
+    test('AppConfig defaults to production HTTPS backend placeholder without requiring hardcoded local IPs', () {
+      expect(AppConfig.defaultProductionUrl, equals('https://api.creatediff.com'));
+      expect(AppConfig.apiBaseUrl, equals('https://api.creatediff.com'));
+      expect(AppConfig.isConfigured, isTrue);
     });
 
     test('Prompt Builder utility preserves regional language and Latin hashtag rules', () {

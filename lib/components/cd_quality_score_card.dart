@@ -46,36 +46,43 @@ class CDQualityScoreCard extends StatelessWidget {
         children: [
           // Header Row
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: scoreColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: scoreColor.withValues(alpha: 0.4)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      quality.overallScore >= 80 ? Icons.verified_rounded : Icons.auto_awesome_rounded,
-                      size: 14,
-                      color: scoreColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'AI Quality: ${quality.overallScore}/100',
-                      style: TextStyle(
-                        fontSize: CDTypography.fontSizeSm,
-                        fontWeight: CDTypography.semiBold,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: scoreColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: scoreColor.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        quality.overallScore >= 80 ? Icons.verified_rounded : Icons.auto_awesome_rounded,
+                        size: 14,
                         color: scoreColor,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          'AI Quality: ${quality.overallScore}/100',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: CDTypography.fontSizeSm,
+                            fontWeight: CDTypography.semiBold,
+                            color: scoreColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const Spacer(),
-              if (quality.retried)
+              if (quality.retried) ...[
+                const SizedBox(width: CDSpacing.xs),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
@@ -98,54 +105,104 @@ class CDQualityScoreCard extends StatelessWidget {
                     ],
                   ),
                 ),
+              ],
             ],
           ),
 
           const SizedBox(height: CDSpacing.md),
 
-          // Score Breakdown Grid
-          Row(
-            children: [
-              Expanded(
-                child: _buildMetricBar(
-                  context,
-                  label: 'Hook Strength',
-                  score: quality.hookStrength,
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: CDSpacing.sm),
-              Expanded(
-                child: _buildMetricBar(
-                  context,
-                  label: 'Platform Fit',
-                  score: quality.platformFit,
-                  isDark: isDark,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: CDSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: _buildMetricBar(
-                  context,
-                  label: 'Audience Fit',
-                  score: quality.audienceFit,
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: CDSpacing.sm),
-              Expanded(
-                child: _buildMetricBar(
-                  context,
-                  label: 'Originality',
-                  score: quality.originality,
-                  isDark: isDark,
-                ),
-              ),
-            ],
+          // Score Breakdown Grid (Adaptive layout)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 280;
+              if (isNarrow) {
+                return Column(
+                  children: [
+                    _buildMetricBar(context, label: 'Hook Strength', score: quality.hookStrength, isDark: isDark),
+                    const SizedBox(height: CDSpacing.xs),
+                    _buildMetricBar(context, label: 'Platform Fit', score: quality.platformFit, isDark: isDark),
+                    const SizedBox(height: CDSpacing.xs),
+                    _buildMetricBar(context, label: 'Audience Fit', score: quality.audienceFit, isDark: isDark),
+                    const SizedBox(height: CDSpacing.xs),
+                    _buildMetricBar(context, label: 'Originality', score: quality.originality, isDark: isDark),
+                    const SizedBox(height: CDSpacing.xs),
+                    _buildMetricBar(context, label: 'Language Naturalness', score: quality.languageNaturalness, isDark: isDark),
+                    const SizedBox(height: CDSpacing.xs),
+                    _buildMetricBar(context, label: 'Regional Relevance', score: quality.regionalAuthenticity, isDark: isDark),
+                  ],
+                );
+              }
+
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricBar(
+                          context,
+                          label: 'Hook Strength',
+                          score: quality.hookStrength,
+                          isDark: isDark,
+                        ),
+                      ),
+                      const SizedBox(width: CDSpacing.sm),
+                      Expanded(
+                        child: _buildMetricBar(
+                          context,
+                          label: 'Platform Fit',
+                          score: quality.platformFit,
+                          isDark: isDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: CDSpacing.sm),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricBar(
+                          context,
+                          label: 'Audience Fit',
+                          score: quality.audienceFit,
+                          isDark: isDark,
+                        ),
+                      ),
+                      const SizedBox(width: CDSpacing.sm),
+                      Expanded(
+                        child: _buildMetricBar(
+                          context,
+                          label: 'Originality',
+                          score: quality.originality,
+                          isDark: isDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: CDSpacing.sm),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricBar(
+                          context,
+                          label: 'Language Naturalness',
+                          score: quality.languageNaturalness,
+                          isDark: isDark,
+                        ),
+                      ),
+                      const SizedBox(width: CDSpacing.sm),
+                      Expanded(
+                        child: _buildMetricBar(
+                          context,
+                          label: 'Regional Relevance',
+                          score: quality.regionalAuthenticity,
+                          isDark: isDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
 
           // Potential Issues / Elevation notes
@@ -188,14 +245,19 @@ class CDQualityScoreCard extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: CDTypography.fontSizeXs,
-                color: isDark ? CDColors.darkTextSecondary : CDColors.lightTextSecondary,
-                fontWeight: CDTypography.medium,
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: CDTypography.fontSizeXs,
+                  color: isDark ? CDColors.darkTextSecondary : CDColors.lightTextSecondary,
+                  fontWeight: CDTypography.medium,
+                ),
               ),
             ),
+            const SizedBox(width: 4),
             Text(
               '$score%',
               style: TextStyle(

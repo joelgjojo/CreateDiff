@@ -11,6 +11,8 @@ import 'usage_guard.dart';
 import 'input_validator.dart';
 import 'backup_service.dart';
 import '../config/api_config.dart';
+import 'cloud_sync_service.dart';
+import '../models/creator_intelligence.dart';
 
 typedef AIServiceException = GrokServiceException;
 
@@ -89,8 +91,15 @@ class AppState extends ChangeNotifier {
     _profile = newProfile;
     await StorageService.saveCreatorProfile(newProfile);
     await StorageService.setCompletedProfileSetup(true);
+    await CloudSyncService.syncLocalData(newProfile);
     notifyListeners();
   }
+
+  Future<void> updateCreatorMemory(CreatorMemory memory) async {
+    await updateProfile(_profile.copyWith(creatorMemory: memory));
+  }
+
+  Future<void> clearCreatorMemory() => updateCreatorMemory(const CreatorMemory());
 
   Future<void> completeOnboarding() async {
     await StorageService.setCompletedOnboarding(true);
@@ -225,6 +234,7 @@ class AppState extends ChangeNotifier {
       await UsageGuard.recordGeneration();
       await StorageService.addProjectToHistory(newProject);
       _contentHistory = StorageService.getContentHistory();
+      await CloudSyncService.syncLocalData(_profile);
 
       return newProject;
     } on AIServiceException catch (e) {
@@ -260,8 +270,19 @@ class AppState extends ChangeNotifier {
 
   /// Toggle bookmark / favorite status on a project
   Future<void> toggleFavorite(String projectId) async {
+    final wasFavorite = _contentHistory.where((project) => project.id == projectId).firstOrNull?.isFavorite ?? false;
     await StorageService.toggleFavorite(projectId);
     _contentHistory = StorageService.getContentHistory();
+    final project = _contentHistory.where((item) => item.id == projectId).firstOrNull;
+    if (!wasFavorite && project != null && project.isFavorite) {
+      final hook = project.generatedContent?.hooks.isNotEmpty == true ? project.generatedContent!.hooks.first : '';
+      final memory = _profile.creatorMemory;
+      await updateCreatorMemory(memory.copyWith(
+        successfulPatterns: _appendUnique(memory.successfulPatterns, 'Favorited ${project.contentType}'),
+        preferredFormats: _appendUnique(memory.preferredFormats, project.contentType),
+        preferredHooks: hook.isEmpty ? memory.preferredHooks : _appendUnique(memory.preferredHooks, hook),
+      ));
+    }
     if (_currentProject?.id == projectId) {
       _currentProject = _currentProject!.copyWith(
         isFavorite: !_currentProject!.isFavorite,
@@ -320,6 +341,7 @@ class AppState extends ChangeNotifier {
       await StorageService.saveCampaign(plan);
       _campaigns = StorageService.getCampaigns();
       await UsageGuard.recordGeneration(estimatedTokens: durationDays * 50);
+      await CloudSyncService.syncLocalData(_profile);
       return plan;
     } on AIServiceException catch (e) {
       _lastError = e;
@@ -596,8 +618,17 @@ class AppState extends ChangeNotifier {
     );
     await StorageService.addProjectToHistory(duplicated);
     _contentHistory = StorageService.getContentHistory();
+    final memory = _profile.creatorMemory;
+    await updateCreatorMemory(memory.copyWith(
+      preferredFormats: _appendUnique(memory.preferredFormats, project.contentType),
+    ));
     notifyListeners();
     return duplicated;
+  }
+
+  List<String> _appendUnique(List<String> values, String value) {
+    if (value.trim().isEmpty || values.contains(value)) return values;
+    return [...values, value].take(12).toList();
   }
 
   // --- Reset All Data ---
@@ -642,4 +673,3 @@ class AppState extends ChangeNotifier {
     });
   }
 }
-

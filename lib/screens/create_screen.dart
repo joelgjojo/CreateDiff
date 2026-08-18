@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../theme/app_theme.dart';
 import '../services/app_state.dart';
 import '../services/input_validator.dart';
+import '../services/voice_input_service.dart';
 import '../components/cd_platform_selector.dart';
 import '../components/cd_content_type_card.dart';
 import '../components/cd_text_input.dart';
@@ -40,6 +41,8 @@ class _CreateScreenState extends State<CreateScreen> {
   final TextEditingController _toneController = TextEditingController();
   final TextEditingController _targetAudienceController = TextEditingController();
   final TextEditingController _keywordsController = TextEditingController();
+  final VoiceInputService _voiceInput = VoiceInputService();
+  bool _isListening = false;
 
   final Map<String, List<Map<String, dynamic>>> _contentTypes = {
     'Instagram': [
@@ -185,6 +188,57 @@ class _CreateScreenState extends State<CreateScreen> {
         setState(() => _isSubmitting = false);
       }
     }
+  }
+
+  Future<void> _toggleVoiceInput() async {
+    if (_isListening) {
+      await _voiceInput.stop();
+      if (mounted) setState(() => _isListening = false);
+      return;
+    }
+
+    String targetLocale = 'en_IN';
+    if (_selectedLanguage == 'Malayalam') {
+      targetLocale = 'ml_IN';
+    } else if (_selectedLanguage == 'Hindi') {
+      targetLocale = 'hi_IN';
+    } else if (_selectedLanguage == 'Manglish') {
+      targetLocale = 'en_IN';
+    }
+
+    final started = await _voiceInput.start(
+      onResult: (text) {
+        if (mounted && text.isNotEmpty) {
+          setState(() {
+            _ideaController.text = text;
+            _ideaController.selection = TextSelection.fromPosition(
+              TextPosition(offset: _ideaController.text.length),
+            );
+          });
+        }
+      },
+      onStatus: (status) {
+        if (status == 'done' || status == 'notListening') {
+          if (mounted && _isListening) {
+            setState(() => _isListening = false);
+          }
+        }
+      },
+      onError: (message) {
+        if (mounted) {
+          setState(() => _isListening = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: CDColors.warning,
+            ),
+          );
+        }
+      },
+      localeId: targetLocale,
+    );
+    if (mounted) setState(() => _isListening = started);
   }
 
   @override
@@ -502,7 +556,13 @@ class _CreateScreenState extends State<CreateScreen> {
             hint: 'E.g., 5 AI tools for creators, behind the scenes of my workspace, mindset shift for 2026...',
             maxLines: 5,
             minLines: 3,
+            suffixIcon: IconButton(
+              tooltip: _isListening ? 'Stop listening' : 'Speak your idea',
+              icon: Icon(_isListening ? Icons.stop_circle_outlined : Icons.mic_none_rounded, color: _isListening ? CDColors.error : CDColors.brand),
+              onPressed: _toggleVoiceInput,
+            ),
           ),
+          if (_isListening) const Padding(padding: EdgeInsets.only(top: 6), child: Text('Listening… speak naturally, then tap stop.', style: TextStyle(fontSize: 12))),
           const SizedBox(height: CDSpacing.md),
 
           // Collapsible Fine-Tune wrapped in Material

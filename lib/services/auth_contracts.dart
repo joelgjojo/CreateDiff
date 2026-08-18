@@ -1,3 +1,5 @@
+import 'session_token_store.dart';
+
 /// Abstract User Identity contract ready for Phase 2 authentication (Firebase/Supabase/Custom)
 abstract class UserIdentity {
   String get id;
@@ -22,6 +24,82 @@ abstract class PermissionLayer {
   bool get isPremium;
   int get dailyGenerationQuota;
   bool canAccessTemplate(String templateId);
+}
+
+class AuthSession {
+  final String accessToken;
+  final String userId;
+  final String? email;
+
+  const AuthSession({required this.accessToken, required this.userId, this.email});
+}
+
+abstract interface class SupabaseAuthGateway {
+  Future<AuthSession> signUp({required String email, required String password});
+  Future<AuthSession> signIn({required String email, required String password});
+  Future<void> signOut();
+  Future<AuthSession?> restoreSession();
+}
+
+class SupabaseSessionManager implements SessionManager, PermissionLayer {
+  final SupabaseAuthGateway gateway;
+  UserIdentity? _currentUser;
+
+  SupabaseSessionManager({required this.gateway});
+
+  @override
+  UserIdentity? get currentUser => _currentUser;
+  @override
+  bool get isAuthenticated => _currentUser != null;
+
+  Future<void> _apply(AuthSession? session) async {
+    if (session == null) {
+      _currentUser = null;
+      await SessionTokenStore.setAccessToken(null);
+      return;
+    }
+    await SessionTokenStore.setAccessToken(session.accessToken);
+    _currentUser = _SessionUserIdentity(id: session.userId, email: session.email);
+  }
+
+  Future<void> signUp({required String email, required String password}) async {
+    await _apply(await gateway.signUp(email: email, password: password));
+  }
+
+  Future<void> signIn({required String email, required String password}) async {
+    await _apply(await gateway.signIn(email: email, password: password));
+  }
+
+  @override
+  Future<void> restoreSession() async => _apply(await gateway.restoreSession());
+  @override
+  Future<void> loginWithProvider(String provider) async => throw UnsupportedError('Use a provider-specific gateway adapter for $provider.');
+  @override
+  Future<void> logout() async {
+    await gateway.signOut();
+    await _apply(null);
+  }
+  @override
+  bool get isPremium => false;
+  @override
+  int get dailyGenerationQuota => 50;
+  @override
+  bool canAccessTemplate(String templateId) => true;
+}
+
+class _SessionUserIdentity implements UserIdentity {
+  @override
+  final String id;
+  @override
+  final String? email;
+  @override
+  final String? displayName = null;
+  @override
+  final bool isAnonymous = false;
+  @override
+  final DateTime createdAt = DateTime.now();
+
+  _SessionUserIdentity({required this.id, this.email});
 }
 
 /// Default Local Session Manager for Pre-Launch (single local user state)

@@ -8,6 +8,9 @@ from app.schemas.generation import (
     CarouselSlide,
     VisualIntelligenceResponse,
     QualityMetadataResponse,
+    CreativeDirectorInsightResponse,
+    ContentReviewResponse,
+    RepurposedContentResponse,
 )
 from app.services.prompt_builder import PromptBuilder
 from app.services.groq_service import GroqService, GroqServiceException
@@ -83,6 +86,9 @@ class GenerationService:
                 palette = ["#080A0F", "#4F43F9", "#7066FF", "#00B894"]
             palette_str = [str(c).strip() for c in palette if str(c).strip()]
             mood = str(raw_vi.get("designMood") or raw_vi.get("design_mood") or "High energy, authoritative, educational").strip()
+            brand = raw_vi.get("brandConsistencySuggestions") or raw_vi.get("brand_consistency_suggestions") or []
+            if not isinstance(brand, list):
+                brand = [str(brand)] if brand else []
             return VisualIntelligenceResponse(
                 visualStyle=style,
                 layoutSuggestion=layout,
@@ -90,6 +96,10 @@ class GenerationService:
                 typographySuggestion=typo,
                 colorPalette=palette_str,
                 designMood=mood,
+                brandConsistencySuggestions=[str(item).strip() for item in brand if str(item).strip()],
+                visualHierarchy=str(raw_vi.get("visualHierarchy") or raw_vi.get("visual_hierarchy") or "Lead with the hook, then supporting proof and CTA").strip(),
+                thumbnailStrategy=str(raw_vi.get("thumbnailStrategy") or raw_vi.get("thumbnail_strategy") or "Use one clear promise with high contrast").strip(),
+                imageDirection=str(raw_vi.get("imageDirection") or raw_vi.get("image_direction") or "Use authentic creator-led imagery or product context").strip(),
             )
         return VisualIntelligenceResponse()
 
@@ -101,6 +111,9 @@ class GenerationService:
                 plat = int(raw_q.get("platformFit") or raw_q.get("platform_fit") or 88)
                 aud = int(raw_q.get("audienceFit") or raw_q.get("audience_fit") or 86)
                 orig = int(raw_q.get("originality") or 84)
+                natural = int(raw_q.get("languageNaturalness") or raw_q.get("language_naturalness") or 85)
+                culture = int(raw_q.get("culturalRelevance") or raw_q.get("cultural_relevance") or 85)
+                regional = int(raw_q.get("regionalAuthenticity") or raw_q.get("regional_authenticity") or 85)
                 overall = int(raw_q.get("overallScore") or raw_q.get("overall_score") or int((hook + plat + aud + orig) / 4))
                 issues = raw_q.get("issues") or []
                 if not isinstance(issues, list):
@@ -112,12 +125,53 @@ class GenerationService:
                     audienceFit=max(0, min(100, aud)),
                     originality=max(0, min(100, orig)),
                     overallScore=max(0, min(100, overall)),
+                    languageNaturalness=max(0, min(100, natural)),
+                    culturalRelevance=max(0, min(100, culture)),
+                    regionalAuthenticity=max(0, min(100, regional)),
                     issues=issues_str,
                     retried=retried,
                 )
             except Exception:
                 pass
         return QualityMetadataResponse(retried=retried)
+
+    @classmethod
+    def _normalize_creative_director(cls, raw: Any) -> CreativeDirectorInsightResponse:
+        raw = raw if isinstance(raw, dict) else {}
+        return CreativeDirectorInsightResponse(
+            audienceInsight=str(raw.get("audienceInsight") or raw.get("audience_insight") or "").strip(),
+            contentAngle=str(raw.get("contentAngle") or raw.get("content_angle") or "").strip(),
+            storyStructure=str(raw.get("storyStructure") or raw.get("story_structure") or "").strip(),
+            improvementSuggestion=str(raw.get("improvementSuggestion") or raw.get("improvement_suggestion") or "").strip(),
+            reasoning=str(raw.get("reasoning") or "").strip(),
+        )
+
+    @classmethod
+    def _normalize_content_review(cls, raw: Any) -> ContentReviewResponse:
+        raw = raw if isinstance(raw, dict) else {}
+        suggestions = raw.get("improvementSuggestions") or raw.get("improvement_suggestions") or []
+        if not isinstance(suggestions, list):
+            suggestions = [str(suggestions)] if suggestions else []
+        return ContentReviewResponse(
+            hookAnalysis=str(raw.get("hookAnalysis") or raw.get("hook_analysis") or "").strip(),
+            clarityAnalysis=str(raw.get("clarityAnalysis") or raw.get("clarity_analysis") or "").strip(),
+            audienceFit=str(raw.get("audienceFit") or raw.get("audience_fit") or "").strip(),
+            improvementSuggestions=[str(item).strip() for item in suggestions if str(item).strip()],
+            disclaimer="AI analysis only — not real performance prediction.",
+        )
+
+    @classmethod
+    def _normalize_repurposed_content(cls, raw: Any) -> RepurposedContentResponse:
+        raw = raw if isinstance(raw, dict) else {}
+        thread = raw.get("xThread") or raw.get("x_thread") or []
+        outline = raw.get("blogOutline") or raw.get("blog_outline") or []
+        return RepurposedContentResponse(
+            instagramCaption=str(raw.get("instagramCaption") or raw.get("instagram_caption") or "").strip(),
+            linkedinPost=str(raw.get("linkedinPost") or raw.get("linkedin_post") or "").strip(),
+            youtubeDescription=str(raw.get("youtubeDescription") or raw.get("youtube_description") or "").strip(),
+            xThread=[str(item).strip() for item in thread if str(item).strip()] if isinstance(thread, list) else [],
+            blogOutline=[str(item).strip() for item in outline if str(item).strip()] if isinstance(outline, list) else [],
+        )
 
     @classmethod
     def _parse_and_normalize(cls, raw_json: Dict[str, Any], retried: bool = False) -> GenerationResponse:
@@ -189,6 +243,9 @@ class GenerationService:
             raw_json.get("quality"),
             retried=retried,
         )
+        creative_director = cls._normalize_creative_director(raw_json.get("creativeDirector") or raw_json.get("creative_director"))
+        content_review = cls._normalize_content_review(raw_json.get("contentReview") or raw_json.get("content_review"))
+        repurposed_content = cls._normalize_repurposed_content(raw_json.get("repurposedContent") or raw_json.get("repurposed_content"))
 
         return GenerationResponse(
             hooks=hooks_str,
@@ -207,6 +264,9 @@ class GenerationService:
             storyPrompts=story_prompts_str,
             visualIntelligence=visual_intel,
             quality=quality,
+            creativeDirector=creative_director,
+            contentReview=content_review,
+            repurposedContent=repurposed_content,
         )
 
     @classmethod
@@ -265,4 +325,3 @@ class GenerationService:
                 return initial_response
 
         return initial_response
-

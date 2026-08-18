@@ -52,8 +52,9 @@ class CDVisualIntelligenceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Responsive Header
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.all(6),
@@ -68,27 +69,35 @@ class CDVisualIntelligenceCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: CDSpacing.xs),
-              Text(
-                'AI Visual Direction',
-                style: TextStyle(
-                  fontSize: CDTypography.fontSizeSm,
-                  fontWeight: CDTypography.semiBold,
-                  color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+              Expanded(
+                child: Text(
+                  'AI Visual Direction',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: CDTypography.fontSizeSm,
+                    fontWeight: CDTypography.semiBold,
+                    color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+                  ),
                 ),
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  visualIntelligence.visualStyle,
-                  style: TextStyle(
-                    fontSize: CDTypography.fontSizeXs,
-                    fontWeight: CDTypography.medium,
-                    color: isDark ? CDColors.darkTextSecondary : CDColors.lightTextSecondary,
+              const SizedBox(width: CDSpacing.xs),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    visualIntelligence.visualStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: CDTypography.fontSizeXs,
+                      fontWeight: CDTypography.medium,
+                      color: isDark ? CDColors.darkTextSecondary : CDColors.lightTextSecondary,
+                    ),
                   ),
                 ),
               ),
@@ -126,6 +135,23 @@ class CDVisualIntelligenceCard extends StatelessWidget {
               isDark: isDark,
             ),
             const SizedBox(height: CDSpacing.sm),
+          ],
+
+          if (visualIntelligence.visualHierarchy.isNotEmpty) ...[
+            _buildDetailRow(icon: Icons.account_tree_outlined, label: 'Visual Hierarchy', value: visualIntelligence.visualHierarchy, isDark: isDark),
+            const SizedBox(height: CDSpacing.xs),
+          ],
+          if (visualIntelligence.thumbnailStrategy.isNotEmpty) ...[
+            _buildDetailRow(icon: Icons.ads_click_outlined, label: 'Thumbnail Strategy', value: visualIntelligence.thumbnailStrategy, isDark: isDark),
+            const SizedBox(height: CDSpacing.xs),
+          ],
+          if (visualIntelligence.imageDirection.isNotEmpty) ...[
+            _buildDetailRow(icon: Icons.photo_camera_back_outlined, label: 'Image Direction', value: visualIntelligence.imageDirection, isDark: isDark),
+            const SizedBox(height: CDSpacing.xs),
+          ],
+          if (visualIntelligence.brandConsistencySuggestions.isNotEmpty) ...[
+            _buildDetailRow(icon: Icons.verified_outlined, label: 'Brand Consistency', value: visualIntelligence.brandConsistencySuggestions.join(' • '), isDark: isDark),
+            const SizedBox(height: CDSpacing.xs),
           ],
 
           // Color Palette Swatches

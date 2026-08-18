@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/creator_profile.dart';
+import '../models/creator_intelligence.dart';
 import '../services/app_state.dart';
 import '../components/cd_text_input.dart';
 import '../components/cd_primary_button.dart';
@@ -33,18 +34,29 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   late TextEditingController _websiteController;
   late TextEditingController _instagramController;
   late TextEditingController _youtubeController;
+  late TextEditingController _regionalContextController;
+  late TextEditingController _langAudienceController;
 
   String _niche = 'Technology';
   final String _category = 'Content Creator';
   String _tone = 'Educational';
   String _primaryLang = 'English';
   String _secondaryLang = 'Manglish';
+  String _languageStyle = 'Conversational';
   String _emojiUsage = 'moderate';
   String _ctaStyle = 'Direct';
   Color _primaryColor = CDColors.brand;
   final Color _secondaryColor = CDColors.lavender;
   List<String> _preferredPlatforms = ['Instagram', 'YouTube', 'LinkedIn'];
   List<String> _contentGoals = ['Audience Growth', 'Community Engagement'];
+
+  final List<String> _languageStyles = [
+    'Conversational',
+    'Technical',
+    'Professional',
+    'Storytelling',
+    'Witty & Energetic',
+  ];
 
   final List<String> _platformOptions = [
     'Instagram',
@@ -144,6 +156,17 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     if (profile.preferredPlatforms.isNotEmpty) _preferredPlatforms = List.from(profile.preferredPlatforms);
     if (profile.contentGoals.isNotEmpty) _contentGoals = List.from(profile.contentGoals);
     _primaryColor = profile.primaryColor;
+
+    _regionalContextController = TextEditingController(text: profile.languageProfile.regionalContext);
+    _langAudienceController = TextEditingController(
+      text: profile.languageProfile.audienceType.isNotEmpty
+          ? profile.languageProfile.audienceType
+          : profile.targetAudience,
+    );
+    if (profile.languageProfile.preferredStyle.isNotEmpty &&
+        _languageStyles.contains(profile.languageProfile.preferredStyle)) {
+      _languageStyle = profile.languageProfile.preferredStyle;
+    }
   }
 
   @override
@@ -156,6 +179,8 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     _websiteController.dispose();
     _instagramController.dispose();
     _youtubeController.dispose();
+    _regionalContextController.dispose();
+    _langAudienceController.dispose();
     super.dispose();
   }
 
@@ -165,6 +190,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
       setState(() => _currentStep++);
     } else {
       final updatedProfile = CreatorProfile(
+        id: AppState.instance.profile.id,
         creatorName: _nameController.text.trim(),
         username: _usernameController.text.trim(),
         niche: _niche,
@@ -184,6 +210,16 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         websiteUrl: _websiteController.text.trim(),
         instagramHandle: _instagramController.text.trim(),
         youtubeHandle: _youtubeController.text.trim(),
+        languageProfile: LanguageProfile(
+          language: _primaryLang,
+          preferredStyle: _languageStyle,
+          audienceType: _langAudienceController.text.trim().isNotEmpty
+              ? _langAudienceController.text.trim()
+              : 'General audience',
+          regionalContext: _regionalContextController.text.trim(),
+          communicationTone: _tone,
+        ),
+        creatorMemory: AppState.instance.profile.creatorMemory,
       );
 
       await AppState.instance.updateProfile(updatedProfile);
@@ -610,14 +646,16 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Support for regional languages and custom emoji density.',
+          'Tailor vernacular intelligence, regional dialects, and delivery style.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: CDColors.textSecondary(context),
               ),
         ),
         const SizedBox(height: CDSpacing.xl),
+
+        // 1. Primary Language
         Text(
-          'Primary Language',
+          'Primary Content Language',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: CDColors.textPrimary(context),
@@ -652,7 +690,71 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
             );
           }).toList(),
         ),
+        const SizedBox(height: CDSpacing.lg),
+
+        // 2. Language Delivery Style
+        Text(
+          'Preferred Delivery & Expression Style',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
+        ),
+        const SizedBox(height: CDSpacing.sm),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _languageStyles.map((style) {
+            final isSelected = _languageStyle == style;
+            return ChoiceChip(
+              label: Text(style),
+              selected: isSelected,
+              onSelected: (_) {
+                AppHaptics.selection();
+                setState(() => _languageStyle = style);
+              },
+              selectedColor: CDColors.primary,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : CDColors.textPrimary(context),
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+              ),
+              backgroundColor: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: CDSpacing.lg),
+
+        // 3. Regional Context & Audience Cards
+        CDGlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CDTextInput(
+                label: 'Regional Context & Local Nuances',
+                hint: 'e.g., Kerala tech & startup community, modern Manglish slang, South Asian creator references...',
+                controller: _regionalContextController,
+                maxLines: 2,
+              ),
+              const SizedBox(height: CDSpacing.md),
+              CDTextInput(
+                label: 'Target Regional Audience',
+                hint: 'e.g., College students, developers, regional entrepreneurs...',
+                controller: _langAudienceController,
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: CDSpacing.xl),
+
+        // 4. Emoji Usage
         Text(
           'Emoji Usage in Captions',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(

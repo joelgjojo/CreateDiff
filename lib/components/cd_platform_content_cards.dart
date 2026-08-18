@@ -54,15 +54,18 @@ class CDReelScriptCard extends StatelessWidget {
                 child: const Icon(Icons.movie_creation_outlined, size: 16, color: Color(0xFFFF4757)),
               ),
               const SizedBox(width: CDSpacing.xs),
-              Text(
-                'Video Script & Flow',
-                style: TextStyle(
-                  fontSize: CDTypography.fontSizeSm,
-                  fontWeight: CDTypography.semiBold,
-                  color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+              Expanded(
+                child: Text(
+                  'Video Script & Flow',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: CDTypography.fontSizeSm,
+                    fontWeight: CDTypography.semiBold,
+                    color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+                  ),
                 ),
               ),
-              const Spacer(),
               IconButton(
                 icon: const Icon(Icons.copy_rounded, size: 16),
                 onPressed: () => _copy(context, script, 'Script'),
@@ -187,15 +190,18 @@ class _CDCarouselSlideViewerState extends State<CDCarouselSlideViewer> {
                 child: const Icon(Icons.view_carousel_outlined, size: 16, color: Color(0xFF00B894)),
               ),
               const SizedBox(width: CDSpacing.xs),
-              Text(
-                'Carousel Slides (${_currentIndex + 1}/${widget.slides.length})',
-                style: TextStyle(
-                  fontSize: CDTypography.fontSizeSm,
-                  fontWeight: CDTypography.semiBold,
-                  color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+              Expanded(
+                child: Text(
+                  'Carousel Slides (${_currentIndex + 1}/${widget.slides.length})',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: CDTypography.fontSizeSm,
+                    fontWeight: CDTypography.semiBold,
+                    color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+                  ),
                 ),
               ),
-              const Spacer(),
               IconButton(
                 icon: const Icon(Icons.copy_rounded, size: 16),
                 onPressed: () => _copySlide(context, currentSlide),
@@ -287,30 +293,35 @@ class _CDCarouselSlideViewerState extends State<CDCarouselSlideViewer> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ElevatedButton.icon(
-                onPressed: _currentIndex > 0
-                    ? () => setState(() => _currentIndex--)
-                    : null,
-                icon: const Icon(Icons.arrow_back_rounded, size: 14),
-                label: const Text('Previous'),
-                style: ElevatedButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  backgroundColor: isDark ? const Color(0xFF1E2230) : const Color(0xFFE5E9F2),
-                  foregroundColor: isDark ? Colors.white : Colors.black,
-                  elevation: 0,
+              Flexible(
+                child: ElevatedButton.icon(
+                  onPressed: _currentIndex > 0
+                      ? () => setState(() => _currentIndex--)
+                      : null,
+                  icon: const Icon(Icons.arrow_back_rounded, size: 14),
+                  label: const Text('Previous', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  style: ElevatedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    backgroundColor: isDark ? const Color(0xFF1E2230) : const Color(0xFFE5E9F2),
+                    foregroundColor: isDark ? Colors.white : Colors.black,
+                    elevation: 0,
+                  ),
                 ),
               ),
-              ElevatedButton.icon(
-                onPressed: _currentIndex < widget.slides.length - 1
-                    ? () => setState(() => _currentIndex++)
-                    : null,
-                icon: const Icon(Icons.arrow_forward_rounded, size: 14),
-                label: const Text('Next Slide'),
-                style: ElevatedButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  backgroundColor: const Color(0xFF4F43F9),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
+              const SizedBox(width: CDSpacing.xs),
+              Flexible(
+                child: ElevatedButton.icon(
+                  onPressed: _currentIndex < widget.slides.length - 1
+                      ? () => setState(() => _currentIndex++)
+                      : null,
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 14),
+                  label: const Text('Next Slide', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  style: ElevatedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    backgroundColor: const Color(0xFF4F43F9),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                  ),
                 ),
               ),
             ],
@@ -371,12 +382,16 @@ class CDTitleOptionsCard extends StatelessWidget {
                 child: const Icon(Icons.title_rounded, size: 16, color: Color(0xFF7066FF)),
               ),
               const SizedBox(width: CDSpacing.xs),
-              Text(
-                'High-CTR Title Options',
-                style: TextStyle(
-                  fontSize: CDTypography.fontSizeSm,
-                  fontWeight: CDTypography.semiBold,
-                  color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+              Expanded(
+                child: Text(
+                  'High-CTR Title Options',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: CDTypography.fontSizeSm,
+                    fontWeight: CDTypography.semiBold,
+                    color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+                  ),
                 ),
               ),
             ],
@@ -472,12 +487,16 @@ class CDStoryPromptsCard extends StatelessWidget {
                 child: const Icon(Icons.auto_stories_outlined, size: 16, color: Color(0xFFF39C12)),
               ),
               const SizedBox(width: CDSpacing.xs),
-              Text(
-                'Story Interactive Prompts',
-                style: TextStyle(
-                  fontSize: CDTypography.fontSizeSm,
-                  fontWeight: CDTypography.semiBold,
-                  color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+              Expanded(
+                child: Text(
+                  'Story Interactive Prompts',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: CDTypography.fontSizeSm,
+                    fontWeight: CDTypography.semiBold,
+                    color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+                  ),
                 ),
               ),
             ],

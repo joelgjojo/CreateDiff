@@ -9,6 +9,8 @@ void main() {
   HttpOverrides.global = null; // Enable live HTTP requests during integration testing
 
   test('Live AI Generation Pipeline Test (when GROK_API_KEY is supplied)', () async {
+    const runLiveTests = bool.fromEnvironment('RUN_LIVE_AI_TESTS', defaultValue: false);
+    if (!runLiveTests) return;
     await ApiConfig.init();
 
     if (!ApiConfig.hasApiKey) {

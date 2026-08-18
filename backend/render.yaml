@@ -23,3 +23,13 @@ services:
         value: "60"
       - key: CORS_ALLOWED_ORIGINS
         value: ""
+      - key: AUTH_REQUIRED
+        value: "true"
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: SUPABASE_JWT_ISSUER
+        sync: false
+      - key: SUPABASE_JWT_AUDIENCE
+        value: authenticated
+      - key: DATABASE_URL
+        sync: false

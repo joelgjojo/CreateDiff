@@ -66,7 +66,7 @@ class _CDSecondaryButtonState extends State<CDSecondaryButton> {
       child: Container(
         height: buttonHeight,
         constraints: BoxConstraints(
-          minWidth: widget.isFullWidth ? double.infinity : 100,
+          minWidth: widget.isFullWidth ? double.infinity : 0,
         ),
         decoration: BoxDecoration(
           gradient: bgGradient,
@@ -91,7 +91,7 @@ class _CDSecondaryButtonState extends State<CDSecondaryButton> {
                 : null,
             borderRadius: BorderRadius.circular(CDRadius.medium),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: CDSpacing.lg),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Row(
                 mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -32,6 +32,22 @@ class PromptBuilder:
             lines.append(f"• Content Style: {ctx.content_style}")
         if ctx.brand_description:
             lines.append(f"• Brand Description: {ctx.brand_description}")
+        if ctx.language_profile:
+            language = ctx.language_profile
+            lines.extend([
+                f"• Language Profile: {language.language} / {language.preferred_style}",
+                f"• Audience Type: {language.audience_type}",
+                f"• Regional Context: {language.regional_context or 'Creator-defined context only'}",
+                f"• Communication Tone: {language.communication_tone or ctx.tone}",
+            ])
+        if ctx.creator_memory:
+            memory = ctx.creator_memory
+            lines.extend([
+                f"• Explicitly preferred hooks: {', '.join(memory.preferred_hooks) or 'None yet'}",
+                f"• Explicitly preferred formats: {', '.join(memory.preferred_formats) or 'None yet'}",
+                f"• Explicitly avoid: {', '.join(memory.avoid_patterns) or 'None yet'}",
+                f"• Brand rules: {', '.join(memory.brand_rules) or 'None yet'}",
+            ])
             
         lines.extend([
             f"• Preferred CTA Style: {ctx.preferred_cta_style if ctx.preferred_cta_style else 'Direct'}",
@@ -44,6 +60,7 @@ class PromptBuilder:
             "• If Primary Language is 'Hindi' or 'Hinglish': Use conversational Hindi/Hinglish with modern creator terminology.",
             "• If Primary Language is 'Tamil' / 'Telugu': Use natural, culturally resonant phrasing.",
             "• If Primary Language is 'English': Use modern, punchy creator English with active verbs, conversational flow, and zero corporate jargon.",
+            "• Never assume a regional audience preference. Use only creator-provided language profile and regional context; when context is absent, stay neutral and natural.",
             "",
             "=== PLATFORM-SPECIFIC INTELLIGENCE & RELEVANT OUTPUTS ===",
             "• Tailor the output specifically for the requested platform and format:",
@@ -55,10 +72,13 @@ class PromptBuilder:
             "  - LinkedIn Post / Article: Provide strong 1-2 line opening hooks, insight-dense post body with whitespace, thought-leadership CTA, professional hashtags.",
             "",
             "=== VISUAL INTELLIGENCE DIRECTION ===",
-            "• Provide a visual direction blueprint for the graphic/video design (visualStyle, layoutSuggestion, thumbnailDirection, typographySuggestion, 4-color hex palette, designMood).",
+            "• Provide a visual direction blueprint for the graphic/video design (visualStyle, layoutSuggestion, thumbnailDirection, typographySuggestion, 4-color hex palette, designMood, brandConsistencySuggestions, visualHierarchy, thumbnailStrategy, imageDirection).",
             "",
             "=== SINGLE-CALL QUALITY SELF-ASSESSMENT ===",
-            "• Include quality evaluation metrics (0-100) assessing hookStrength, platformFit, audienceFit, originality, overallScore, and any potential issues.",
+            "• Include quality evaluation metrics (0-100) assessing hookStrength, platformFit, audienceFit, originality, overallScore, languageNaturalness, culturalRelevance, regionalAuthenticity, and any potential issues.",
+            "• Include creativeDirector as optional post-generation strategic insight: audienceInsight, contentAngle, storyStructure, improvementSuggestion, reasoning.",
+            "• Include contentReview as AI analysis only, never performance prediction: hookAnalysis, clarityAnalysis, audienceFit, improvementSuggestions.",
+            "• Include repurposedContent with Instagram caption, LinkedIn post, YouTube description, X thread, and blog outline. It must reuse the core idea, not introduce unsupported claims.",
             "",
             "=== HASHTAG STRATEGY (STRICT DISCOVERABILITY) ===",
             "• Write hashtags primarily in English/Latin characters for maximum search indexing (e.g. #KeralaFood, #TechInMalayalam, #CreatorEconomy) unless explicitly requested.",
@@ -115,7 +135,11 @@ class PromptBuilder:
     "thumbnailDirection": "Close-up reaction on left, high-contrast neon typography on right",
     "typographySuggestion": "Space Grotesk / Inter Bold with generous letter spacing",
     "colorPalette": ["#080A0F", "#4F43F9", "#7066FF", "#00B894"],
-    "designMood": "High energy, authoritative, educational"
+    "designMood": "High energy, authoritative, educational",
+    "brandConsistencySuggestions": ["Maintain dark graphite background with electric violet accents", "Use consistent 16px padding on text cards"],
+    "visualHierarchy": "Bold hook headline -> Supporting proof graphic -> Clear CTA button",
+    "thumbnailStrategy": "High contrast expression with short 3-word hook",
+    "imageDirection": "High-clarity studio shot or clean vector UI mockup"
   },
   "quality": {
     "hookStrength": 90,
@@ -123,7 +147,31 @@ class PromptBuilder:
     "audienceFit": 88,
     "originality": 86,
     "overallScore": 89,
+    "languageNaturalness": 92,
+    "culturalRelevance": 90,
+    "regionalAuthenticity": 91,
     "issues": []
+  },
+  "creativeDirector": {
+    "audienceInsight": "Creators seek fast actionable blueprints rather than abstract theory.",
+    "contentAngle": "Contrarian breakdown of traditional workflows vs modern AI studio approach.",
+    "storyStructure": "Problem hook -> 3-step solution -> Proof point -> Strong CTA.",
+    "improvementSuggestion": "Double down on specific time-saved metrics in the second point.",
+    "reasoning": "Data-backed proof points convert 40% higher on social feeds."
+  },
+  "contentReview": {
+    "hookAnalysis": "Strong curiosity gap in the first 2 seconds; immediately addresses creator pain points.",
+    "clarityAnalysis": "Clear, punchy sentences with active verbs and zero fluff.",
+    "audienceFit": "Precisely calibrated for modern creators and digital entrepreneurs.",
+    "improvementSuggestions": ["Consider an even bolder first word for maximum thumbnail stopping power."],
+    "disclaimer": "AI analysis only — not real performance prediction."
+  },
+  "repurposedContent": {
+    "instagramCaption": "Short punchy IG caption version with bullet points and emojis...",
+    "linkedinPost": "Insightful narrative-driven LinkedIn post discussing creator efficiency...",
+    "youtubeDescription": "SEO-optimized YouTube video description with timestamps and links...",
+    "xThread": ["1/5 Stop doing everything manually in 2026.", "2/5 Here is the exact AI workflow to 10x your output...", "3/5 Final takeaway."],
+    "blogOutline": ["Introduction: The Shift in Creator Workflows", "Section 1: Core AI Studio Tools", "Section 2: Implementation Blueprint", "Conclusion"]
   }
 }'''
         ])
@@ -235,4 +283,3 @@ class PromptBuilder:
             f"Ensure every single day from Day 1 to Day {req.duration_days} has a complete title, topic, platform, contentType, hookAngle, outline, and strategicIntent."
         )
         return "\n".join(lines)
-

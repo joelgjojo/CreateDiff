@@ -1,6 +1,15 @@
-from fastapi import APIRouter, Request, status
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, Request, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 from app.schemas.generation import GenerationRequest, GenerationResponse
 from app.services.generation_service import GenerationService
+from app.services.auth import AuthenticatedUser, get_current_user
+from app.db.database import get_db
+from app.db.models import Generation
+from app.services.usage_service import enforce_limit, record
+from app.services.analytics import track
 
 router = APIRouter(tags=["Generation"])
 
@@ -14,9 +23,28 @@ router = APIRouter(tags=["Generation"])
 async def generate_content(
     request: Request,
     payload: GenerationRequest,
+    user: AuthenticatedUser = Depends(get_current_user),
+    db: Optional[AsyncSession] = Depends(get_db),
 ) -> GenerationResponse:
     """
     Accepts creator ideas and context, validates inputs, and orchestrates
     Groq AI generation safely on the server side.
     """
-    return await GenerationService.generate(payload)
+    await enforce_limit(db, user.db_user_id or user.subject, "generation")
+    await enforce_limit(db, user.db_user_id or user.subject, "ai_request")
+    if db is not None and user.db_user_id:
+        await record(db, user.db_user_id, "ai_request", metadata={"endpoint": "generate", "platform": payload.platform})
+        await db.commit()
+    try:
+        result = await GenerationService.generate(payload)
+    except Exception:
+        await track("generation_failed", user_id=user.db_user_id or user.subject, properties={"platform": payload.platform, "content_type": payload.content_type})
+        raise
+    if db is not None and user.db_user_id:
+        db.add(Generation(user_id=user.db_user_id, platform=payload.platform, content_type=payload.content_type, idea=payload.idea, response=result.model_dump(by_alias=True), retry_count=1 if result.quality and result.quality.retried else 0))
+        await record(db, user.db_user_id, "generation", metadata={"platform": payload.platform, "content_type": payload.content_type})
+        await db.commit()
+    await track("generation_completed", user_id=user.db_user_id or user.subject, properties={"platform": payload.platform, "content_type": payload.content_type})
+    if result.quality and result.quality.retried:
+        await track("generation_quality_retry", user_id=user.db_user_id or user.subject, properties={"platform": payload.platform})
+    return result

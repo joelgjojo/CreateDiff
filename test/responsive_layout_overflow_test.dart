@@ -22,6 +22,10 @@ import 'package:creatediff/models/campaign_plan.dart';
 import 'package:creatediff/components/cd_export_share_sheet.dart';
 
 
+import 'package:creatediff/models/visual_intelligence.dart';
+import 'package:creatediff/models/quality_metadata.dart';
+import 'package:creatediff/models/content_intelligence.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -59,6 +63,86 @@ void main() {
       hashtagsNiche: ['#DesignStudioAI', '#TechInMalayalam', '#ShortFormContent'],
       coverText: 'TOP 5 AI TOOLS FOR CREATORS 2026',
       variations: ['Standard 9:16 Video', 'Carousel Breakdown', 'Story Poll'],
+      quality: QualityMetadata(
+        overallScore: 88,
+        hookStrength: 92,
+        platformFit: 90,
+        audienceFit: 86,
+        originality: 84,
+        languageNaturalness: 89,
+        regionalAuthenticity: 91,
+        retried: true,
+        issues: ['Fast pacing recommended for Instagram Reels retention'],
+      ),
+      visualIntelligence: VisualIntelligence(
+        visualStyle: 'Modern Dark Minimalist Cyber Studio',
+        layoutSuggestion: 'Bold typography left aligned with luminous gradient badges',
+        thumbnailDirection: 'High-contrast headline with neon accent pill overlay',
+        typographySuggestion: 'Outfit 800 title with Inter 400 body',
+        colorPalette: ['#4F43F9', '#00B894', '#FF4757', '#F39C12', '#0D1017'],
+        visualHierarchy: 'Headline -> Key stat -> Brand icon -> Swipe CTA',
+        thumbnailStrategy: 'Curiosity gap visual with 3-word hook',
+        imageDirection: 'Studio lighting, crisp dark aesthetic with subtle purple rim light',
+        brandConsistencySuggestions: ['Use signature #4F43F9 accent', 'Consistent 16px corner radius'],
+      ),
+      creativeDirector: CreativeDirectorInsight(
+        audienceInsight: 'Target creators seeking fast, actionable workflow upgrades without fluff.',
+        contentAngle: 'Contrast traditional slow workflows against modern AI-accelerated studio workflows.',
+        storyStructure: 'Hook (0-3s) -> Problem (3-15s) -> 5 Tools (15-45s) -> Actionable CTA (45-60s)',
+        improvementSuggestion: 'Emphasize the specific time saved per workflow step.',
+        reasoning: 'High-retention structure optimized for Instagram algorithm discovery.',
+      ),
+      contentReview: ContentReview(
+        hookAnalysis: 'Strong curiosity gap and clear promise of tangible creator ROI.',
+        clarityAnalysis: 'Clean bulleted structure with smooth transitions between items.',
+        audienceFit: 'Direct alignment with intermediate-to-advanced South Asian tech creators.',
+        improvementSuggestions: ['Add on-screen text overlays for sound-off viewers', 'Pin primary CTA in comments'],
+      ),
+      repurposedContent: RepurposedContent(
+        instagramCaption: '5 AI tools changing creator workflows in 2026. Save this post!',
+        linkedinPost: 'How top modern creators are saving 15 hours a week with AI tooling in 2026.\n\nHere is the exact breakdown...',
+        youtubeDescription: 'In this video, we break down the 5 essential AI tools every creator must know in 2026.',
+        xThread: [
+          '1/5 AI is not replacing creators, but creators using AI are replacing those who do not.',
+          '2/5 Tool 1: CreateDiff AI for instant multi-format creator packs.',
+          '3/5 Tool 2: Script automators for fast video planning.',
+        ],
+        blogOutline: [
+          'Introduction: The Creator Bottleneck in 2026',
+          'Tool 1: Studio Scripting and Multilingual Hooks',
+          'Tool 2: Visual Intelligence & AI Branding',
+          'Conclusion & Free Action Checklist',
+        ],
+      ),
+      script: '[0:00 - 0:03] Stop scrolling! 5 AI tools that will 10x your workflow.\n[0:03 - 0:15] If you are still editing everything manually, here is what changed in 2026...',
+      sceneDirections: [
+        'Close-up camera angle with direct eye contact',
+        'Screen recording overlay with animated cursor callout',
+        'Final card with brand logo and follow button prompt',
+      ],
+      slides: [
+        CarouselSlide(
+          slideNumber: 1,
+          headline: '5 AI Tools You Cannot Ignore',
+          bodyText: 'The 2026 creator toolkit for faster output and higher quality.',
+          visualCue: 'Bold typography on dark glass backdrop',
+        ),
+        CarouselSlide(
+          slideNumber: 2,
+          headline: 'Tool #1: CreateDiff AI',
+          bodyText: 'Full content packs in seconds with tailored regional nuances.',
+          visualCue: 'Product mockup with purple glow highlight',
+        ),
+      ],
+      titleOptions: [
+        '5 AI Tools Top Creators Are Gatekeeping in 2026',
+        'How I 10xed My Content Creation Speed Using AI',
+        'The Ultimate 2026 AI Content Creation Stack',
+      ],
+      storyPrompts: [
+        'Which AI tool do you use most? Poll: A) Scripting B) Visuals C) Captions',
+        'Drop your biggest creator bottleneck below and I will suggest the best AI tool!',
+      ],
     ),
   );
 

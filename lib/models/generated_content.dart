@@ -1,5 +1,6 @@
 import 'visual_intelligence.dart';
 import 'quality_metadata.dart';
+import 'content_intelligence.dart';
 
 class CarouselSlide {
   final int slideNumber;
@@ -73,6 +74,9 @@ class GeneratedContent {
   // Intelligence layers
   final VisualIntelligence? visualIntelligence;
   final QualityMetadata? quality;
+  final CreativeDirectorInsight? creativeDirector;
+  final ContentReview? contentReview;
+  final RepurposedContent? repurposedContent;
 
   const GeneratedContent({
     this.hooks = const [],
@@ -91,6 +95,9 @@ class GeneratedContent {
     this.storyPrompts = const [],
     this.visualIntelligence,
     this.quality,
+    this.creativeDirector,
+    this.contentReview,
+    this.repurposedContent,
   });
 
   GeneratedContent copyWith({
@@ -110,6 +117,9 @@ class GeneratedContent {
     List<String>? storyPrompts,
     VisualIntelligence? visualIntelligence,
     QualityMetadata? quality,
+    CreativeDirectorInsight? creativeDirector,
+    ContentReview? contentReview,
+    RepurposedContent? repurposedContent,
   }) {
     return GeneratedContent(
       hooks: hooks ?? this.hooks,
@@ -128,6 +138,9 @@ class GeneratedContent {
       storyPrompts: storyPrompts ?? this.storyPrompts,
       visualIntelligence: visualIntelligence ?? this.visualIntelligence,
       quality: quality ?? this.quality,
+      creativeDirector: creativeDirector ?? this.creativeDirector,
+      contentReview: contentReview ?? this.contentReview,
+      repurposedContent: repurposedContent ?? this.repurposedContent,
     );
   }
 
@@ -149,6 +162,9 @@ class GeneratedContent {
       'storyPrompts': storyPrompts,
       if (visualIntelligence != null) 'visualIntelligence': visualIntelligence!.toJson(),
       if (quality != null) 'quality': quality!.toJson(),
+      if (creativeDirector != null) 'creativeDirector': creativeDirector!.toJson(),
+      if (contentReview != null) 'contentReview': contentReview!.toJson(),
+      if (repurposedContent != null) 'repurposedContent': repurposedContent!.toJson(),
     };
   }
 
@@ -206,7 +222,21 @@ class GeneratedContent {
       quality: json['quality'] != null
           ? QualityMetadata.fromJson(json['quality'] as Map<String, dynamic>)
           : null,
+      creativeDirector: json['creativeDirector'] is Map<String, dynamic>
+          ? CreativeDirectorInsight.fromJson(json['creativeDirector'] as Map<String, dynamic>)
+          : (json['creative_director'] is Map<String, dynamic>
+              ? CreativeDirectorInsight.fromJson(json['creative_director'] as Map<String, dynamic>)
+              : null),
+      contentReview: json['contentReview'] is Map<String, dynamic>
+          ? ContentReview.fromJson(json['contentReview'] as Map<String, dynamic>)
+          : (json['content_review'] is Map<String, dynamic>
+              ? ContentReview.fromJson(json['content_review'] as Map<String, dynamic>)
+              : null),
+      repurposedContent: json['repurposedContent'] is Map<String, dynamic>
+          ? RepurposedContent.fromJson(json['repurposedContent'] as Map<String, dynamic>)
+          : (json['repurposed_content'] is Map<String, dynamic>
+              ? RepurposedContent.fromJson(json['repurposed_content'] as Map<String, dynamic>)
+              : null),
     );
   }
 }
-

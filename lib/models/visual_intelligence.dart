@@ -5,6 +5,10 @@ class VisualIntelligence {
   final String typographySuggestion;
   final List<String> colorPalette;
   final String designMood;
+  final List<String> brandConsistencySuggestions;
+  final String visualHierarchy;
+  final String thumbnailStrategy;
+  final String imageDirection;
 
   const VisualIntelligence({
     this.visualStyle = 'Modern Creator Minimalist',
@@ -13,6 +17,10 @@ class VisualIntelligence {
     this.typographySuggestion = 'Geometric sans-serif with tracked caps',
     this.colorPalette = const ['#080A0F', '#4F43F9', '#7066FF', '#00B894'],
     this.designMood = 'High energy, educational, authentic',
+    this.brandConsistencySuggestions = const [],
+    this.visualHierarchy = 'Lead with the hook, then supporting proof and CTA',
+    this.thumbnailStrategy = 'Use one clear promise with high contrast',
+    this.imageDirection = 'Use authentic creator-led imagery or product context',
   });
 
   VisualIntelligence copyWith({
@@ -22,6 +30,10 @@ class VisualIntelligence {
     String? typographySuggestion,
     List<String>? colorPalette,
     String? designMood,
+    List<String>? brandConsistencySuggestions,
+    String? visualHierarchy,
+    String? thumbnailStrategy,
+    String? imageDirection,
   }) {
     return VisualIntelligence(
       visualStyle: visualStyle ?? this.visualStyle,
@@ -30,6 +42,10 @@ class VisualIntelligence {
       typographySuggestion: typographySuggestion ?? this.typographySuggestion,
       colorPalette: colorPalette ?? this.colorPalette,
       designMood: designMood ?? this.designMood,
+      brandConsistencySuggestions: brandConsistencySuggestions ?? this.brandConsistencySuggestions,
+      visualHierarchy: visualHierarchy ?? this.visualHierarchy,
+      thumbnailStrategy: thumbnailStrategy ?? this.thumbnailStrategy,
+      imageDirection: imageDirection ?? this.imageDirection,
     );
   }
 
@@ -41,6 +57,10 @@ class VisualIntelligence {
       'typographySuggestion': typographySuggestion,
       'colorPalette': colorPalette,
       'designMood': designMood,
+      'brandConsistencySuggestions': brandConsistencySuggestions,
+      'visualHierarchy': visualHierarchy,
+      'thumbnailStrategy': thumbnailStrategy,
+      'imageDirection': imageDirection,
     };
   }
 
@@ -68,6 +88,18 @@ class VisualIntelligence {
       designMood: json['designMood'] as String? ??
           json['design_mood'] as String? ??
           'High energy, educational, authentic',
+      brandConsistencySuggestions: (json['brandConsistencySuggestions'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          (json['brand_consistency_suggestions'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          const [],
+      visualHierarchy: json['visualHierarchy'] as String? ??
+          json['visual_hierarchy'] as String? ??
+          'Lead with the hook, then supporting proof and CTA',
+      thumbnailStrategy: json['thumbnailStrategy'] as String? ??
+          json['thumbnail_strategy'] as String? ??
+          'Use one clear promise with high contrast',
+      imageDirection: json['imageDirection'] as String? ??
+          json['image_direction'] as String? ??
+          'Use authentic creator-led imagery or product context',
     );
   }
 }

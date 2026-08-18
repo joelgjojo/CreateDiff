@@ -48,29 +48,27 @@
 
 ---
 
-## 🚀 Running with Grok AI
-
-### Prerequisites
-- Flutter SDK `^3.13.0` / Flutter 3.29+
-- Dart SDK `^3.13.0`
-- xAI Grok API Key (from [console.x.ai](https://console.x.ai))
+## 🚀 Running the App
 
 ### Launching the Application
-To run the app with your xAI Grok API key securely supplied at compile-time:
+By default, CreateDiff connects securely to the production HTTPS backend (`https://api.creatediff.com`):
 
 ```bash
-# Run locally with your Grok API key
-flutter run --dart-define=GROK_API_KEY=your_xai_api_key
+# Run with default production backend (works immediately on iOS/Android physical devices & simulators)
+flutter run
 
-# Run with custom model override (optional, defaults to grok-4.5)
-flutter run --dart-define=GROK_API_KEY=your_xai_api_key --dart-define=GROK_MODEL=grok-4.5
+# Run pointing to your deployed backend or Render instance
+flutter run --dart-define=API_BASE_URL=https://your-backend.onrender.com
 
-# Build release/debug APK with API key
-flutter build apk --debug --dart-define=GROK_API_KEY=your_xai_api_key
+# Run pointing to a local development server
+flutter run --dart-define=API_BASE_URL=http://localhost:8000
+
+# Build release APK with custom backend
+flutter build apk --release --dart-define=API_BASE_URL=https://your-backend.onrender.com
 ```
 
 > [!TIP]
-> You can also test and configure connection keys at runtime inside the **Developer Debug Panel** (accessible via the bug icon in the Top App Bar).
+> You can also test and configure connection endpoints at runtime inside the **Developer Debug Panel** (accessible via the bug icon in the Top App Bar).
 
 ---
 
@@ -98,7 +96,7 @@ AppState (Reactive State Manager) + UsageGuard (Rate Limiting & Cost Protection)
          ↓
 AIService (Exponential Backoff Retry & Sanitize Layer)
          ↓
-AIConfig / ApiConfig (Compile-time --dart-define & .env resolution)
+ApiConfig (compile-time non-secret backend URL)
          ↓
 Groq / xAI Responses API (/chat/completions)
 ```
@@ -109,11 +107,10 @@ Groq / xAI Responses API (/chat/completions)
 
 > [!IMPORTANT]
 > **API Key Architecture Notice**:
-> - **Phase 1 (Pre-Launch & Testing)**: The API key lives client-side via `--dart-define` / `.env` / local `ApiConfig`. This is acceptable for rapid pre-launch testing with free-tier developer keys.
-> - **Phase 2 (Production Launch)**: In production mobile deployments, client-side `.env` files can be reverse-engineered from APK binaries. Before public release with real user volume, Grok/Groq API calls must move behind a server-side backend API Gateway proxy (e.g. Supabase Edge Functions / Cloudflare Workers / Node.js API) that keeps third-party provider keys 100% off user devices, attaches authenticated user tokens, and handles server-side quota enforcement.
+> - Provider API keys and Supabase JWT secrets are backend-only.
+> - Flutter receives only a non-secret backend URL through `--dart-define` and sends authenticated bearer tokens.
 
 ---
 
 ## 📄 License
 Private & Proprietary — Developed for CreateDiff.
-

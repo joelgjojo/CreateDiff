@@ -125,7 +125,24 @@ All API responses for non-200 scenarios conform to a stable machine-readable sch
 
 ---
 
-## 6. Future Roadmap
+## 6. Phase 3 Real User Infrastructure
+
+The Phase 3 boundary keeps `SharedPreferences` schema v3 as the offline cache and adds a cloud projection:
+
+```text
+Flutter local schema v3 ── offline-first ──> UI / retry queue
+        │ authenticated first sync (Bearer Supabase JWT)
+        ▼
+FastAPI auth dependency ──> PostgreSQL ORM ──> Supabase user identity
+        │
+        ├── generation / campaign records
+        ├── usage logs and configurable rolling limits
+        └── abstract analytics + Sentry adapter seam
+```
+
+The protected AI routes are `POST /api/v1/generate` and `POST /api/v1/campaign/plan`. `POST /api/v1/profile/sync` is the first cloud migration endpoint. In development, unauthenticated local requests use a deterministic local identity for backward-compatible tests; production requires `AUTH_REQUIRED=true` or the production environment guard. Production database structure is applied through `backend/migrations/001_phase3_initial.sql`; `DB_AUTO_CREATE` is for local development only.
+
+## 7. Future Roadmap
 
 1. **User Authentication & Accounts**: Token-based JWT/OAuth2 authentication layer with server-verified identity.
 2. **Cloud Creator Profiles**: Synchronized Brand Memory profiles across user devices.

@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'theme/app_theme.dart';
 import 'services/app_state.dart';
+import 'services/session_token_store.dart';
 import 'screens/splash_screen.dart';
 
 Future<void> main() async {
@@ -61,14 +61,8 @@ Future<void> main() async {
     );
   };
 
-  // Load .env safely — ApiConfig.init() has its own fallback
-  try {
-    await dotenv.load(fileName: '.env');
-  } catch (_) {
-    // .env may be absent; keys can come from --dart-define instead
-  }
-
   // Initialize persistent App State (SharedPreferences)
+  await SessionTokenStore.init();
   await AppState.instance.init();
 
   runApp(const CreateDiffApp());

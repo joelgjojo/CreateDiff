@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'creator_intelligence.dart';
 
 class CreatorProfile {
   final String id;
@@ -22,6 +23,8 @@ class CreatorProfile {
   final String websiteUrl;
   final String instagramHandle;
   final String youtubeHandle;
+  final LanguageProfile languageProfile;
+  final CreatorMemory creatorMemory;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -47,6 +50,8 @@ class CreatorProfile {
     this.websiteUrl = '',
     this.instagramHandle = '',
     this.youtubeHandle = '',
+    this.languageProfile = const LanguageProfile(),
+    this.creatorMemory = const CreatorMemory(),
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? const _DefaultDateTime(),
@@ -76,6 +81,8 @@ class CreatorProfile {
     String? websiteUrl,
     String? instagramHandle,
     String? youtubeHandle,
+    LanguageProfile? languageProfile,
+    CreatorMemory? creatorMemory,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -101,6 +108,8 @@ class CreatorProfile {
       websiteUrl: websiteUrl ?? this.websiteUrl,
       instagramHandle: instagramHandle ?? this.instagramHandle,
       youtubeHandle: youtubeHandle ?? this.youtubeHandle,
+      languageProfile: languageProfile ?? this.languageProfile,
+      creatorMemory: creatorMemory ?? this.creatorMemory,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
     );
@@ -129,6 +138,8 @@ class CreatorProfile {
       'websiteUrl': websiteUrl,
       'instagramHandle': instagramHandle,
       'youtubeHandle': youtubeHandle,
+      'languageProfile': languageProfile.toJson(),
+      'creatorMemory': creatorMemory.toJson(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -181,6 +192,8 @@ class CreatorProfile {
       websiteUrl: json['websiteUrl'] as String? ?? '',
       instagramHandle: json['instagramHandle'] as String? ?? '',
       youtubeHandle: json['youtubeHandle'] as String? ?? '',
+      languageProfile: json['languageProfile'] is Map<String, dynamic> ? LanguageProfile.fromJson(json['languageProfile'] as Map<String, dynamic>) : LanguageProfile(language: json['primaryLanguage'] as String? ?? 'English'),
+      creatorMemory: json['creatorMemory'] is Map<String, dynamic> ? CreatorMemory.fromJson(json['creatorMemory'] as Map<String, dynamic>) : const CreatorMemory(),
       createdAt: created,
       updatedAt: updated,
     );
@@ -197,4 +210,3 @@ class _DefaultDateTime implements DateTime {
       ? '2026-01-01T00:00:00.000'
       : _d;
 }
-

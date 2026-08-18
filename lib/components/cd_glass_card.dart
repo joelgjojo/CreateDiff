@@ -129,32 +129,35 @@ class _CDGlassCardState extends State<CDGlassCard> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(widget.borderRadius),
-        child: Stack(
-          children: [
-            // Top rim specular highlight line
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 1.0,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: isDark
-                      ? CDColors.specularHighlightDark
-                      : LinearGradient(
-                          colors: [
-                            Colors.white.withValues(alpha: 0.80),
-                            Colors.white.withValues(alpha: 0.0),
-                          ],
-                        ),
+        child: Material(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              // Top rim specular highlight line
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 1.0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: isDark
+                        ? CDColors.specularHighlightDark
+                        : LinearGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.80),
+                              Colors.white.withValues(alpha: 0.0),
+                            ],
+                          ),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: widget.padding ?? const EdgeInsets.all(CDSpacing.lg),
-              child: widget.child,
-            ),
-          ],
+              Padding(
+                padding: widget.padding ?? const EdgeInsets.all(CDSpacing.lg),
+                child: widget.child,
+              ),
+            ],
+          ),
         ),
       ),
     );

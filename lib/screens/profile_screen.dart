@@ -24,6 +24,211 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isMemoryExpanded = false;
 
+  Future<void> _editCreatorMemory(CreatorProfile profile) async {
+    final memory = profile.creatorMemory;
+    final brandRulesCtrl = TextEditingController(text: memory.brandRules.join('\n'));
+    final avoidCtrl = TextEditingController(text: memory.avoidPatterns.join('\n'));
+    final hooksCtrl = TextEditingController(text: memory.preferredHooks.join('\n'));
+    final formatsCtrl = TextEditingController(text: memory.preferredFormats.join(', '));
+    final patternsCtrl = TextEditingController(text: memory.successfulPatterns.join('\n'));
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(ctx).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: CDColors.borderSubtle(ctx)),
+        ),
+        padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + MediaQuery.viewInsetsOf(ctx).bottom),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: CDColors.brand.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.psychology_rounded, color: CDColors.brand, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Creator Memory',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: CDColors.textPrimary(ctx),
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Memory continuously learns from your favorited content and custom studio directives. Modify your active memory patterns below.',
+                style: TextStyle(fontSize: 12, color: CDColors.textSecondary(ctx), height: 1.35),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: brandRulesCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Brand Rules (one per line)',
+                  hintText: 'e.g. Always lead with actionable numbers\nNever use buzzwords like "game-changer"',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: avoidCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Patterns to Avoid (one per line)',
+                  hintText: 'e.g. Generic intros\nCorporate jargon\nLong rhetorical questions',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: hooksCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Preferred Hook Styles (one per line)',
+                  hintText: 'e.g. Contrarian statements\nTime-saved metrics\nBehind-the-scenes breakdown',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: formatsCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Preferred Formats (comma separated)',
+                  hintText: 'e.g. Reel, Carousel, LinkedIn Post',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: patternsCtrl,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Learned Successful Patterns (one per line)',
+                  hintText: 'e.g. High engagement on 30s quick-tips',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                  onPressed: () async {
+                    List<String> parseLines(String text) => text
+                        .split('\n')
+                        .map((l) => l.trim())
+                        .where((l) => l.isNotEmpty)
+                        .take(20)
+                        .toList();
+
+                    List<String> parseComma(String text) => text
+                        .split(',')
+                        .map((c) => c.trim())
+                        .where((c) => c.isNotEmpty)
+                        .take(15)
+                        .toList();
+
+                    final updatedMemory = memory.copyWith(
+                      brandRules: parseLines(brandRulesCtrl.text),
+                      avoidPatterns: parseLines(avoidCtrl.text),
+                      preferredHooks: parseLines(hooksCtrl.text),
+                      preferredFormats: parseComma(formatsCtrl.text),
+                      successfulPatterns: parseLines(patternsCtrl.text),
+                    );
+
+                    await AppState.instance.updateCreatorMemory(updatedMemory);
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx);
+                    }
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Creator Memory updated! ✦'),
+                          backgroundColor: CDColors.success,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Save Creator Memory', style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    brandRulesCtrl.dispose();
+    avoidCtrl.dispose();
+    hooksCtrl.dispose();
+    formatsCtrl.dispose();
+    patternsCtrl.dispose();
+  }
+
+  Future<void> _confirmClearMemory() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Clear Creator Memory?'),
+        content: const Text(
+          'This will reset all learned favorite patterns, hook preferences, and custom brand rules back to defaults. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: CDColors.error),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Clear Memory'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await AppState.instance.clearCreatorMemory();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Creator memory cleared.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = AppState.instance;
@@ -247,6 +452,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildMemoryRow('Tone of Voice', profile.tone.isNotEmpty ? profile.tone : 'Educational'),
                 _buildMemoryRow('CTA Style', profile.preferredCTAStyle.isNotEmpty ? profile.preferredCTAStyle : 'Direct'),
                 _buildMemoryRow('Emoji Usage', profile.emojiUsage.toUpperCase()),
+                _buildMemoryRow('Language Style', '${profile.languageProfile.language} • ${profile.languageProfile.preferredStyle}'),
+                _buildMemoryRow('Creator Memory', profile.creatorMemory.isBuilding ? 'Building from your favorites and reuse' : '${profile.creatorMemory.preferredFormats.length} preferred formats • ${profile.creatorMemory.preferredHooks.length} preferred hooks'),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(onPressed: () => _editCreatorMemory(profile), icon: const Icon(Icons.tune_rounded, size: 16), label: const Text('Edit memory')),
+                ),
+                if (!profile.creatorMemory.isBuilding)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: _confirmClearMemory,
+                      icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                      label: const Text('Clear learned memory'),
+                    ),
+                  ),
                 const SizedBox(height: CDSpacing.md),
               ],
             ),
