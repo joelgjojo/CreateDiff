@@ -2,16 +2,18 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/creator_profile.dart';
 import '../models/content_project.dart';
+import '../models/campaign_plan.dart';
 import '../theme/design_tokens.dart';
 import 'usage_guard.dart';
 
 class StorageService {
-  static const int currentSchemaVersion = 2;
+  static const int currentSchemaVersion = 3;
   static const String _keySchemaVersion = 'creatediff_schema_version';
   static const String _keyCompletedOnboarding = 'hasCompletedOnboarding';
   static const String _keyCompletedProfileSetup = 'hasCompletedProfileSetup';
   static const String _keyCreatorProfile = 'currentCreatorProfile';
   static const String _keyContentHistory = 'contentHistory';
+  static const String _keyCampaigns = 'campaignPlans';
   static const String _keyThemeMode = 'selectedThemeMode';
 
   static SharedPreferences? _prefs;
@@ -34,6 +36,21 @@ class StorageService {
             final map = Map<String, dynamic>.from(item as Map);
             map['updatedAt'] ??= map['createdAt'] ?? DateTime.now().toIso8601String();
             map['isDeleted'] ??= false;
+            return ContentProject.fromJson(map);
+          }).toList();
+          await saveContentHistory(migrated);
+        } catch (_) {}
+      }
+    }
+    if (version < 3) {
+      final raw = _prefs?.getString(_keyContentHistory);
+      if (raw != null && raw.isNotEmpty) {
+        try {
+          final list = jsonDecode(raw) as List<dynamic>;
+          final migrated = list.map((item) {
+            final map = Map<String, dynamic>.from(item as Map);
+            map['isFavorite'] ??= false;
+            map['isDraft'] ??= false;
             return ContentProject.fromJson(map);
           }).toList();
           await saveContentHistory(migrated);
@@ -75,7 +92,7 @@ class StorageService {
     await _prefs?.setString(_keyCreatorProfile, raw);
   }
 
-  // --- Content History with Soft-Delete Support ---
+  // --- Content History with Soft-Delete, Favorites & Drafts Support ---
   static List<ContentProject> getContentHistory({bool includeDeleted = false}) {
     final raw = _prefs?.getString(_keyContentHistory);
     if (raw == null || raw.isEmpty) return [];
@@ -92,6 +109,14 @@ class StorageService {
     }
   }
 
+  static List<ContentProject> getFavorites() {
+    return getContentHistory().where((p) => p.isFavorite).toList();
+  }
+
+  static List<ContentProject> getDrafts() {
+    return getContentHistory().where((p) => p.isDraft).toList();
+  }
+
   static Future<void> saveContentHistory(List<ContentProject> history) async {
     // Cap history to prevent unbounded SharedPreferences growth
     final capped = history.length > CDLimits.maxHistoryItems
@@ -106,6 +131,18 @@ class StorageService {
     current.removeWhere((item) => item.id == project.id);
     current.insert(0, project);
     await saveContentHistory(current);
+  }
+
+  static Future<void> toggleFavorite(String id) async {
+    final current = getContentHistory(includeDeleted: true);
+    final idx = current.indexWhere((p) => p.id == id);
+    if (idx != -1) {
+      current[idx] = current[idx].copyWith(
+        isFavorite: !current[idx].isFavorite,
+        updatedAt: DateTime.now(),
+      );
+      await saveContentHistory(current);
+    }
   }
 
   /// Soft deletes a project, preserving its record for instant undo / recovery
@@ -143,6 +180,38 @@ class StorageService {
     await saveContentHistory(current);
   }
 
+  // --- Campaign Plans Persistence ---
+  static List<CampaignPlan> getCampaigns() {
+    final raw = _prefs?.getString(_keyCampaigns);
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((item) => CampaignPlan.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> saveCampaigns(List<CampaignPlan> campaigns) async {
+    final raw = jsonEncode(campaigns.map((e) => e.toJson()).toList());
+    await _prefs?.setString(_keyCampaigns, raw);
+  }
+
+  static Future<void> saveCampaign(CampaignPlan campaign) async {
+    final current = getCampaigns();
+    current.removeWhere((c) => c.id == campaign.id);
+    current.insert(0, campaign);
+    await saveCampaigns(current);
+  }
+
+  static Future<void> deleteCampaign(String id) async {
+    final current = getCampaigns();
+    current.removeWhere((c) => c.id == id);
+    await saveCampaigns(current);
+  }
+
   // --- Preferences ---
   static String getThemeMode() =>
       _prefs?.getString(_keyThemeMode) ?? 'system';
@@ -154,3 +223,4 @@ class StorageService {
     await _prefs?.clear();
   }
 }
+

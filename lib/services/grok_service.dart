@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 import '../models/creator_profile.dart';
 import '../models/generated_content.dart';
+import '../models/campaign_plan.dart';
 
 /// Explicit status codes representing the AI generation lifecycle and failure reasons.
 enum GrokGenerationStatus {
@@ -94,6 +95,12 @@ class GrokService {
     buffer.writeln('• Primary Language: ${profile.primaryLanguage.isNotEmpty ? profile.primaryLanguage : "English"}');
     if (profile.secondaryLanguage.isNotEmpty) {
       buffer.writeln('• Regional / Secondary Dialect: ${profile.secondaryLanguage}');
+    }
+    if (profile.preferredPlatforms.isNotEmpty) {
+      buffer.writeln('• Preferred Platforms: ${profile.preferredPlatforms.join(", ")}');
+    }
+    if (profile.contentGoals.isNotEmpty) {
+      buffer.writeln('• Content Goals: ${profile.contentGoals.join(", ")}');
     }
     if (profile.contentStyle.isNotEmpty) {
       buffer.writeln('• Content Style: ${profile.contentStyle}');
@@ -243,9 +250,11 @@ class GrokService {
       'niche': profile.niche,
       'category': profile.category,
       'targetAudience': profile.targetAudience,
+      'preferredPlatforms': profile.preferredPlatforms,
       'primaryLanguage': profile.primaryLanguage,
       'secondaryLanguage': profile.secondaryLanguage,
       'tone': profile.tone,
+      'contentGoals': profile.contentGoals,
       'contentStyle': profile.contentStyle,
       'brandDescription': profile.brandDescription,
       'preferredCTAStyle': profile.preferredCTAStyle,
@@ -265,7 +274,6 @@ class GrokService {
     final serializedPayload = jsonEncode(payload);
     final overallStopwatch = Stopwatch()..start();
 
-    // 65-second total timeout to handle Render free-tier cold starts smoothly
     const timeoutDuration = Duration(seconds: 65);
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 15);
 
@@ -328,43 +336,173 @@ class GrokService {
           );
         }
 
-        if (statusCode == 429) {
-          throw GrokServiceException(
-            status: GrokGenerationStatus.rateLimited,
-            message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Generation rate limit exceeded. Please wait a moment before trying again.',
-            statusCode: statusCode,
-            rawResponse: responseBody,
-            requestId: requestId,
-          );
-        }
-
-        if (statusCode == 504) {
-          throw GrokServiceException(
-            status: GrokGenerationStatus.networkError,
-            message: 'AI generation timed out. The server was busy or waking up. Please tap to retry.',
-            statusCode: statusCode,
-            rawResponse: responseBody,
-            requestId: requestId,
-          );
-        }
-
-        throw GrokServiceException(
-          status: GrokGenerationStatus.serverError,
+        final ex = GrokServiceException(
+          status: statusCode == 429
+              ? GrokGenerationStatus.rateLimited
+              : (statusCode == 504 ? GrokGenerationStatus.networkError : GrokGenerationStatus.serverError),
           message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'AI service temporarily unavailable. Please retry shortly.',
           statusCode: statusCode,
           rawResponse: responseBody,
+          requestId: requestId,
+        );
+
+        _lastDebugLog = GrokDebugLog(
+          provider: provider,
+          model: model,
+          timestamp: DateTime.now(),
+          status: ex.status,
+          statusCode: statusCode,
+          errorMessage: ex.message,
+          durationMs: overallStopwatch.elapsedMilliseconds,
+          promptLength: serializedPayload.length,
+          responseLength: responseBody.length,
+          attemptCount: 1,
+          requestId: requestId,
+        );
+
+        throw ex;
+      }
+    } on SocketException catch (e) {
+      _lastDebugLog = GrokDebugLog(
+        provider: provider,
+        model: model,
+        timestamp: DateTime.now(),
+        status: GrokGenerationStatus.networkError,
+        errorMessage: e.message,
+        durationMs: overallStopwatch.elapsedMilliseconds,
+        promptLength: serializedPayload.length,
+        responseLength: 0,
+      );
+      throw GrokServiceException(
+        status: GrokGenerationStatus.networkError,
+        message: 'No internet connection detected or backend unavailable. Check your network (${e.message}).',
+      );
+    } on TimeoutException {
+      _lastDebugLog = GrokDebugLog(
+        provider: provider,
+        model: model,
+        timestamp: DateTime.now(),
+        status: GrokGenerationStatus.networkError,
+        errorMessage: 'Request timed out',
+        durationMs: overallStopwatch.elapsedMilliseconds,
+        promptLength: serializedPayload.length,
+        responseLength: 0,
+      );
+      throw const GrokServiceException(
+        status: GrokGenerationStatus.networkError,
+        message: 'Request timed out while connecting to the AI backend. Please tap to retry.',
+      );
+    } catch (e) {
+      if (e is GrokServiceException) rethrow;
+      _lastDebugLog = GrokDebugLog(
+        provider: provider,
+        model: model,
+        timestamp: DateTime.now(),
+        status: GrokGenerationStatus.unknownError,
+        errorMessage: e.toString(),
+        durationMs: overallStopwatch.elapsedMilliseconds,
+        promptLength: serializedPayload.length,
+        responseLength: 0,
+      );
+      throw GrokServiceException(
+        status: GrokGenerationStatus.unknownError,
+        message: e.toString(),
+      );
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  /// Dispatches campaign planning request to CreateDiff Backend API (`POST /api/v1/campaign/plan`).
+  static Future<CampaignPlan> planCampaign({
+    required String goal,
+    int durationDays = 7,
+    String? platform,
+    String? niche,
+    required CreatorProfile profile,
+  }) async {
+    final backendBaseUrl = ApiConfig.backendBaseUrl.replaceAll(RegExp(r'/+$'), '');
+    final endpoint = '$backendBaseUrl/api/v1/campaign/plan';
+
+    if (!ApiConfig.hasApiKey || backendBaseUrl.isEmpty) {
+      throw const GrokServiceException(
+        status: GrokGenerationStatus.apiKeyMissing,
+        message: 'AI features unavailable — API not configured.',
+      );
+    }
+
+    final creatorContextMap = {
+      'name': profile.creatorName,
+      'username': profile.username,
+      'niche': profile.niche,
+      'category': profile.category,
+      'targetAudience': profile.targetAudience,
+      'preferredPlatforms': profile.preferredPlatforms,
+      'primaryLanguage': profile.primaryLanguage,
+      'secondaryLanguage': profile.secondaryLanguage,
+      'tone': profile.tone,
+      'contentGoals': profile.contentGoals,
+      'contentStyle': profile.contentStyle,
+      'brandDescription': profile.brandDescription,
+      'preferredCTAStyle': profile.preferredCTAStyle,
+      'emojiUsage': profile.emojiUsage,
+    };
+
+    final payload = {
+      'goal': goal,
+      'durationDays': durationDays,
+      'platform': platform ?? 'All',
+      if (niche != null && niche.isNotEmpty) 'niche': niche,
+      'creatorContext': creatorContextMap,
+    };
+
+    final serializedPayload = jsonEncode(payload);
+    const timeoutDuration = Duration(seconds: 70);
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 15);
+
+    try {
+      final uri = Uri.parse(endpoint);
+      final request = await client.postUrl(uri);
+
+      request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
+      request.headers.set('X-Request-ID', 'cd-camp-${DateTime.now().millisecondsSinceEpoch}');
+
+      request.add(utf8.encode(serializedPayload));
+
+      final response = await request.close().timeout(timeoutDuration);
+      final responseBody = await response.transform(utf8.decoder).join();
+      final statusCode = response.statusCode;
+      final requestId = response.headers.value('x-request-id');
+
+      if (statusCode == 200) {
+        final jsonMap = jsonDecode(responseBody) as Map<String, dynamic>;
+        return CampaignPlan.fromJson(jsonMap);
+      } else {
+        final serverErrorMsg = _extractServerErrorMessage(responseBody, statusCode);
+        if (statusCode == 429) {
+          throw GrokServiceException(
+            status: GrokGenerationStatus.rateLimited,
+            message: 'Campaign planner rate limit exceeded. Please wait a moment.',
+            statusCode: statusCode,
+            requestId: requestId,
+          );
+        }
+        throw GrokServiceException(
+          status: GrokGenerationStatus.serverError,
+          message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Unable to generate campaign plan.',
+          statusCode: statusCode,
           requestId: requestId,
         );
       }
     } on SocketException catch (e) {
       throw GrokServiceException(
         status: GrokGenerationStatus.networkError,
-        message: 'No internet connection detected or backend unavailable. Check your network (${e.message}).',
+        message: 'Network error connecting to campaign planner (${e.message}).',
       );
     } on TimeoutException {
       throw const GrokServiceException(
         status: GrokGenerationStatus.networkError,
-        message: 'Request timed out while connecting to the AI backend. Please tap to retry.',
+        message: 'Campaign generation timed out. Please tap to retry.',
       );
     } catch (e) {
       if (e is GrokServiceException) rethrow;
@@ -377,3 +515,4 @@ class GrokService {
     }
   }
 }
+

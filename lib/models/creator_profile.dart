@@ -7,9 +7,11 @@ class CreatorProfile {
   final String niche;
   final String category;
   final String targetAudience;
+  final List<String> preferredPlatforms;
   final String primaryLanguage;
   final String secondaryLanguage;
   final String tone;
+  final List<String> contentGoals;
   final String contentStyle;
   final String brandDescription;
   final String preferredCTAStyle;
@@ -30,9 +32,11 @@ class CreatorProfile {
     this.niche = 'Technology',
     this.category = 'Content Creator',
     this.targetAudience = 'Creators and small businesses',
+    this.preferredPlatforms = const ['Instagram', 'YouTube', 'LinkedIn'],
     this.primaryLanguage = 'English',
     this.secondaryLanguage = '',
     this.tone = 'Educational',
+    this.contentGoals = const ['Audience Growth', 'Community Engagement'],
     this.contentStyle = 'Actionable and inspiring',
     this.brandDescription = '',
     this.preferredCTAStyle = 'Direct',
@@ -57,9 +61,11 @@ class CreatorProfile {
     String? niche,
     String? category,
     String? targetAudience,
+    List<String>? preferredPlatforms,
     String? primaryLanguage,
     String? secondaryLanguage,
     String? tone,
+    List<String>? contentGoals,
     String? contentStyle,
     String? brandDescription,
     String? preferredCTAStyle,
@@ -80,9 +86,11 @@ class CreatorProfile {
       niche: niche ?? this.niche,
       category: category ?? this.category,
       targetAudience: targetAudience ?? this.targetAudience,
+      preferredPlatforms: preferredPlatforms ?? this.preferredPlatforms,
       primaryLanguage: primaryLanguage ?? this.primaryLanguage,
       secondaryLanguage: secondaryLanguage ?? this.secondaryLanguage,
       tone: tone ?? this.tone,
+      contentGoals: contentGoals ?? this.contentGoals,
       contentStyle: contentStyle ?? this.contentStyle,
       brandDescription: brandDescription ?? this.brandDescription,
       preferredCTAStyle: preferredCTAStyle ?? this.preferredCTAStyle,
@@ -106,9 +114,11 @@ class CreatorProfile {
       'niche': niche,
       'category': category,
       'targetAudience': targetAudience,
+      'preferredPlatforms': preferredPlatforms,
       'primaryLanguage': primaryLanguage,
       'secondaryLanguage': secondaryLanguage,
       'tone': tone,
+      'contentGoals': contentGoals,
       'contentStyle': contentStyle,
       'brandDescription': brandDescription,
       'preferredCTAStyle': preferredCTAStyle,
@@ -140,9 +150,23 @@ class CreatorProfile {
       niche: json['niche'] as String? ?? 'Technology',
       category: json['category'] as String? ?? 'Content Creator',
       targetAudience: json['targetAudience'] as String? ?? 'Creators and small businesses',
+      preferredPlatforms: (json['preferredPlatforms'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          (json['preferred_platforms'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const ['Instagram', 'YouTube', 'LinkedIn'],
       primaryLanguage: json['primaryLanguage'] as String? ?? 'English',
       secondaryLanguage: json['secondaryLanguage'] as String? ?? '',
       tone: json['tone'] as String? ?? 'Educational',
+      contentGoals: (json['contentGoals'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          (json['content_goals'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const ['Audience Growth', 'Community Engagement'],
       contentStyle: json['contentStyle'] as String? ?? 'Actionable and inspiring',
       brandDescription: json['brandDescription'] as String? ?? '',
       preferredCTAStyle: json['preferredCTAStyle'] as String? ?? 'Direct',
@@ -173,3 +197,4 @@ class _DefaultDateTime implements DateTime {
       ? '2026-01-01T00:00:00.000'
       : _d;
 }
+

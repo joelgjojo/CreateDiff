@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/creator_profile.dart';
 import '../models/content_project.dart';
 import '../models/generated_content.dart';
+import '../models/campaign_plan.dart';
+import '../theme/design_tokens.dart';
 import 'storage_service.dart';
 import 'grok_service.dart';
 import 'usage_guard.dart';
@@ -19,9 +21,11 @@ class AppState extends ChangeNotifier {
 
   CreatorProfile _profile = const CreatorProfile();
   List<ContentProject> _contentHistory = [];
+  List<CampaignPlan> _campaigns = [];
   ContentProject? _currentProject;
   GeneratedContent? _currentGeneratedContent;
   bool _isGenerating = false;
+  bool _isPlanningCampaign = false;
   AIGenerationStatus _generationStatus = AIGenerationStatus.idle;
   AIServiceException? _lastError;
   String _generationStep = 'Understanding your idea...';
@@ -33,9 +37,15 @@ class AppState extends ChangeNotifier {
   // Getters
   CreatorProfile get profile => _profile;
   List<ContentProject> get contentHistory => _contentHistory;
+  List<CampaignPlan> get campaigns => _campaigns;
+  List<ContentProject> get favorites =>
+      _contentHistory.where((p) => p.isFavorite && !p.isDeleted).toList();
+  List<ContentProject> get drafts =>
+      _contentHistory.where((p) => p.isDraft && !p.isDeleted).toList();
   ContentProject? get currentProject => _currentProject;
   GeneratedContent? get currentGeneratedContent => _currentGeneratedContent;
   bool get isGenerating => _isGenerating;
+  bool get isPlanningCampaign => _isPlanningCampaign;
   AIGenerationStatus get generationStatus => _generationStatus;
   AIServiceException? get lastError => _lastError;
   String get generationStep => _generationStep;
@@ -60,6 +70,7 @@ class AppState extends ChangeNotifier {
     }
 
     _contentHistory = StorageService.getContentHistory();
+    _campaigns = StorageService.getCampaigns();
 
     final savedTheme = StorageService.getThemeMode();
     if (savedTheme == 'light') {
@@ -103,6 +114,7 @@ class AppState extends ChangeNotifier {
     await updateProfile(imported);
     return const ValidationResult.valid();
   }
+
 
   // --- Theme Mode ---
   Future<void> setThemeMode(ThemeMode mode) async {
@@ -183,7 +195,7 @@ class AppState extends ChangeNotifier {
         onRetry: (attempt, max) {
           if (_activeRequestId != reqId) return;
           _currentRetryAttempt = attempt;
-          _generationStep = 'Retrying with Grok AI (Attempt $attempt/$max)...';
+          _generationStep = CDStrings.retryLoadingMessage;
           _generationStatus = AIGenerationStatus.retrying;
           notifyListeners();
         },
@@ -243,6 +255,90 @@ class AppState extends ChangeNotifier {
   void setCurrentProject(ContentProject project) {
     _currentProject = project;
     _currentGeneratedContent = project.generatedContent;
+    notifyListeners();
+  }
+
+  /// Toggle bookmark / favorite status on a project
+  Future<void> toggleFavorite(String projectId) async {
+    await StorageService.toggleFavorite(projectId);
+    _contentHistory = StorageService.getContentHistory();
+    if (_currentProject?.id == projectId) {
+      _currentProject = _currentProject!.copyWith(
+        isFavorite: !_currentProject!.isFavorite,
+      );
+    }
+    notifyListeners();
+  }
+
+  /// Save or update a project as draft
+  Future<void> saveDraft(ContentProject draftProject) async {
+    final updated = draftProject.copyWith(
+      isDraft: true,
+      status: 'draft',
+      updatedAt: DateTime.now(),
+    );
+    await StorageService.addProjectToHistory(updated);
+    _contentHistory = StorageService.getContentHistory();
+    if (_currentProject?.id == draftProject.id) {
+      _currentProject = updated;
+    }
+    notifyListeners();
+  }
+
+  // --- Campaign Planner Workflow ---
+  Future<CampaignPlan?> planCampaign({
+    required String goal,
+    int durationDays = 7,
+    String? platform,
+    String? niche,
+  }) async {
+    if (_isPlanningCampaign) return null;
+
+    final usage = UsageGuard.checkUsage();
+    if (usage.isBlocked) {
+      _lastError = AIServiceException(
+        status: AIGenerationStatus.rateLimited,
+        message: usage.message ?? 'Daily studio limit reached. Resets tomorrow.',
+      );
+      notifyListeners();
+      return null;
+    }
+
+    _isPlanningCampaign = true;
+    _lastError = null;
+    notifyListeners();
+
+    try {
+      final plan = await GrokService.planCampaign(
+        goal: goal,
+        durationDays: durationDays,
+        platform: platform,
+        niche: niche,
+        profile: _profile,
+      );
+
+      await StorageService.saveCampaign(plan);
+      _campaigns = StorageService.getCampaigns();
+      await UsageGuard.recordGeneration(estimatedTokens: durationDays * 50);
+      return plan;
+    } on AIServiceException catch (e) {
+      _lastError = e;
+      return null;
+    } catch (e) {
+      _lastError = AIServiceException(
+        status: AIGenerationStatus.unknownError,
+        message: e.toString(),
+      );
+      return null;
+    } finally {
+      _isPlanningCampaign = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteCampaign(String campaignId) async {
+    await StorageService.deleteCampaign(campaignId);
+    _campaigns = StorageService.getCampaigns();
     notifyListeners();
   }
 
@@ -320,7 +416,7 @@ class AppState extends ChangeNotifier {
         onRetry: (attempt, max) {
           if (_activeRequestId != reqId) return;
           _currentRetryAttempt = attempt;
-          _generationStep = 'Retrying with Grok AI (Attempt $attempt/$max)...';
+          _generationStep = CDStrings.retryLoadingMessage;
           _generationStatus = AIGenerationStatus.retrying;
           notifyListeners();
         },
@@ -416,7 +512,7 @@ class AppState extends ChangeNotifier {
         onRetry: (attempt, max) {
           if (_activeRequestId != reqId) return;
           _currentRetryAttempt = attempt;
-          _generationStep = 'Retrying with Grok AI (Attempt $attempt/$max)...';
+          _generationStep = CDStrings.retryLoadingMessage;
           _generationStatus = AIGenerationStatus.retrying;
           notifyListeners();
         },
@@ -512,9 +608,11 @@ class AppState extends ChangeNotifier {
     await UsageGuard.resetToday();
     _profile = const CreatorProfile();
     _contentHistory = [];
+    _campaigns = [];
     _currentProject = null;
     _currentGeneratedContent = null;
     _isGenerating = false;
+    _isPlanningCampaign = false;
     _generationStatus = AIGenerationStatus.idle;
     _lastError = null;
     _themeMode = ThemeMode.system;
@@ -535,7 +633,6 @@ class AppState extends ChangeNotifier {
     return Timer.periodic(const Duration(milliseconds: 1000), (t) {
       elapsedSeconds++;
       if (elapsedSeconds >= 5) {
-        // Cold start detection for free-tier / asleep instances
         _generationStep = 'Waking up the AI engine — this can take up to a minute on first use...';
       } else {
         stepIdx = (stepIdx + 1) % standardSteps.length;
@@ -545,3 +642,4 @@ class AppState extends ChangeNotifier {
     });
   }
 }
+

@@ -7,7 +7,7 @@ class ContentProject {
   final String idea;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String status; // 'generating', 'generated', 'designed', 'exported'
+  final String status; // 'generating', 'generated', 'designed', 'exported', 'draft'
   final GeneratedContent? generatedContent;
   final String selectedDesignTemplate;
   final String selectedDesignStyle;
@@ -15,6 +15,10 @@ class ContentProject {
   final String tone;
   final bool isDeleted;
   final DateTime? deletedAt;
+  final bool isFavorite;
+  final bool isDraft;
+  final String? campaignId;
+  final int? qualityScore;
 
   const ContentProject({
     required this.id,
@@ -31,6 +35,10 @@ class ContentProject {
     this.tone = 'Educational',
     this.isDeleted = false,
     this.deletedAt,
+    this.isFavorite = false,
+    this.isDraft = false,
+    this.campaignId,
+    this.qualityScore,
   }) : updatedAt = updatedAt ?? createdAt;
 
   ContentProject copyWith({
@@ -49,6 +57,10 @@ class ContentProject {
     bool? isDeleted,
     DateTime? deletedAt,
     bool clearDeletedAt = false,
+    bool? isFavorite,
+    bool? isDraft,
+    String? campaignId,
+    int? qualityScore,
   }) {
     return ContentProject(
       id: id ?? this.id,
@@ -65,6 +77,10 @@ class ContentProject {
       tone: tone ?? this.tone,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
+      isFavorite: isFavorite ?? this.isFavorite,
+      isDraft: isDraft ?? this.isDraft,
+      campaignId: campaignId ?? this.campaignId,
+      qualityScore: qualityScore ?? this.qualityScore,
     );
   }
 
@@ -84,6 +100,10 @@ class ContentProject {
       'tone': tone,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt?.toIso8601String(),
+      'isFavorite': isFavorite,
+      'isDraft': isDraft,
+      'campaignId': campaignId,
+      'qualityScore': qualityScore ?? generatedContent?.quality?.overallScore,
     };
   }
 
@@ -100,6 +120,10 @@ class ContentProject {
         ? DateTime.tryParse(json['deletedAt'] as String)
         : null;
 
+    final generated = json['generatedContent'] != null
+        ? GeneratedContent.fromJson(json['generatedContent'] as Map<String, dynamic>)
+        : null;
+
     return ContentProject(
       id: json['id'] as String? ?? DateTime.now().millisecondsSinceEpoch.toString(),
       platform: json['platform'] as String? ?? 'Instagram',
@@ -108,15 +132,19 @@ class ContentProject {
       createdAt: created,
       updatedAt: updated,
       status: json['status'] as String? ?? 'generated',
-      generatedContent: json['generatedContent'] != null
-          ? GeneratedContent.fromJson(json['generatedContent'] as Map<String, dynamic>)
-          : null,
+      generatedContent: generated,
       selectedDesignTemplate: json['selectedDesignTemplate'] as String? ?? '',
       selectedDesignStyle: json['selectedDesignStyle'] as String? ?? 'minimal',
       language: json['language'] as String? ?? 'English',
       tone: json['tone'] as String? ?? 'Educational',
       isDeleted: json['isDeleted'] as bool? ?? false,
       deletedAt: deleted,
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      isDraft: json['isDraft'] as bool? ?? false,
+      campaignId: json['campaignId'] as String?,
+      qualityScore: (json['qualityScore'] as num?)?.toInt() ??
+          generated?.quality?.overallScore,
     );
   }
 }
+

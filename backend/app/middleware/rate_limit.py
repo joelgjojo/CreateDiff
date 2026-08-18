@@ -68,7 +68,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next) -> Response:
         # Only rate-limit resource-consuming generation endpoints
-        if request.url.path.startswith("/api/v1/generate") and request.method == "POST":
+        is_generation_endpoint = (
+            request.url.path.startswith("/api/v1/generate") or request.url.path.startswith("/api/v1/campaign")
+        )
+        if is_generation_endpoint and request.method == "POST":
             # Extract real client IP (handle proxies if forwarded)
             forwarded = request.headers.get("x-forwarded-for")
             if forwarded:

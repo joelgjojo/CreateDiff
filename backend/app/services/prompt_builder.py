@@ -1,16 +1,18 @@
-from typing import Optional
+import json
+from typing import Optional, List
 from app.schemas.generation import CreatorContext, GenerationRequest
+from app.schemas.campaign import CampaignPlanRequest
 
 
 class PromptBuilder:
-    """Server-side Prompt Orchestrator for CreateDiff AI Content Studio."""
+    """Server-side Prompt Orchestrator for CreateDiff AI Content Studio Phase 3."""
 
     @staticmethod
     def build_system_prompt(creator_context: Optional[CreatorContext] = None) -> str:
         ctx = creator_context or CreatorContext()
         lines = [
             "You are the core AI Content Engine for CreateDiff — a premium mobile AI Creation Studio.",
-            "Your role is to transform raw ideas into complete, high-converting, platform-optimized creator content packs.",
+            "Your role is to transform raw ideas into complete, high-converting, platform-tailored creator content packs with visual direction and quality self-assessment in a single unified execution.",
             "",
             "=== CREATOR BRAND MEMORY (STRICT CONTEXT) ===",
             f"• Creator / Brand Name: {ctx.name if ctx.name else 'Creator'}",
@@ -22,6 +24,10 @@ class PromptBuilder:
         
         if ctx.secondary_language:
             lines.append(f"• Regional / Secondary Dialect: {ctx.secondary_language}")
+        if ctx.preferred_platforms:
+            lines.append(f"• Preferred Platforms: {', '.join(ctx.preferred_platforms)}")
+        if ctx.content_goals:
+            lines.append(f"• Content & Growth Goals: {', '.join(ctx.content_goals)}")
         if ctx.content_style:
             lines.append(f"• Content Style: {ctx.content_style}")
         if ctx.brand_description:
@@ -32,25 +38,31 @@ class PromptBuilder:
             f"• Emoji Density: {ctx.emoji_usage if ctx.emoji_usage else 'moderate'}",
             "",
             "=== LANGUAGE & REGIONAL RULES ===",
-            "• Content Language separation: Write hooks, captions, and cover text in the creator's chosen language/dialect (e.g. Malayalam script, Manglish, Hindi, English).",
-            "• If Primary Language is 'Manglish': Write in English script blended naturally with Malayalam vocabulary and modern Kerala creator slang (e.g. 'Nammal', 'Machane', 'Scene', 'Kidu', 'Poli', 'Set aayi'). Keep it authentic, energetic, and relatable.",
+            "• Content Language separation: Write hooks, captions, scripts, and cover text in the creator's chosen language/dialect (e.g. Malayalam script, Manglish, Hindi, English).",
+            "• If Primary Language is 'Manglish': Write in English script blended naturally with Malayalam vocabulary and modern Kerala creator slang (e.g. 'Nammal', 'Machane', 'Scene', 'Kidu', 'Poli', 'Set aayi', 'Adipoli'). Keep it authentic, energetic, and relatable.",
             "• If Primary Language is 'Malayalam': Write in native Malayalam script (മലയാളം) with fluent, natural phrasing suited for social media.",
             "• If Primary Language is 'Hindi' or 'Hinglish': Use conversational Hindi/Hinglish with modern creator terminology.",
             "• If Primary Language is 'Tamil' / 'Telugu': Use natural, culturally resonant phrasing.",
             "• If Primary Language is 'English': Use modern, punchy creator English with active verbs, conversational flow, and zero corporate jargon.",
             "",
-            "=== PLATFORM & FORMAT INTELLIGENCE ===",
-            "• Instagram Reel: Fast-paced hooks (visual + audio cues in first 3s), punchy caption with white space, and engagement prompt.",
-            "• Instagram Carousel / Post: Slide-by-slide value breakdown, educational nuggets, and a save/share CTA.",
-            "• Instagram Story: Interactive poll/question ideas and quick conversational hooks.",
-            "• YouTube Short: Immediate intrigue, continuous pacing, and loop-friendly structure.",
-            "• YouTube Video: Comprehensive outline with chapter structure, value delivery, and SEO-friendly description.",
-            "• LinkedIn Post / Article: Strong 1-2 line opening hook, insight-dense bullet points, double line breaks, and conversation-starter CTA.",
+            "=== PLATFORM-SPECIFIC INTELLIGENCE & RELEVANT OUTPUTS ===",
+            "• Tailor the output specifically for the requested platform and format:",
+            "  - Instagram Reel: Provide 5 hook variations, a full scene-by-scene script with timestamps ([0-3s Hook], [3-15s Meat], [15-30s Twist], [30-45s CTA]), 3-5 visual/camera scene directions, engaging caption, CTAs, hashtags, and coverText.",
+            "  - Instagram Carousel: Provide 5-7 structured slide blueprints (each with slideNumber, headline, bodyText, visualCue), coverText, caption, CTAs, hashtags.",
+            "  - Instagram Story: Provide 3-5 sequential story frames, 3 interactive sticker/poll question prompts, conversational script/hook, CTA.",
+            "  - YouTube Short: Provide 3-5 high-converting title options, 5 hook variations, punchy short script with audio/visual cues, SEO description, thumbnail text, tags/hashtags.",
+            "  - YouTube Video: Provide title options, chapter/outline breakdown, SEO description, thumbnail direction.",
+            "  - LinkedIn Post / Article: Provide strong 1-2 line opening hooks, insight-dense post body with whitespace, thought-leadership CTA, professional hashtags.",
+            "",
+            "=== VISUAL INTELLIGENCE DIRECTION ===",
+            "• Provide a visual direction blueprint for the graphic/video design (visualStyle, layoutSuggestion, thumbnailDirection, typographySuggestion, 4-color hex palette, designMood).",
+            "",
+            "=== SINGLE-CALL QUALITY SELF-ASSESSMENT ===",
+            "• Include quality evaluation metrics (0-100) assessing hookStrength, platformFit, audienceFit, originality, overallScore, and any potential issues.",
             "",
             "=== HASHTAG STRATEGY (STRICT DISCOVERABILITY) ===",
-            "• IMPORTANT: Hashtags must follow social platform discoverability standards.",
-            "• Write hashtags primarily in English/Latin characters for maximum search indexing (e.g. #KeralaFood, #MalayaliCreator, #TechInMalayalam, #IndianCreators) instead of non-indexed regional script, unless explicitly requested.",
-            "• hashtagsHighReach: Exactly 5 broad discovery tags (1M+ reach, high volume).",
+            "• Write hashtags primarily in English/Latin characters for maximum search indexing (e.g. #KeralaFood, #TechInMalayalam, #CreatorEconomy) unless explicitly requested.",
+            "• hashtagsHighReach: Exactly 5 broad discovery tags (1M+ reach).",
             "• hashtagsMediumReach: Exactly 4 category/industry-specific tags (50K–1M reach).",
             "• hashtagsNiche: Exactly 3 community/hyper-targeted tags (<50K reach).",
             "",
@@ -60,15 +72,15 @@ class PromptBuilder:
             "",
             "=== STRICT OUTPUT INSTRUCTIONS ===",
             "1. Deliver output exclusively in valid, parseable JSON format.",
-            "2. Do not wrap the JSON with markdown code blocks (no ```json or ```). Return raw JSON.",
-            "3. Provide exactly 5 distinct, high-impact hooks covering curiosity, contrarian, blueprint, story, and question angles.",
-            "4. Provide a full formatted caption with clean line breaks, value points, and a strong ending.",
-            "5. Provide 3 action-oriented CTAs aligned with the creator's CTA style.",
-            "6. Segment hashtags into 3 reach tiers: high reach (broad discovery), medium reach (niche/topic), and niche/community (highly targeted).",
-            "7. Provide a punchy, high-contrast Cover Text (3-5 uppercase words) suitable for visual design slides.",
-            "8. Provide 3 creative format variations (e.g. Standard, High-Engagement, Story Framework).",
-            "9. Respect the specified language and regional dialect.",
-            "10. Do NOT invent fictional personal brand facts not given in the Creator Brand Memory.",
+            "2. Do not wrap the JSON with markdown code blocks. Return raw JSON.",
+            "3. Provide exactly 5 distinct, high-impact hooks.",
+            "4. Provide a full formatted caption with clean line breaks.",
+            "5. Provide 3 action-oriented CTAs aligned with creator style.",
+            "6. Segment hashtags into 3 reach tiers.",
+            "7. Provide punchy Cover Text (3-5 uppercase words).",
+            "8. Provide 3 creative format variations.",
+            "9. Populate platform-specific fields according to the requested format (script & sceneDirections for Reels/Shorts; slides for Carousels; titleOptions & thumbnailText for YouTube/Reels; storyPrompts for Stories).",
+            "10. Populate visualIntelligence and quality objects.",
             "",
             "=== REQUIRED JSON SCHEMA ===",
             '''{
@@ -79,7 +91,40 @@ class PromptBuilder:
   "hashtagsMediumReach": ["#tag1", "#tag2", "#tag3", "#tag4"],
   "hashtagsNiche": ["#tag1", "#tag2", "#tag3"],
   "coverText": "PUNCHY GRAPHIC TITLE",
-  "variations": ["Variation 1", "Variation 2", "Variation 3"]
+  "variations": ["Standard Format", "High-Engagement Variation", "Story Blueprint"],
+  "script": "[0-3s Hook]: ...\\n[3-15s Point 1]: ...\\n[15-30s Point 2]: ...\\n[30-45s CTA]: ...",
+  "sceneDirections": [
+    "Scene 1: Close-up with dynamic text overlay",
+    "Scene 2: Screen-share / b-roll demonstrating workflow",
+    "Scene 3: Direct to camera with high energy"
+  ],
+  "slides": [
+    {
+      "slideNumber": 1,
+      "headline": "Slide Headline",
+      "bodyText": "Key takeaway bullet point",
+      "visualCue": "Minimalist diagram illustration"
+    }
+  ],
+  "titleOptions": ["Title Option 1", "Title Option 2", "Title Option 3"],
+  "thumbnailText": "STOP SCROLLING",
+  "storyPrompts": ["Poll: Which AI tool do you use?", "Question: What is your #1 creation roadblock?"],
+  "visualIntelligence": {
+    "visualStyle": "Modern Dark Minimalist Tech",
+    "layoutSuggestion": "Large bold typography on top with 3 floating feature cards",
+    "thumbnailDirection": "Close-up reaction on left, high-contrast neon typography on right",
+    "typographySuggestion": "Space Grotesk / Inter Bold with generous letter spacing",
+    "colorPalette": ["#080A0F", "#4F43F9", "#7066FF", "#00B894"],
+    "designMood": "High energy, authoritative, educational"
+  },
+  "quality": {
+    "hookStrength": 90,
+    "platformFit": 92,
+    "audienceFit": 88,
+    "originality": 86,
+    "overallScore": 89,
+    "issues": []
+  }
 }'''
         ])
         return "\n".join(lines)
@@ -99,5 +144,95 @@ class PromptBuilder:
             lines.append(f"Length Preference: {req.override_length}")
             
         lines.append("")
-        lines.append("Generate the complete structured JSON content pack now:")
+        lines.append(f"Generate the complete structured JSON content pack tailored for {req.platform} {req.content_type} now:")
         return "\n".join(lines)
+
+    @staticmethod
+    def build_quality_retry_prompt(original_output: dict, issues: List[str]) -> str:
+        """Builds a targeted single-refinement prompt when AI self-scores fail quality threshold."""
+        issues_str = "; ".join(issues) if issues else "Hook strength and originality below quality threshold."
+        return (
+            "The initial generation scored below our creator excellence threshold.\n"
+            f"Specific issues identified: {issues_str}\n\n"
+            "Please regenerate and improve the content pack to achieve top-tier creator quality:\n"
+            "1. Elevate hook strength with irresistible curiosity or contrarian angles.\n"
+            "2. Ensure punchy, concise phrasing tailored strictly to the platform.\n"
+            "3. Eliminate generic filler and maximize actionable depth.\n"
+            "4. Return the full structured JSON matching the required schema.\n\n"
+            f"Previous draft output for reference:\n{json.dumps(original_output, ensure_ascii=False)}"
+        )
+
+    @staticmethod
+    def build_campaign_system_prompt(creator_context: Optional[CreatorContext] = None) -> str:
+        ctx = creator_context or CreatorContext()
+        lines = [
+            "You are the Strategic Campaign Architect for CreateDiff — a premium mobile AI Creation Studio.",
+            "Your role is to design structured, cohesive multi-day content campaigns that help creators build authority, grow their audience, and execute consistent high-performing content.",
+            "",
+            "=== CREATOR BRAND MEMORY ===",
+            f"• Creator Name: {ctx.name if ctx.name else 'Creator'}",
+            f"• Niche / Domain: {ctx.niche if ctx.niche else 'General'}",
+            f"• Target Audience: {ctx.target_audience if ctx.target_audience else 'General audience'}",
+            f"• Brand Voice: {ctx.tone if ctx.tone else 'Educational & Engaging'}",
+            f"• Primary Language: {ctx.primary_language if ctx.primary_language else 'English'}",
+        ]
+        if ctx.secondary_language:
+            lines.append(f"• Regional Dialect: {ctx.secondary_language}")
+        if ctx.preferred_platforms:
+            lines.append(f"• Preferred Platforms: {', '.join(ctx.preferred_platforms)}")
+        if ctx.content_goals:
+            lines.append(f"• Core Goals: {', '.join(ctx.content_goals)}")
+
+        lines.extend([
+            "",
+            "=== CAMPAIGN DESIGN PRINCIPLES ===",
+            "• Every single day MUST carry all four core elements: (1) Format Tag, (2) Punchy Title, (3) Viral Hook Angle, and (4) Structured 3-part Outline.",
+            "• Content progression should follow a strategic narrative arc: Discovery / Attraction -> Education / Deep-Dive -> Social Proof / Relatability -> High-Conversion / Community Call.",
+            "• Ensure format diversity across the week (mix of Reels/Shorts, Carousels, and Thought-Leadership Posts).",
+            "• Maintain consistent quality across all entries without truncation.",
+            "",
+            "=== STRICT OUTPUT INSTRUCTIONS ===",
+            "1. Deliver output exclusively in valid, parseable JSON format without markdown code blocks.",
+            "2. Provide an overarching campaign title, concise strategy summary, and day-by-day schedule.",
+            "3. Each day item MUST include: day (integer), title, topic, platform, contentType, hookAngle, outline, and strategicIntent.",
+            "",
+            "=== REQUIRED JSON SCHEMA ===",
+            '''{
+  "campaignTitle": "7-Day AI Creator Acceleration Series",
+  "campaignGoal": "Grow AI education page for students",
+  "durationDays": 7,
+  "platform": "All",
+  "strategySummary": "A progressive 7-day content sprint establishing student workflow authority before transitioning into tool recommendations and community building.",
+  "days": [
+    {
+      "day": 1,
+      "title": "5 AI Tools Every Student Needs in 2026",
+      "topic": "AI tools for academic research and note synthesis",
+      "platform": "Instagram",
+      "contentType": "Reel",
+      "hookAngle": "If you are still studying without these 5 AI tools, you are doing it the hard way.",
+      "outline": "• Hook: Show 10-hour study workload vs 30-min AI synthesis\\n• Core: Showcase top 3 research tools\\n• CTA: Comment TOOLS to get the free cheat sheet",
+      "strategicIntent": "Discovery & Viral Reach"
+    }
+  ]
+}'''
+        ])
+        return "\n".join(lines)
+
+    @staticmethod
+    def build_campaign_user_prompt(req: CampaignPlanRequest) -> str:
+        lines = [
+            f"Campaign Goal: {req.goal}",
+            f"Duration: {req.duration_days} Days",
+            f"Target Platform: {req.platform if req.platform else 'All'}",
+        ]
+        if req.niche:
+            lines.append(f"Niche Override: {req.niche}")
+
+        lines.append("")
+        lines.append(
+            f"Plan the complete {req.duration_days}-day creator campaign now. "
+            f"Ensure every single day from Day 1 to Day {req.duration_days} has a complete title, topic, platform, contentType, hookAngle, outline, and strategicIntent."
+        )
+        return "\n".join(lines)
+

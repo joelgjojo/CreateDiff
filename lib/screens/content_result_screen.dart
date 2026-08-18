@@ -12,6 +12,9 @@ import '../components/cd_primary_button.dart';
 import '../components/cd_secondary_button.dart';
 import '../components/cd_export_share_sheet.dart';
 import '../components/cd_atmospheric_background.dart';
+import '../components/cd_quality_score_card.dart';
+import '../components/cd_visual_intelligence_card.dart';
+import '../components/cd_platform_content_cards.dart';
 import 'design_selection_screen.dart';
 
 /// The editorial studio workspace displaying the complete generated content pack.
@@ -37,6 +40,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
   void initState() {
     super.initState();
     _currentProject = widget.project;
+    _isBookmarked = widget.project.isFavorite;
   }
 
   void _copySection(String title, String text) {
@@ -59,7 +63,9 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
 
   void _toggleBookmark() {
     AppHaptics.selection();
-    setState(() => _isBookmarked = !_isBookmarked);
+    final newFav = !_isBookmarked;
+    setState(() => _isBookmarked = newFav);
+    AppState.instance.toggleFavorite(_currentProject.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -79,6 +85,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
       ),
     );
   }
+
 
   void _openDesignSelection() {
     AppHaptics.light();
@@ -311,6 +318,42 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // --- Section 0: AI Quality Assessment ---
+                          if (generated.quality != null) ...[
+                            CDQualityScoreCard(quality: generated.quality!),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+
+                          // --- Section 0.5: AI Visual Direction ---
+                          if (generated.visualIntelligence != null) ...[
+                            CDVisualIntelligenceCard(visualIntelligence: generated.visualIntelligence!),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+
+                          // --- Section 0.6: Platform-Specific Modules ---
+                          if (generated.script != null && generated.script!.isNotEmpty) ...[
+                            CDReelScriptCard(
+                              script: generated.script!,
+                              sceneDirections: generated.sceneDirections,
+                            ),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+
+                          if (generated.slides.isNotEmpty) ...[
+                            CDCarouselSlideViewer(slides: generated.slides),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+
+                          if (generated.titleOptions.isNotEmpty) ...[
+                            CDTitleOptionsCard(titleOptions: generated.titleOptions),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+
+                          if (generated.storyPrompts.isNotEmpty) ...[
+                            CDStoryPromptsCard(storyPrompts: generated.storyPrompts),
+                            const SizedBox(height: CDSpacing.sm),
+                          ],
+
                           // --- Section 1: Hooks ---
                           _buildHooksSection(generated, appState, accentColor, isDark),
                           const SizedBox(height: CDSpacing.lg),
@@ -344,6 +387,7 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
                           const SizedBox(height: CDSpacing.xl),
                         ],
                       ),
+
                     ),
                   ),
                   // Bottom Action Bar with frosted glass styling

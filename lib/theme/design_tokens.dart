@@ -67,8 +67,10 @@ class CDColors {
   // ==========================================
   static const Color success = Color(0xFF00B894); // Mint Green
   static const Color error = Color(0xFFFF4757); // Coral Red
+  static const Color coralRed = Color(0xFFFF4757);
   static const Color warning = Color(0xFFFFA502); // Warm Amber
   static const Color info = Color(0xFF3742FA); // Electric Blue
+
 
   // Platform Subtle Identifiers
   static const Color instagram = Color(0xFFE4405F);
@@ -181,9 +183,30 @@ class CDSpacing {
   static const double huge = 48.0;
   static const double massive = 64.0;
 
+  static const double screenPadding = 20.0;
+  static const double radiusCard = 16.0;
+
   /// Guaranteed bottom clearance so floating navigation never obscures content
   static const double navBarClearance = 112.0;
 }
+
+/// Standardized typography scale and font weights
+class CDTypography {
+  CDTypography._();
+
+  static const double fontSizeXs = 11.0;
+  static const double fontSizeSm = 13.0;
+  static const double fontSizeMd = 15.0;
+  static const double fontSizeLg = 18.0;
+  static const double fontSizeXl = 22.0;
+
+  static const FontWeight regular = FontWeight.w400;
+  static const FontWeight medium = FontWeight.w500;
+  static const FontWeight semiBold = FontWeight.w600;
+  static const FontWeight bold = FontWeight.w700;
+  static const FontWeight extraBold = FontWeight.w800;
+}
+
 
 /// Standardized corner radius tokens
 class CDRadius {
@@ -256,3 +279,12 @@ class CDGlass {
   static const double lightSurfaceOpacity = 0.75; // rgba(255,255,255,0.75)
   static const double lightBorderOpacity = 0.08; // rgba(79,67,249,0.08)
 }
+
+/// Centralized strings & copy tokens across CreateDiff
+class CDStrings {
+  CDStrings._();
+
+  /// Unified retry state loading message
+  static const String retryLoadingMessage = 'Refining & elevating your content pack...';
+}
+

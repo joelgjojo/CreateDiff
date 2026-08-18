@@ -12,6 +12,7 @@ import '../components/cd_logo.dart';
 import 'create_screen.dart';
 import 'content_result_screen.dart';
 import 'creator_profile_screen.dart';
+import 'campaign_planner_screen.dart';
 
 /// The centerpiece Home screen featuring an editorial greeting, a frosted glass
 /// hero creation surface, horizontal platform shortcuts, and recent creation history.
@@ -45,6 +46,15 @@ class _HomeScreenState extends State<HomeScreen> {
           initialContentType: contentType,
           initialIdea: idea,
         ),
+      ),
+    );
+  }
+
+  void _openCampaignPlanner(BuildContext context) {
+    AppHaptics.light();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const CampaignPlannerScreen(),
       ),
     );
   }
@@ -281,7 +291,97 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: CDSpacing.lg),
+
+                  // --- 2.5 AI Campaign Planner Highlight Card ---
+                  InkWell(
+                    onTap: () => _openCampaignPlanner(context),
+                    borderRadius: BorderRadius.circular(CDSpacing.radiusCard),
+                    child: Container(
+                      padding: const EdgeInsets.all(CDSpacing.md),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [const Color(0xFF191D2C), const Color(0xFF121520)]
+                              : [const Color(0xFFECEFFC), Colors.white],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(CDSpacing.radiusCard),
+                        border: Border.all(
+                          color: const Color(0xFF4F43F9).withValues(alpha: isDark ? 0.35 : 0.20),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4F43F9),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: CDSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        'AI Campaign Planner',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: CDTypography.fontSizeMd,
+                                          fontWeight: CDTypography.bold,
+                                          color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF00B894).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Text(
+                                        'NEW',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF00B894),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Generate structured 7, 14, or 30-day multi-platform content roadmaps.',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: CDTypography.fontSizeXs,
+                                    color: isDark ? CDColors.darkTextSecondary : CDColors.lightTextSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF4F43F9)),
+                        ],
+
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: CDSpacing.xxl),
+
 
                   // --- 3. Quick Create Shortcuts (No clipping) ---
                   const CDSectionHeader(title: 'Quick Shortcuts'),

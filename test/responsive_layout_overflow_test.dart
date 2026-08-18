@@ -5,7 +5,9 @@ import 'package:creatediff/models/creator_profile.dart';
 import 'package:creatediff/models/content_project.dart';
 import 'package:creatediff/models/generated_content.dart';
 import 'package:creatediff/services/app_state.dart';
+import 'package:creatediff/services/storage_service.dart';
 import 'package:creatediff/theme/app_theme.dart';
+
 import 'package:creatediff/screens/home_screen.dart';
 import 'package:creatediff/screens/create_screen.dart';
 import 'package:creatediff/screens/content_result_screen.dart';
@@ -15,7 +17,10 @@ import 'package:creatediff/screens/history_screen.dart';
 import 'package:creatediff/screens/design_selection_screen.dart';
 import 'package:creatediff/screens/onboarding_screen.dart';
 import 'package:creatediff/screens/splash_screen.dart';
+import 'package:creatediff/screens/campaign_planner_screen.dart';
+import 'package:creatediff/models/campaign_plan.dart';
 import 'package:creatediff/components/cd_export_share_sheet.dart';
+
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -265,6 +270,69 @@ void main() {
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
 
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('CampaignPlannerScreen renders input & full roadmap with zero overflow', (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        // 1. Initial screen
+        await tester.pumpWidget(wrapScreen(const CampaignPlannerScreen()));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        // 2. Screen with populated campaign plan and long badges
+        final plan = CampaignPlan(
+          id: 'camp_audit',
+          campaignTitle: '30-Day Omnichannel Creator Growth & Brand Monetization Sequence',
+          campaignGoal: 'Scale audience & build sustainable authority',
+          durationDays: 30,
+          platform: 'Instagram',
+          strategySummary: 'Holistic content sequence alternating between discovery hooks, educational carousels, and high-conversion community posts.',
+          days: [
+            CampaignDayItem(
+              day: 1,
+              title: '5 AI Tools Every Modern Creator Needs to Know in 2026',
+              topic: 'Productivity',
+              platform: 'Instagram',
+              contentType: 'Reel',
+              hookAngle: 'Stop spending 10 hours editing when this one tool can do it in 60 seconds.',
+              outline: '• Dynamic hook with visual stop\n• 3 core AI workflow tools\n• Actionable breakdown\n• CTA to save and share',
+              strategicIntent: 'Productivity & Efficiency & Viral Discovery',
+            ),
+            CampaignDayItem(
+              day: 2,
+              title: 'The Modern Brand Memory Architecture Explained for Designers',
+              topic: 'Design & Branding',
+              platform: 'Instagram',
+              contentType: 'Carousel',
+              hookAngle: 'Why standard prompt templates are failing your brand.',
+              outline: '• Slide 1: Problem statement\n• Slide 2: Context retention\n• Slide 3: Visual identity guidelines\n• Slide 4: Summary',
+              strategicIntent: 'Authority Building & Community Engagement',
+            ),
+          ],
+          createdAt: DateTime.now(),
+        );
+
+        await StorageService.saveCampaign(plan);
+        await AppState.instance.init();
+        await tester.pumpWidget(wrapScreen(const CampaignPlannerScreen()));
+
+        await tester.pumpAndSettle();
+
+        // Switch to saved campaign
+        await tester.tap(find.byIcon(Icons.folder_special_outlined));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        // Select the campaign
+        await tester.tap(find.text('30-Day Omnichannel Creator Growth & Brand Monetization Sequence'));
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       });
 

@@ -43,6 +43,24 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
   String _ctaStyle = 'Direct';
   Color _primaryColor = CDColors.brand;
   final Color _secondaryColor = CDColors.lavender;
+  List<String> _preferredPlatforms = ['Instagram', 'YouTube', 'LinkedIn'];
+  List<String> _contentGoals = ['Audience Growth', 'Community Engagement'];
+
+  final List<String> _platformOptions = [
+    'Instagram',
+    'YouTube',
+    'LinkedIn',
+    'TikTok',
+    'Twitter / X',
+  ];
+
+  final List<String> _goalOptions = [
+    'Audience Growth',
+    'Authority Building',
+    'Community Engagement',
+    'Lead Generation',
+    'Brand Awareness',
+  ];
 
   final List<String> _niches = [
     'Technology',
@@ -123,6 +141,8 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     if (profile.secondaryLanguage.isNotEmpty) _secondaryLang = profile.secondaryLanguage;
     if (profile.emojiUsage.isNotEmpty) _emojiUsage = profile.emojiUsage;
     if (profile.preferredCTAStyle.isNotEmpty) _ctaStyle = profile.preferredCTAStyle;
+    if (profile.preferredPlatforms.isNotEmpty) _preferredPlatforms = List.from(profile.preferredPlatforms);
+    if (profile.contentGoals.isNotEmpty) _contentGoals = List.from(profile.contentGoals);
     _primaryColor = profile.primaryColor;
   }
 
@@ -150,9 +170,11 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         niche: _niche,
         category: _category,
         targetAudience: _audienceController.text.trim(),
+        preferredPlatforms: _preferredPlatforms,
         primaryLanguage: _primaryLang,
         secondaryLanguage: _secondaryLang,
         tone: _tone,
+        contentGoals: _contentGoals,
         contentStyle: _contentStyleController.text.trim(),
         brandDescription: _brandDescController.text.trim(),
         preferredCTAStyle: _ctaStyle,
@@ -165,6 +187,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
       );
 
       await AppState.instance.updateProfile(updatedProfile);
+
 
       if (!mounted) return;
       if (widget.isInitialSetup) {
@@ -409,12 +432,107 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Help CreateDiff match your unique personality and audience expectations.',
+          'Help CreateDiff match your unique personality, platforms, and audience expectations.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: CDColors.textSecondary(context),
               ),
         ),
         const SizedBox(height: CDSpacing.xl),
+
+        // Preferred Platforms Multi-Select
+        Text(
+          'Preferred Platforms',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
+        ),
+        const SizedBox(height: CDSpacing.sm),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _platformOptions.map((p) {
+            final isSelected = _preferredPlatforms.contains(p);
+            return FilterChip(
+              label: Text(p),
+              selected: isSelected,
+              onSelected: (selected) {
+                AppHaptics.selection();
+                setState(() {
+                  if (selected) {
+                    if (!_preferredPlatforms.contains(p)) _preferredPlatforms.add(p);
+                  } else {
+                    if (_preferredPlatforms.length > 1) _preferredPlatforms.remove(p);
+                  }
+                });
+              },
+              selectedColor: CDColors.primary,
+              checkmarkColor: Colors.white,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : CDColors.textPrimary(context),
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+              ),
+              backgroundColor: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+              ),
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: CDSpacing.lg),
+
+        // Content Goals Multi-Select
+        Text(
+          'Primary Content Goals',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: CDColors.textPrimary(context),
+              ),
+        ),
+        const SizedBox(height: CDSpacing.sm),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _goalOptions.map((g) {
+            final isSelected = _contentGoals.contains(g);
+            return FilterChip(
+              label: Text(g),
+              selected: isSelected,
+              onSelected: (selected) {
+                AppHaptics.selection();
+                setState(() {
+                  if (selected) {
+                    if (!_contentGoals.contains(g)) _contentGoals.add(g);
+                  } else {
+                    if (_contentGoals.length > 1) _contentGoals.remove(g);
+                  }
+                });
+              },
+              selectedColor: CDColors.primary,
+              checkmarkColor: Colors.white,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : CDColors.textPrimary(context),
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+              ),
+              backgroundColor: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.pill)),
+              side: BorderSide(
+                color: isSelected ? Colors.transparent : CDColors.borderSubtle(context),
+              ),
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: CDSpacing.lg),
+
         CDGlassCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
