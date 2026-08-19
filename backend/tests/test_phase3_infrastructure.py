@@ -90,3 +90,27 @@ async def test_configurable_usage_limit_and_rolling_reset(db_session, monkeypatc
         await session.commit()
         monkeypatch.setattr(settings, "USAGE_CAMPAIGN_LIMIT", 1)
         assert await enforce_limit(session, user.id, "campaign") is None
+
+
+@pytest.mark.asyncio
+async def test_guest_mode_in_production_allows_generation_when_auth_not_required(db_session, monkeypatch):
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    monkeypatch.setattr(settings, "AUTH_REQUIRED", False)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        health_resp = await client.get("/api/v1/health")
+        assert health_resp.status_code == 200
+        # Profile without auth header should succeed with guest session
+        profile_resp = await client.get("/api/v1/profile")
+        assert profile_resp.status_code == 200
+        assert profile_resp.json()["synced"] is False
+
+
+@pytest.mark.asyncio
+async def test_strict_auth_required_blocks_when_auth_required_true(db_session, monkeypatch):
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    monkeypatch.setattr(settings, "AUTH_REQUIRED", True)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        profile_resp = await client.get("/api/v1/profile")
+        assert profile_resp.status_code == 401
+        assert profile_resp.json()["error"]["code"] == "AUTH_REQUIRED"
+

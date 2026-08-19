@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request, status
-from sqlalchemy.ext.asyncio import AsyncSession
+import logging
 from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.schemas.campaign import CampaignPlanRequest, CampaignPlanResponse
 from app.services.campaign_service import CampaignService
 from app.services.auth import AuthenticatedUser, get_current_user
@@ -11,6 +13,7 @@ from app.db.models import Campaign
 from app.services.usage_service import enforce_limit, record
 from app.services.analytics import track
 
+logger = logging.getLogger("creatediff.campaign")
 router = APIRouter(prefix="/campaign", tags=["Campaign"])
 
 
@@ -30,19 +33,51 @@ async def plan_campaign(
     Accepts campaign objectives and creator context to generate a strategic
     multi-day content roadmap.
     """
-    await enforce_limit(db, user.db_user_id or user.subject, "campaign")
-    await enforce_limit(db, user.db_user_id or user.subject, "ai_request")
-    if db is not None and user.db_user_id:
-        await record(db, user.db_user_id, "ai_request", metadata={"endpoint": "campaign/plan", "platform": payload.platform or "All"})
-        await db.commit()
+    # 1. Enforce usage limits & record AI request attempt
+    if db is not None:
+        try:
+            await enforce_limit(db, user.db_user_id or user.subject, "campaign")
+            await enforce_limit(db, user.db_user_id or user.subject, "ai_request")
+            if user.db_user_id:
+                await record(db, user.db_user_id, "ai_request", metadata={"endpoint": "campaign/plan", "platform": payload.platform or "All"})
+                await db.commit()
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.warning(f"Campaign usage check warning (proceeding safely): {e}")
+
+    # 2. Core AI Campaign Planning Pipeline
     try:
         result = await CampaignService.plan_campaign(payload)
     except Exception:
-        await track("campaign_failed", user_id=user.db_user_id or user.subject, properties={"platform": payload.platform or "All"})
+        await track(
+            "campaign_failed",
+            user_id=user.db_user_id or user.subject,
+            properties={"platform": payload.platform or "All"},
+        )
         raise
+
+    # 3. Save campaign plan to database if available
     if db is not None and user.db_user_id:
-        db.add(Campaign(id=result.id, user_id=user.db_user_id, goal=payload.goal, platform=result.platform, duration_days=result.duration_days, plan=result.model_dump(by_alias=True)))
-        await record(db, user.db_user_id, "campaign", metadata={"platform": result.platform, "duration_days": result.duration_days})
-        await db.commit()
-    await track("campaign_completed", user_id=user.db_user_id or user.subject, properties={"platform": result.platform, "duration_days": result.duration_days})
+        try:
+            db.add(
+                Campaign(
+                    id=result.id,
+                    user_id=user.db_user_id,
+                    goal=payload.goal,
+                    platform=result.platform,
+                    duration_days=result.duration_days,
+                    plan=result.model_dump(by_alias=True),
+                )
+            )
+            await record(db, user.db_user_id, "campaign", metadata={"platform": result.platform, "duration_days": result.duration_days})
+            await db.commit()
+        except Exception as e:
+            logger.warning(f"Database campaign persistence warning: {e}")
+
+    await track(
+        "campaign_completed",
+        user_id=user.db_user_id or user.subject,
+        properties={"platform": result.platform, "duration_days": result.duration_days},
+    )
     return result

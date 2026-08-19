@@ -24,7 +24,7 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: ""
       - key: AUTH_REQUIRED
-        value: "true"
+        value: "false" # Set to 'true' once Supabase auth UI is activated
       - key: SUPABASE_JWT_SECRET
         sync: false
       - key: SUPABASE_JWT_ISSUER
@@ -33,3 +33,5 @@ services:
         value: authenticated
       - key: DATABASE_URL
         sync: false
+      - key: DB_AUTO_CREATE
+        value: "true"

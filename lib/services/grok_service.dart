@@ -379,6 +379,36 @@ class GrokService {
             );
           }
 
+          if (statusCode == 401) {
+            throw GrokServiceException(
+              status: GrokGenerationStatus.serverError,
+              message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Please sign in to continue.',
+              statusCode: statusCode,
+              rawResponse: responseBody,
+              requestId: requestId,
+            );
+          }
+
+          if (statusCode == 403) {
+            throw GrokServiceException(
+              status: GrokGenerationStatus.serverError,
+              message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Access denied. Please check your permissions.',
+              statusCode: statusCode,
+              rawResponse: responseBody,
+              requestId: requestId,
+            );
+          }
+
+          if (statusCode == 429) {
+            throw GrokServiceException(
+              status: GrokGenerationStatus.rateLimited,
+              message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Daily studio limit reached. Resets tomorrow.',
+              statusCode: statusCode,
+              rawResponse: responseBody,
+              requestId: requestId,
+            );
+          }
+
           // Retry on 502/503/504 if attempts remain
           if ((statusCode >= 500) && attempt < maxAttempts) {
             onRetry?.call(attempt + 1, maxAttempts);
@@ -387,10 +417,8 @@ class GrokService {
           }
 
           final ex = GrokServiceException(
-            status: statusCode == 429
-                ? GrokGenerationStatus.rateLimited
-                : (statusCode == 504 ? GrokGenerationStatus.networkError : GrokGenerationStatus.serverError),
-            message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'AI service temporarily unavailable. Please retry shortly.',
+            status: statusCode == 504 ? GrokGenerationStatus.networkError : GrokGenerationStatus.serverError,
+            message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'AI service is temporarily unavailable. Please retry shortly.',
             statusCode: statusCode,
             rawResponse: responseBody,
             requestId: requestId,
@@ -538,10 +566,28 @@ class GrokService {
             continue;
           }
 
+          if (statusCode == 401) {
+            throw GrokServiceException(
+              status: GrokGenerationStatus.serverError,
+              message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Please sign in to continue.',
+              statusCode: statusCode,
+              requestId: requestId,
+            );
+          }
+
+          if (statusCode == 403) {
+            throw GrokServiceException(
+              status: GrokGenerationStatus.serverError,
+              message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Access denied. Please check your permissions.',
+              statusCode: statusCode,
+              requestId: requestId,
+            );
+          }
+
           if (statusCode == 429) {
             throw GrokServiceException(
               status: GrokGenerationStatus.rateLimited,
-              message: 'Campaign planner rate limit exceeded. Please wait a moment.',
+              message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Campaign planner rate limit exceeded. Please wait a moment.',
               statusCode: statusCode,
               requestId: requestId,
             );
