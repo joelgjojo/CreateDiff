@@ -11,8 +11,11 @@ import 'usage_guard.dart';
 import 'input_validator.dart';
 import 'backup_service.dart';
 import '../config/api_config.dart';
+import '../config/supabase_config.dart';
 import 'cloud_sync_service.dart';
 import '../models/creator_intelligence.dart';
+import 'auth_contracts.dart';
+import 'supabase_auth_service.dart';
 
 typedef AIServiceException = GrokServiceException;
 
@@ -35,6 +38,8 @@ class AppState extends ChangeNotifier {
   Timer? _loadingTimer;
   bool _isApiConfigured = true;
   int _currentRetryAttempt = 1;
+  SessionManager _sessionManager = LocalSessionManager();
+  StreamSubscription<AuthSession?>? _authSubscription;
 
   // Getters
   CreatorProfile get profile => _profile;
@@ -55,12 +60,23 @@ class AppState extends ChangeNotifier {
   bool get isApiConfigured => ApiConfig.hasApiKey;
   int get currentRetryAttempt => _currentRetryAttempt;
 
+  // Auth Getters
+  SessionManager get sessionManager => _sessionManager;
+  UserIdentity? get currentUser => _sessionManager.currentUser;
+  bool get isAuthenticated => _sessionManager.isAuthenticated && !(_sessionManager.currentUser?.isAnonymous ?? true);
+  bool get isAuthServiceConfigured => SupabaseConfig.isConfigured;
+
   bool get hasCompletedOnboarding => StorageService.hasCompletedOnboarding;
   bool get hasCompletedProfileSetup => StorageService.hasCompletedProfileSetup;
 
   UsageStatus get usageStatus => UsageGuard.checkUsage();
 
-  /// Load initial persisted state from SharedPreferences and AI config
+  void setSessionManagerForTesting(SessionManager manager) {
+    _sessionManager = manager;
+    notifyListeners();
+  }
+
+  /// Load initial persisted state from SharedPreferences, Supabase Auth, and AI config
   Future<void> init() async {
     await ApiConfig.init();
     _isApiConfigured = ApiConfig.hasApiKey;
@@ -83,6 +99,72 @@ class AppState extends ChangeNotifier {
       _themeMode = ThemeMode.system;
     }
 
+    // Initialize Supabase & restore session
+    await SupabaseConfig.init();
+    if (SupabaseConfig.isInitialized) {
+      final authGateway = SupabaseAuthService();
+      _sessionManager = SupabaseSessionManager(
+        gateway: authGateway,
+        onAuthChanged: (user) {
+          notifyListeners();
+        },
+      );
+      await _sessionManager.restoreSession();
+      _authSubscription?.cancel();
+      _authSubscription = authGateway.onAuthStateChange.listen((session) {
+        notifyListeners();
+      });
+    } else {
+      _sessionManager = LocalSessionManager();
+    }
+
+    notifyListeners();
+  }
+
+  // --- Supabase Authentication Actions ---
+  Future<void> signUp({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    if (_sessionManager is SupabaseSessionManager) {
+      await (_sessionManager as SupabaseSessionManager).signUp(
+        email: email,
+        password: password,
+        displayName: displayName,
+      );
+    } else {
+      // Fallback for uninitialized local mock
+      final authGateway = SupabaseAuthService();
+      final manager = SupabaseSessionManager(gateway: authGateway);
+      await manager.signUp(email: email, password: password, displayName: displayName);
+      _sessionManager = manager;
+    }
+    await CloudSyncService.syncLocalData(_profile);
+    notifyListeners();
+  }
+
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {
+    if (_sessionManager is SupabaseSessionManager) {
+      await (_sessionManager as SupabaseSessionManager).signIn(
+        email: email,
+        password: password,
+      );
+    } else {
+      final authGateway = SupabaseAuthService();
+      final manager = SupabaseSessionManager(gateway: authGateway);
+      await manager.signIn(email: email, password: password);
+      _sessionManager = manager;
+    }
+    await CloudSyncService.syncLocalData(_profile);
+    notifyListeners();
+  }
+
+  Future<void> signOut() async {
+    await _sessionManager.logout();
     notifyListeners();
   }
 

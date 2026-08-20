@@ -77,6 +77,8 @@ async def get_current_user(
                 detail={"code": "INVALID_TOKEN", "message": "Token subject is missing."},
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        raw_meta = decoded.get("user_metadata") if isinstance(decoded.get("user_metadata"), dict) else {}
+        display_name = raw_meta.get("display_name") or raw_meta.get("name")
         db_user_id = None
         if db is not None:
             try:
@@ -85,7 +87,7 @@ async def get_current_user(
                     user = User(
                         auth_subject=subject,
                         email=decoded.get("email"),
-                        display_name=decoded.get("user_metadata", {}).get("name") if isinstance(decoded.get("user_metadata"), dict) else None,
+                        display_name=display_name,
                     )
                     db.add(user)
                     await db.flush()
@@ -97,7 +99,7 @@ async def get_current_user(
         return AuthenticatedUser(
             subject=subject,
             email=decoded.get("email"),
-            display_name=None,
+            display_name=display_name,
             db_user_id=db_user_id,
         )
 

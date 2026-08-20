@@ -114,3 +114,55 @@ async def test_strict_auth_required_blocks_when_auth_required_true(db_session, m
         assert profile_resp.status_code == 401
         assert profile_resp.json()["error"]["code"] == "AUTH_REQUIRED"
 
+
+@pytest.mark.asyncio
+async def test_jwt_validation_invalid_and_expired_tokens(db_session, monkeypatch):
+    secret = "phase3-test-secret-32-bytes-minimum!!"
+    monkeypatch.setattr(settings, "SUPABASE_JWT_SECRET", secret)
+    monkeypatch.setattr(settings, "SUPABASE_JWT_AUDIENCE", "authenticated")
+    monkeypatch.setattr(settings, "AUTH_REQUIRED", True)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        # Invalid signature
+        bad_token = jwt.encode({"sub": "u1", "aud": "authenticated"}, "wrong-secret-key-32-chars-long!!", algorithm="HS256")
+        resp_bad = await client.get("/api/v1/profile", headers={"Authorization": f"Bearer {bad_token}"})
+        assert resp_bad.status_code == 401
+        assert resp_bad.json()["error"]["code"] == "INVALID_TOKEN"
+
+        # Expired token
+        expired_token = jwt.encode(
+            {"sub": "u1", "aud": "authenticated", "exp": datetime.now(timezone.utc).timestamp() - 3600},
+            secret,
+            algorithm="HS256",
+        )
+        resp_exp = await client.get("/api/v1/profile", headers={"Authorization": f"Bearer {expired_token}"})
+        assert resp_exp.status_code == 401
+        assert resp_exp.json()["error"]["code"] == "INVALID_TOKEN"
+
+        # Missing subject
+        no_sub_token = jwt.encode({"email": "nosub@example.com", "aud": "authenticated", "exp": datetime.now(timezone.utc).timestamp() + 3600}, secret, algorithm="HS256")
+        resp_nosub = await client.get("/api/v1/profile", headers={"Authorization": f"Bearer {no_sub_token}"})
+        assert resp_nosub.status_code == 401
+        assert resp_nosub.json()["error"]["code"] == "INVALID_TOKEN"
+
+        # Valid token with display_name in user_metadata
+        valid_meta_token = jwt.encode(
+            {
+                "sub": "user-meta-1",
+                "email": "alex@example.com",
+                "aud": "authenticated",
+                "user_metadata": {"display_name": "Alex Visuals"},
+                "exp": datetime.now(timezone.utc).timestamp() + 3600,
+            },
+            secret,
+            algorithm="HS256",
+        )
+        resp_valid = await client.post(
+            "/api/v1/profile/sync",
+            headers={"Authorization": f"Bearer {valid_meta_token}"},
+            json={"profile": {"creatorName": "Alex Visuals"}},
+        )
+        assert resp_valid.status_code == 200
+        assert resp_valid.json()["synced"] is True
+
+

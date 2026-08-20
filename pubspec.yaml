@@ -39,6 +39,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   speech_to_text: ^7.4.0
   share_plus: ^10.0.2
+  supabase_flutter: ^2.8.0
 
 dev_dependencies:
   flutter_test:

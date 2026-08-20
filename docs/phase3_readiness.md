@@ -36,7 +36,7 @@ Flutter production builds receive only the backend URL through `--dart-define=CR
 
 Local profile, content projects, drafts, favorites, and campaigns remain available offline. After a valid Supabase session stores an access token, `CloudSyncService.syncLocalData` sends the local projection to `/api/v1/profile/sync`. Sync is idempotent per authenticated user and local source ID; the server scopes every read and write by the verified user identity.
 
-Apply `backend/migrations/001_phase3_initial.sql` before production startup. `DB_AUTO_CREATE` is development-only.
+Apply `backend/migrations/001_phase3_initial.sql` and `backend/migrations/002_supabase_profiles_rls.sql` before production startup. `DB_AUTO_CREATE` is development-only.
 
 ## Security controls
 

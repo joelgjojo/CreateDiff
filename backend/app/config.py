@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     # Phase 3 infrastructure. Auth is enabled by default in production and can
     # be enabled in staging/dev with AUTH_REQUIRED=true.
     AUTH_REQUIRED: bool = Field(default=False)
+    SUPABASE_URL: str = Field(default="", description="Supabase project URL; server-side only")
+    SUPABASE_SERVICE_ROLE_KEY: str = Field(default="", description="Supabase service-role secret; server-side only")
     SUPABASE_JWT_SECRET: str = Field(default="", description="Supabase JWT secret; server-side only")
     SUPABASE_JWT_ISSUER: str = Field(default="", description="Expected Supabase JWT issuer")
     SUPABASE_JWT_AUDIENCE: str = Field(default="authenticated")

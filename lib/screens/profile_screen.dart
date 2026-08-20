@@ -11,6 +11,7 @@ import '../components/cd_logo.dart';
 import 'creator_profile_screen.dart';
 import 'onboarding_screen.dart';
 import 'debug_panel_screen.dart';
+import 'auth_screen.dart';
 
 /// The profile and studio settings screen featuring Brand Memory progressive disclosure,
 /// appearance mode selection, data reset, and studio info.
@@ -278,30 +279,225 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                          // --- Brand Memory Highlight Card with Lockup ---
-                          _buildBrandMemorySection(context, profile),
-                          const SizedBox(height: CDSpacing.xl),
+                    // --- Account & Identity Card ---
+                    _buildAccountSection(context, appState),
+                    const SizedBox(height: CDSpacing.xl),
 
-                          // --- Appearance & Theme ---
-                          _buildAppearanceSection(context, appState),
-                          const SizedBox(height: CDSpacing.xl),
+                    // --- Brand Memory Highlight Card with Lockup ---
+                    _buildBrandMemorySection(context, profile),
+                    const SizedBox(height: CDSpacing.xl),
 
-                          // --- Studio Data Management ---
-                          _buildDataManagementSection(context, appState),
-                          const SizedBox(height: CDSpacing.xl),
+                    // --- Appearance & Theme ---
+                    _buildAppearanceSection(context, appState),
+                    const SizedBox(height: CDSpacing.xl),
 
-                          // --- About CreateDiff ---
-                          _buildAboutSection(context),
-                          const SizedBox(height: CDSpacing.md),
+                    // --- Studio Data Management ---
+                    _buildDataManagementSection(context, appState),
+                    const SizedBox(height: CDSpacing.xl),
+
+                    // --- About CreateDiff ---
+                    _buildAboutSection(context),
+                    const SizedBox(height: CDSpacing.md),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAccountSection(BuildContext context, AppState appState) {
+    final isDark = CDColors.isDark(context);
+    final isAuthenticated = appState.isAuthenticated;
+    final currentUser = appState.currentUser;
+
+    final displayName = isAuthenticated
+        ? ((currentUser?.displayName?.isNotEmpty ?? false)
+            ? currentUser!.displayName!
+            : (appState.profile.creatorName.isNotEmpty ? appState.profile.creatorName : 'Creator'))
+        : (appState.profile.creatorName.isNotEmpty ? appState.profile.creatorName : 'Guest Creator');
+
+    final email = isAuthenticated ? (currentUser?.email ?? '') : 'Local Studio Mode • Sign in to sync identity';
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'C';
+
+    return CDGlassCard(
+      elevated: true,
+      padding: const EdgeInsets.all(CDSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: isAuthenticated
+                            ? CDColors.brand.withValues(alpha: isDark ? 0.25 : 0.15)
+                            : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05)),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isAuthenticated ? CDColors.brand : CDColors.borderSubtle(context),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          initial,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: isAuthenticated ? CDColors.brand : CDColors.textPrimary(context),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: CDSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                  color: CDColors.textPrimary(context),
+                                ),
+                          ),
+                          Text(
+                            email,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: CDColors.textSecondary(context),
+                                  fontSize: 11.5,
+                                ),
+                          ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isAuthenticated
+                      ? CDColors.success.withValues(alpha: isDark ? 0.20 : 0.12)
+                      : CDColors.brand.withValues(alpha: isDark ? 0.18 : 0.10),
+                  borderRadius: BorderRadius.circular(CDRadius.pill),
+                  border: Border.all(
+                    color: isAuthenticated
+                        ? CDColors.success.withValues(alpha: 0.35)
+                        : CDColors.brand.withValues(alpha: 0.30),
+                    width: 0.8,
                   ),
                 ),
-              );
-            },
-          );
-        }
+                child: Text(
+                  isAuthenticated ? 'AUTHENTICATED' : 'GUEST MODE',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: isAuthenticated ? CDColors.success : CDColors.brand,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: CDSpacing.md),
+          Divider(height: 1, color: CDColors.borderSubtle(context)),
+          const SizedBox(height: CDSpacing.sm),
+          Align(
+            alignment: Alignment.centerRight,
+            child: isAuthenticated
+                ? TextButton.icon(
+                    onPressed: () => _confirmSignOut(context, appState),
+                    icon: const Icon(Icons.logout_rounded, size: 15, color: CDColors.error),
+                    label: const Text(
+                      'Sign Out',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: CDColors.error,
+                      ),
+                    ),
+                  )
+                : TextButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const AuthScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.login_rounded, size: 15, color: CDColors.brand),
+                    label: const Text(
+                      'Sign In / Create Account ✦',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: CDColors.brand,
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmSignOut(BuildContext context, AppState appState) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: CDColors.surface(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(CDRadius.large)),
+        title: Text(
+          'Sign Out?',
+          style: TextStyle(fontWeight: FontWeight.w800, color: CDColors.textPrimary(context)),
+        ),
+        content: Text(
+          'Are you sure you want to sign out? Your local Creator Memory and saved projects will remain safely on this device.',
+          style: TextStyle(color: CDColors.textSecondary(context), height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: CDColors.textPrimary(context), fontWeight: FontWeight.w600),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: CDColors.error),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await appState.signOut();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Signed out successfully.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
 
   Widget _buildBrandMemorySection(BuildContext context, CreatorProfile profile) {
     final isDark = CDColors.isDark(context);

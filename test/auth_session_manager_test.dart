@@ -5,16 +5,18 @@ import 'package:creatediff/services/session_token_store.dart';
 
 class _FakeGateway implements SupabaseAuthGateway {
   @override
-  Future<AuthSession> signUp({required String email, required String password}) async =>
-      const AuthSession(accessToken: 'signup-token', userId: 'user-1', email: 'a@example.com');
+  Future<AuthSession> signUp({required String email, required String password, String? displayName}) async =>
+      AuthSession(accessToken: 'signup-token', userId: 'user-1', email: email, displayName: displayName);
   @override
   Future<AuthSession> signIn({required String email, required String password}) async =>
-      const AuthSession(accessToken: 'signin-token', userId: 'user-1', email: 'a@example.com');
+      AuthSession(accessToken: 'signin-token', userId: 'user-1', email: email, displayName: 'Creator');
   @override
   Future<void> signOut() async {}
   @override
   Future<AuthSession?> restoreSession() async =>
-      const AuthSession(accessToken: 'restored-token', userId: 'user-1', email: 'a@example.com');
+      const AuthSession(accessToken: 'restored-token', userId: 'user-1', email: 'a@example.com', displayName: 'Creator');
+  @override
+  Stream<AuthSession?> get onAuthStateChange => const Stream.empty();
 }
 
 void main() {

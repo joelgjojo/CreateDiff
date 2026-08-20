@@ -13,6 +13,7 @@ class CDTextInput extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final bool isRequired;
+  final bool obscureText;
   final String? initialValue;
 
   const CDTextInput({
@@ -27,6 +28,7 @@ class CDTextInput extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.isRequired = false,
+    this.obscureText = false,
     this.initialValue,
   });
 
@@ -77,6 +79,7 @@ class CDTextInput extends StatelessWidget {
           maxLines: maxLines,
           minLines: minLines,
           keyboardType: keyboardType,
+          obscureText: obscureText,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: CDColors.textPrimary(context),
                 fontWeight: FontWeight.w400,
