@@ -17,8 +17,8 @@ void main() {
     });
 
     test('AppConfig defaults to production HTTPS backend without requiring hardcoded local IPs', () {
-      expect(AppConfig.defaultProductionUrl, equals('https://creatediff-api.onrender.com'));
-      expect(AppConfig.apiBaseUrl, equals('https://creatediff-api.onrender.com'));
+      expect(AppConfig.defaultProductionUrl, equals('https://creatediff-1.onrender.com'));
+      expect(AppConfig.apiBaseUrl, equals('https://creatediff-1.onrender.com'));
       expect(AppConfig.isConfigured, isTrue);
     });
 

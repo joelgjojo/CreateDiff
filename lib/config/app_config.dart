@@ -11,7 +11,7 @@ class AppConfig {
   AppConfig._();
 
   /// Default production HTTPS backend URL.
-  static const String defaultProductionUrl = 'https://creatediff-api.onrender.com';
+  static const String defaultProductionUrl = 'https://creatediff-1.onrender.com';
   static const String defaultModelName = 'openai/gpt-oss-120b';
   static const String providerName = 'CreateDiff Cloud AI';
 

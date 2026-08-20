@@ -11,6 +11,7 @@ from app.middleware.request_id import RequestIDMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.utils.logging import LoggingMiddleware, logger
+from app.schemas.health import HealthResponse
 from app.schemas.errors import ErrorResponse, ErrorDetail
 from app.services.groq_service import GroqServiceException
 from app.services.analytics import SentryReporter
@@ -20,10 +21,6 @@ from app.db.database import init_db
 async def lifespan(application: FastAPI):
     logger.info("CreateDiff backend starting...")
     await init_db()
-    logger.info("Registered API routes:")
-    for route in sorted(application.routes, key=lambda item: (item.path, sorted(item.methods or []))):
-        methods = ",".join(sorted(route.methods or []))
-        logger.info("%s %s", methods, route.path)
     yield
     logger.info("CreateDiff backend shutting down...")
 
@@ -46,6 +43,15 @@ def root():
     }
 
 
+@app.get("/health", response_model=HealthResponse, tags=["Health"])
+async def root_health() -> HealthResponse:
+    return HealthResponse(
+        status="healthy",
+        service="CreateDiff AI Studio",
+        version="1.0.0",
+    )
+
+
 # 1. Security & Request ID Middleware
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(LoggingMiddleware)
@@ -62,8 +68,9 @@ app.add_middleware(
     expose_headers=["X-Request-ID", "Retry-After"],
 )
 
-# 3. Include API v1 Router
+# 3. Include API Routers (both /api/v1 prefix and root level for 100% path compatibility)
 app.include_router(api_v1_router, prefix="/api/v1")
+app.include_router(api_v1_router)
 error_reporter = SentryReporter()
 
 
