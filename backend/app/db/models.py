@@ -69,3 +69,15 @@ class UsageLog(Base):
     event_metadata: Mapped[dict[str, Any]] = mapped_column("metadata", JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     __table_args__ = (Index("ix_usage_user_event_time", "user_id", "event_type", "created_at"),)
+
+
+class ContentFeedback(Base):
+    __tablename__ = "content_feedback"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(String(36), index=True)
+    content_id: Mapped[str] = mapped_column(String(100), index=True)
+    platform: Mapped[str] = mapped_column(String(50))
+    content_type: Mapped[str] = mapped_column(String(50))
+    feedback: Mapped[str] = mapped_column(String(20))
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)

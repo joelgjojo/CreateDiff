@@ -54,3 +54,25 @@ async def test_feedback_endpoint():
         data = response.json()
         assert data["status"] == "recorded"
         assert data["contentId"] == "cnt_12345"
+
+
+@pytest.mark.asyncio
+async def test_feedback_invalid_rejection():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        payload = {
+            "contentId": "cnt_invalid",
+            "platform": "Instagram",
+            "contentType": "Reel",
+            "feedback": "invalid_value",
+        }
+        response = await client.post("/api/v1/feedback", json=payload)
+        assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_get_feedback_endpoint():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/api/v1/feedback")
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
