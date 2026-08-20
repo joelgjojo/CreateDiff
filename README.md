@@ -51,20 +51,27 @@
 ## 🚀 Running the App
 
 ### Launching the Application
-By default, CreateDiff connects securely to the production HTTPS backend (`https://api.creatediff.com`):
+By default, CreateDiff connects securely to the production HTTPS backend (`https://api.creatediff.com`) with local offline guest mode:
 
 ```bash
-# Run with default production backend (works immediately on iOS/Android physical devices & simulators)
-flutter run
+# Run with .env configuration (recommended for local development & cloud auth)
+flutter run --dart-define-from-file=.env
 
-# Run pointing to your deployed backend or Render instance
+# Run with explicit Supabase cloud authentication credentials
+flutter run --dart-define=SUPABASE_URL=https://<project-ref>.supabase.co \
+            --dart-define=SUPABASE_ANON_KEY=<your_supabase_anon_key>
+
+# Run pointing to your custom backend / Render instance
 flutter run --dart-define=API_BASE_URL=https://your-backend.onrender.com
 
-# Run pointing to a local development server
-flutter run --dart-define=API_BASE_URL=http://localhost:8000
+# Build release APK with .env configuration
+flutter build apk --release --dart-define-from-file=.env
 
-# Build release APK with custom backend
-flutter build apk --release --dart-define=API_BASE_URL=https://your-backend.onrender.com
+# Build release APK with explicit credentials
+flutter build apk --release \
+  --dart-define=API_BASE_URL=https://api.creatediff.com \
+  --dart-define=SUPABASE_URL=https://<project-ref>.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=<your_supabase_anon_key>
 ```
 
 > [!TIP]

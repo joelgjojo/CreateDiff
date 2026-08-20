@@ -2,20 +2,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "CreateDiff (Debug)",
-      "request": "launch",
+      "name": "CreateDiff (Debug with .env)",
       "type": "dart",
+      "request": "launch",
       "toolArgs": [
-        "--dart-define=GROK_API_KEY=YOUR_GROK_API_KEY"
+        "--dart-define-from-file=.env"
       ]
     },
     {
-      "name": "CreateDiff (Release)",
-      "request": "launch",
+      "name": "CreateDiff (Release with .env)",
       "type": "dart",
+      "request": "launch",
       "flutterMode": "release",
       "toolArgs": [
-        "--dart-define=GROK_API_KEY=YOUR_GROK_API_KEY"
+        "--dart-define-from-file=.env"
       ]
     }
   ]
