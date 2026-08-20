@@ -27,6 +27,7 @@ class SupabaseConfig {
   }
 
   /// Supabase project URL.
+  /// Canonical: SUPABASE_URL (with fallback alias SUPABASE_PROJECT_URL)
   static String get url {
     if (_overrideUrl != null && _overrideUrl!.isNotEmpty) {
       return sanitize(_overrideUrl);
@@ -37,18 +38,6 @@ class SupabaseConfig {
     const projectUrl = String.fromEnvironment('SUPABASE_PROJECT_URL');
     if (projectUrl.isNotEmpty) return sanitize(projectUrl);
 
-    const restUrl = String.fromEnvironment('SUPABASE_REST_URL');
-    if (restUrl.isNotEmpty) return sanitize(restUrl);
-
-    const nextUrl = String.fromEnvironment('NEXT_PUBLIC_SUPABASE_URL');
-    if (nextUrl.isNotEmpty) return sanitize(nextUrl);
-
-    const viteUrl = String.fromEnvironment('VITE_SUPABASE_URL');
-    if (viteUrl.isNotEmpty) return sanitize(viteUrl);
-
-    const expoUrl = String.fromEnvironment('EXPO_PUBLIC_SUPABASE_URL');
-    if (expoUrl.isNotEmpty) return sanitize(expoUrl);
-
     const legacyUrl = String.fromEnvironment('CREATE_DIFF_SUPABASE_URL');
     if (legacyUrl.isNotEmpty) return sanitize(legacyUrl);
 
@@ -56,6 +45,7 @@ class SupabaseConfig {
   }
 
   /// Supabase Anonymous Public Key.
+  /// Canonical: SUPABASE_ANON_KEY (with fallback aliases SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLIC_ANON_KEY)
   static String get anonKey {
     if (_overrideAnonKey != null && _overrideAnonKey!.isNotEmpty) {
       return sanitize(_overrideAnonKey);
@@ -68,21 +58,6 @@ class SupabaseConfig {
 
     const pubAnonKey = String.fromEnvironment('SUPABASE_PUBLIC_ANON_KEY');
     if (pubAnonKey.isNotEmpty) return sanitize(pubAnonKey);
-
-    const baseKey = String.fromEnvironment('SUPABASE_KEY');
-    if (baseKey.isNotEmpty) return sanitize(baseKey);
-
-    const basePubKey = String.fromEnvironment('SUPABASE_PUBLIC_KEY');
-    if (basePubKey.isNotEmpty) return sanitize(basePubKey);
-
-    const nextKey = String.fromEnvironment('NEXT_PUBLIC_SUPABASE_ANON_KEY');
-    if (nextKey.isNotEmpty) return sanitize(nextKey);
-
-    const viteKey = String.fromEnvironment('VITE_SUPABASE_ANON_KEY');
-    if (viteKey.isNotEmpty) return sanitize(viteKey);
-
-    const expoKey = String.fromEnvironment('EXPO_PUBLIC_SUPABASE_ANON_KEY');
-    if (expoKey.isNotEmpty) return sanitize(expoKey);
 
     const legacyKey = String.fromEnvironment('CREATE_DIFF_SUPABASE_ANON_KEY');
     if (legacyKey.isNotEmpty) return sanitize(legacyKey);
@@ -132,15 +107,10 @@ class SupabaseConfig {
   /// Returns true if valid, non-placeholder Supabase connection parameters are present.
   static bool get isConfigured => isUrlValid(url) && isKeyValid(anonKey);
 
-  /// Safe diagnostic status object (never exposes secrets or keys).
+  /// Safe diagnostic status object showing only non-secret boolean status and host.
   static Map<String, dynamic> get diagnosticStatus => {
-    'supabaseUrlConfigured': url.isNotEmpty,
-    'supabaseUrlValid': isUrlValid(url),
-    'supabasePlaceholderDetected': isPlaceholder(url) || isPlaceholder(anonKey),
-    'supabasePublicKeyConfigured': isKeyValid(anonKey),
-    'supabaseIsConfigured': isConfigured,
-    'supabaseIsInitialized': isInitialized,
-    'supabaseHost': isUrlValid(url) ? (Uri.tryParse(url)?.host ?? 'valid') : 'invalid_or_placeholder',
+    'supabaseConfigured': isConfigured,
+    'host': isUrlValid(url) ? (Uri.tryParse(url)?.host ?? 'none') : 'none',
   };
 
   /// Returns true if Supabase SDK has been successfully initialized.
