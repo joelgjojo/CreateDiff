@@ -20,6 +20,10 @@ from app.db.database import init_db
 async def lifespan(application: FastAPI):
     logger.info("CreateDiff backend starting...")
     await init_db()
+    logger.info("Registered API routes:")
+    for route in sorted(application.routes, key=lambda item: (item.path, sorted(item.methods or []))):
+        methods = ",".join(sorted(route.methods or []))
+        logger.info("%s %s", methods, route.path)
     yield
     logger.info("CreateDiff backend shutting down...")
 

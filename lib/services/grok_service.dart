@@ -398,6 +398,10 @@ class GrokService {
         } else {
           final serverErrorMsg = _extractServerErrorMessage(responseBody, statusCode);
 
+          if (kDebugMode) {
+            debugPrint('[CreateDiff Client] Backend error: method=POST url=$endpoint status=$statusCode message=$serverErrorMsg');
+          }
+
           if (statusCode == 400 || statusCode == 422) {
             throw GrokServiceException(
               status: GrokGenerationStatus.invalidResponse,
