@@ -74,6 +74,8 @@ class SupabaseAuthService implements SupabaseAuthGateway {
         raw.contains('connection refused') ||
         raw.contains('network is unreachable') ||
         raw.contains('handshake') ||
+        raw.contains('formatexception') ||
+        raw.contains('clientexception') ||
         raw.contains('timeout')) {
       return 'Unable to connect to the authentication server. Please check your internet connection.';
     }

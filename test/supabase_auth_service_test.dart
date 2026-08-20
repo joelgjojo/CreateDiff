@@ -34,9 +34,12 @@ void main() {
       expect(msg, 'Too many attempts. Please wait a moment and try again.');
     });
 
-    test('maps network exceptions gracefully', () {
-      final msg = SupabaseAuthService.mapAuthError(Exception('SocketException: Failed host lookup'));
-      expect(msg, 'Unable to connect to the authentication server. Please check your internet connection.');
+    test('maps network and format exceptions gracefully', () {
+      final msg1 = SupabaseAuthService.mapAuthError(Exception('SocketException: Failed host lookup'));
+      expect(msg1, 'Unable to connect to the authentication server. Please check your internet connection.');
+
+      final msg2 = SupabaseAuthService.mapAuthError(const FormatException('%3Cproject-ref%3E.supabase.co is not a valid link-local address'));
+      expect(msg2, 'Unable to connect to the authentication server. Please check your internet connection.');
     });
 
     test('throws unconfigured AuthServiceException with clear offline message', () {
