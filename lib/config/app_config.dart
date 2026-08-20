@@ -35,8 +35,7 @@ class AppConfig {
   /// Priority:
   /// 1. In-memory runtime override (debug panel / tests)
   /// 2. Build-time `API_BASE_URL` environment variable (`--dart-define=API_BASE_URL=...`)
-  /// 3. Legacy build-time variables (for backward compatibility)
-  /// 4. Default production Render HTTPS endpoint
+  /// 3. Default production Render HTTPS endpoint
   static String get apiBaseUrl {
     // 1. Runtime override
     if (_overrideApiBaseUrl != null && _overrideApiBaseUrl!.trim().isNotEmpty) {
@@ -49,23 +48,7 @@ class AppConfig {
       return sanitizeUrl(dartDefineUrl);
     }
 
-    // 3. Backward-compatible environment variables
-    const legacyProdUrl = String.fromEnvironment('CREATE_DIFF_PRODUCTION_API_BASE_URL');
-    if (legacyProdUrl.trim().isNotEmpty) {
-      return sanitizeUrl(legacyProdUrl);
-    }
-
-    const legacyDevUrl = String.fromEnvironment('CREATE_DIFF_DEV_API_BASE_URL');
-    if (legacyDevUrl.trim().isNotEmpty) {
-      return sanitizeUrl(legacyDevUrl);
-    }
-
-    const legacyGenericUrl = String.fromEnvironment('CREATE_DIFF_API_BASE_URL');
-    if (legacyGenericUrl.trim().isNotEmpty) {
-      return sanitizeUrl(legacyGenericUrl);
-    }
-
-    // 4. Default to production HTTPS backend placeholder
+    // 3. Default to the production HTTPS backend.
     return defaultProductionUrl;
   }
 

@@ -75,7 +75,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```json
 {
   "status": "healthy",
-  "service": "creatediff-api",
+  "service": "CreateDiff AI Studio",
   "version": "1.0.0"
 }
 ```
@@ -86,7 +86,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```json
 {
   "status": "ready",
-  "service": "creatediff-api",
+  "service": "CreateDiff AI Studio",
   "version": "1.0.0",
   "ai_configured": true
 }

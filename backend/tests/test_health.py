@@ -10,7 +10,7 @@ async def test_health_endpoint():
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
-        assert data["service"] == "creatediff-api"
+        assert data["service"] == "CreateDiff AI Studio"
         assert data["version"] == "1.0.0"
         assert "X-Request-ID" in response.headers
         assert response.headers["X-Content-Type-Options"] == "nosniff"

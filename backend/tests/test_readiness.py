@@ -9,7 +9,7 @@ async def test_readiness_endpoint():
         response = await client.get("/api/v1/readiness")
         assert response.status_code == 200
         data = response.json()
-        assert data["service"] == "creatediff-api"
+        assert data["service"] == "CreateDiff AI Studio"
         assert "ai_configured" in data
         assert isinstance(data["ai_configured"], bool)
         assert "auth_configured" in data

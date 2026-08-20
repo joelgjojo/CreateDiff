@@ -18,7 +18,7 @@ async def get_readiness() -> ReadinessResponse:
     database_configured = bool(settings.DATABASE_URL.strip())
     return ReadinessResponse(
         status="ready" if has_key and auth_configured and database_configured else "degraded",
-        service="creatediff-api",
+        service="CreateDiff AI Studio",
         version="1.0.0",
         ai_configured=has_key,
         auth_configured=auth_configured,

@@ -334,11 +334,23 @@ class GrokService {
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       final client = HttpClient()..connectionTimeout = const Duration(seconds: 15);
       try {
+        final accessToken = SessionTokenStore.accessToken;
         if (kDebugMode) {
           debugPrint('==================== [CreateDiff Backend AI Request (Attempt $attempt/$maxAttempts)] ====================');
+          debugPrint('[CreateDiff Client] Method: POST');
           debugPrint('[CreateDiff Client] Endpoint: $endpoint');
           debugPrint('[CreateDiff Client] API host: ${Uri.parse(endpoint).host} | Path: ${Uri.parse(endpoint).path}');
+          debugPrint('[CreateDiff Client] Headers: Content-Type=application/json; Authorization=${accessToken == null || accessToken.isEmpty ? 'absent' : 'Bearer [redacted]'}; X-Request-ID=[generated]');
           debugPrint('[CreateDiff Client] Platform: $platform | Format: $contentType');
+          debugPrint('[CreateDiff Client] Request body: ${jsonEncode({
+            'platform': platform,
+            'contentType': contentType,
+            'idea': '[redacted; ${idea.length} chars]',
+            'overrideTone': overrideTone == null ? null : '[redacted]',
+            'overrideLanguage': overrideLanguage == null ? null : '[redacted]',
+            'overrideLength': overrideLength == null ? null : '[redacted]',
+            'creatorContext': '[redacted]',
+          })}');
           debugPrint('=========================================================================');
         }
 
@@ -346,7 +358,6 @@ class GrokService {
         final request = await client.postUrl(uri);
 
         request.headers.set(HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
-        final accessToken = SessionTokenStore.accessToken;
         if (accessToken != null && accessToken.isNotEmpty) {
           request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
         }

@@ -12,6 +12,6 @@ async def get_health() -> HealthResponse:
     """
     return HealthResponse(
         status="healthy",
-        service="creatediff-api",
+        service="CreateDiff AI Studio",
         version="1.0.0",
     )
