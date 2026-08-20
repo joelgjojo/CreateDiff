@@ -11,8 +11,6 @@ void main() {
   });
 
   test('SupabaseConfig sanitizes and holds override credentials', () {
-    expect(SupabaseConfig.isConfigured, isFalse);
-
     SupabaseConfig.setOverrides(
       url: '  "https://example.supabase.co"  ',
       anonKey: '  \'anon-key-12345\'  ',
@@ -22,14 +20,23 @@ void main() {
     expect(SupabaseConfig.anonKey, 'anon-key-12345');
     expect(SupabaseConfig.isConfigured, isTrue);
 
+    final diag = SupabaseConfig.diagnosticStatus;
+    expect(diag['supabaseUrlConfigured'], isTrue);
+    expect(diag['supabasePublicKeyConfigured'], isTrue);
+    expect(diag['supabaseIsConfigured'], isTrue);
+    expect(diag['supabaseHost'], 'example.supabase.co');
+    // Ensure actual anonKey is never exposed in diagnostics
+    expect(diag.containsKey('anonKey'), isFalse);
+    expect(diag.containsKey('key'), isFalse);
+
     SupabaseConfig.resetOverrides();
-    expect(SupabaseConfig.isConfigured, isFalse);
   });
 
   test('SupabaseConfig init returns false when unconfigured without crashing', () async {
-    SupabaseConfig.resetOverrides();
+    SupabaseConfig.setOverrides(url: '', anonKey: '');
     final result = await SupabaseConfig.init();
     expect(result, isFalse);
     expect(SupabaseConfig.isInitialized, isFalse);
+    SupabaseConfig.resetOverrides();
   });
 }

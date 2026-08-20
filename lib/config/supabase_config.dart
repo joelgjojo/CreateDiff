@@ -37,6 +37,18 @@ class SupabaseConfig {
     const projectUrl = String.fromEnvironment('SUPABASE_PROJECT_URL');
     if (projectUrl.isNotEmpty) return sanitize(projectUrl);
 
+    const restUrl = String.fromEnvironment('SUPABASE_REST_URL');
+    if (restUrl.isNotEmpty) return sanitize(restUrl);
+
+    const nextUrl = String.fromEnvironment('NEXT_PUBLIC_SUPABASE_URL');
+    if (nextUrl.isNotEmpty) return sanitize(nextUrl);
+
+    const viteUrl = String.fromEnvironment('VITE_SUPABASE_URL');
+    if (viteUrl.isNotEmpty) return sanitize(viteUrl);
+
+    const expoUrl = String.fromEnvironment('EXPO_PUBLIC_SUPABASE_URL');
+    if (expoUrl.isNotEmpty) return sanitize(expoUrl);
+
     const legacyUrl = String.fromEnvironment('CREATE_DIFF_SUPABASE_URL');
     if (legacyUrl.isNotEmpty) return sanitize(legacyUrl);
 
@@ -57,6 +69,21 @@ class SupabaseConfig {
     const pubAnonKey = String.fromEnvironment('SUPABASE_PUBLIC_ANON_KEY');
     if (pubAnonKey.isNotEmpty) return sanitize(pubAnonKey);
 
+    const baseKey = String.fromEnvironment('SUPABASE_KEY');
+    if (baseKey.isNotEmpty) return sanitize(baseKey);
+
+    const basePubKey = String.fromEnvironment('SUPABASE_PUBLIC_KEY');
+    if (basePubKey.isNotEmpty) return sanitize(basePubKey);
+
+    const nextKey = String.fromEnvironment('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    if (nextKey.isNotEmpty) return sanitize(nextKey);
+
+    const viteKey = String.fromEnvironment('VITE_SUPABASE_ANON_KEY');
+    if (viteKey.isNotEmpty) return sanitize(viteKey);
+
+    const expoKey = String.fromEnvironment('EXPO_PUBLIC_SUPABASE_ANON_KEY');
+    if (expoKey.isNotEmpty) return sanitize(expoKey);
+
     const legacyKey = String.fromEnvironment('CREATE_DIFF_SUPABASE_ANON_KEY');
     if (legacyKey.isNotEmpty) return sanitize(legacyKey);
 
@@ -65,6 +92,15 @@ class SupabaseConfig {
 
   /// Returns true if valid Supabase connection parameters are present.
   static bool get isConfigured => url.isNotEmpty && anonKey.isNotEmpty;
+
+  /// Safe diagnostic status object (never exposes secrets or keys).
+  static Map<String, dynamic> get diagnosticStatus => {
+    'supabaseUrlConfigured': url.isNotEmpty,
+    'supabasePublicKeyConfigured': anonKey.isNotEmpty,
+    'supabaseIsConfigured': isConfigured,
+    'supabaseIsInitialized': isInitialized,
+    'supabaseHost': url.isNotEmpty ? (Uri.tryParse(url)?.host ?? 'configured') : 'none',
+  };
 
   /// Returns true if Supabase SDK has been successfully initialized.
   static bool get isInitialized => _isInitialized;
