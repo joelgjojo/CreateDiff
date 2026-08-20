@@ -46,7 +46,9 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Sign In ✦'));
+    final submitFinder = find.text('Sign In ✦');
+    await tester.ensureVisible(submitFinder);
+    await tester.tap(submitFinder);
     await tester.pumpAndSettle();
 
     expect(find.text('Please enter your email address.'), findsOneWidget);

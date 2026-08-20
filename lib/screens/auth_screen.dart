@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../config/supabase_config.dart';
 import '../services/app_state.dart';
 import '../services/supabase_auth_service.dart';
 import '../components/cd_atmospheric_background.dart';
@@ -190,6 +191,34 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (!SupabaseConfig.isConfigured) ...[
+                            Container(
+                              padding: const EdgeInsets.all(CDSpacing.sm),
+                              decoration: BoxDecoration(
+                                color: CDColors.brand.withValues(alpha: isDark ? 0.15 : 0.08),
+                                borderRadius: BorderRadius.circular(CDRadius.small),
+                                border: Border.all(color: CDColors.brand.withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.info_outline_rounded, size: 16, color: CDColors.brand),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Offline Studio Mode Active — Cloud auth is unconfigured in this build. All creation & AI generation remains available in local guest mode.',
+                                      style: TextStyle(
+                                        color: CDColors.textSecondary(context),
+                                        fontSize: 11.5,
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: CDSpacing.md),
+                          ],
                           if (_isSignUp) ...[
                             CDTextInput(
                               controller: _nameController,

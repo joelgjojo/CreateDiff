@@ -25,9 +25,15 @@ class SupabaseAuthService implements SupabaseAuthGateway {
   SupabaseClient get _activeClient {
     if (_client != null) return _client;
     if (SupabaseConfig.isInitialized) return Supabase.instance.client;
+    if (!SupabaseConfig.isConfigured) {
+      throw const AuthServiceException(
+        'Cloud authentication is not configured for this build. You can continue creating in Offline Guest Mode.',
+        code: 'UNCONFIGURED',
+      );
+    }
     throw const AuthServiceException(
-      'Authentication service is not configured. Please check your connection.',
-      code: 'UNCONFIGURED',
+      'Authentication service failed to initialize. Please check your network connection.',
+      code: 'UNINITIALIZED',
     );
   }
 

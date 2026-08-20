@@ -38,5 +38,17 @@ void main() {
       final msg = SupabaseAuthService.mapAuthError(Exception('SocketException: Failed host lookup'));
       expect(msg, 'Unable to connect to the authentication server. Please check your internet connection.');
     });
+
+    test('throws unconfigured AuthServiceException with clear offline message', () {
+      final service = SupabaseAuthService();
+      expect(
+        () => service.signIn(email: 'test@example.com', password: 'password123'),
+        throwsA(isA<AuthServiceException>().having(
+          (e) => e.message,
+          'message',
+          contains('Cloud authentication is not configured for this build'),
+        )),
+      );
+    });
   });
 }

@@ -34,6 +34,9 @@ class SupabaseConfig {
     const envUrl = String.fromEnvironment('SUPABASE_URL');
     if (envUrl.isNotEmpty) return sanitize(envUrl);
 
+    const projectUrl = String.fromEnvironment('SUPABASE_PROJECT_URL');
+    if (projectUrl.isNotEmpty) return sanitize(projectUrl);
+
     const legacyUrl = String.fromEnvironment('CREATE_DIFF_SUPABASE_URL');
     if (legacyUrl.isNotEmpty) return sanitize(legacyUrl);
 
@@ -47,6 +50,12 @@ class SupabaseConfig {
     }
     const envKey = String.fromEnvironment('SUPABASE_ANON_KEY');
     if (envKey.isNotEmpty) return sanitize(envKey);
+
+    const pubKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+    if (pubKey.isNotEmpty) return sanitize(pubKey);
+
+    const pubAnonKey = String.fromEnvironment('SUPABASE_PUBLIC_ANON_KEY');
+    if (pubAnonKey.isNotEmpty) return sanitize(pubAnonKey);
 
     const legacyKey = String.fromEnvironment('CREATE_DIFF_SUPABASE_ANON_KEY');
     if (legacyKey.isNotEmpty) return sanitize(legacyKey);
