@@ -90,16 +90,57 @@ class SupabaseConfig {
     return '';
   }
 
-  /// Returns true if valid Supabase connection parameters are present.
-  static bool get isConfigured => url.isNotEmpty && anonKey.isNotEmpty;
+  /// Checks if a configuration string contains placeholder markers.
+  static bool isPlaceholder(String val) {
+    if (val.isEmpty) return true;
+    final lower = val.toLowerCase().trim();
+    return lower.contains('<') ||
+        lower.contains('>') ||
+        lower.contains('%3c') ||
+        lower.contains('%3e') ||
+        lower.contains('project-ref') ||
+        lower.contains('project_ref') ||
+        lower.contains('your_') ||
+        lower.contains('your-') ||
+        lower.contains('your_supabase') ||
+        lower.contains('insert_') ||
+        lower.contains('insert-') ||
+        lower.contains('change_me') ||
+        lower.contains('change-me') ||
+        lower.contains('placeholder') ||
+        lower.contains('anon_key') ||
+        lower.contains('anon-key');
+  }
+
+  /// Validates that the Supabase URL is properly formatted and non-placeholder.
+  static bool isUrlValid(String rawUrl) {
+    if (rawUrl.isEmpty || isPlaceholder(rawUrl)) return false;
+    final uri = Uri.tryParse(rawUrl);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) return false;
+    if (uri.scheme != 'https' && uri.scheme != 'http') return false;
+    if (uri.host.contains('%') || uri.host.contains('<') || uri.host.contains('>')) return false;
+    return true;
+  }
+
+  /// Validates that the Supabase Anon / Publishable Key is non-placeholder.
+  static bool isKeyValid(String rawKey) {
+    if (rawKey.isEmpty || isPlaceholder(rawKey)) return false;
+    if (rawKey.length < 16) return false;
+    return true;
+  }
+
+  /// Returns true if valid, non-placeholder Supabase connection parameters are present.
+  static bool get isConfigured => isUrlValid(url) && isKeyValid(anonKey);
 
   /// Safe diagnostic status object (never exposes secrets or keys).
   static Map<String, dynamic> get diagnosticStatus => {
     'supabaseUrlConfigured': url.isNotEmpty,
-    'supabasePublicKeyConfigured': anonKey.isNotEmpty,
+    'supabaseUrlValid': isUrlValid(url),
+    'supabasePlaceholderDetected': isPlaceholder(url) || isPlaceholder(anonKey),
+    'supabasePublicKeyConfigured': isKeyValid(anonKey),
     'supabaseIsConfigured': isConfigured,
     'supabaseIsInitialized': isInitialized,
-    'supabaseHost': url.isNotEmpty ? (Uri.tryParse(url)?.host ?? 'configured') : 'none',
+    'supabaseHost': isUrlValid(url) ? (Uri.tryParse(url)?.host ?? 'valid') : 'invalid_or_placeholder',
   };
 
   /// Returns true if Supabase SDK has been successfully initialized.
@@ -124,7 +165,11 @@ class SupabaseConfig {
   static Future<bool> init() async {
     if (!isConfigured) {
       if (kDebugMode) {
-        debugPrint('[SupabaseConfig] Supabase is unconfigured — operating in local guest mode.');
+        if (isPlaceholder(url) || isPlaceholder(anonKey)) {
+          debugPrint('[SupabaseConfig] Placeholder credentials detected in SUPABASE_URL / SUPABASE_ANON_KEY — operating in local guest mode.');
+        } else {
+          debugPrint('[SupabaseConfig] Supabase is unconfigured — operating in local guest mode.');
+        }
       }
       _isInitialized = false;
       return false;
