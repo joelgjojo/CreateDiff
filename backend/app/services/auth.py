@@ -112,7 +112,7 @@ async def get_current_user(
         )
 
     # 2. Strict Authentication Mode Check
-    if settings.AUTH_REQUIRED:
+    if settings.AUTH_REQUIRED or settings.is_production:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"code": "AUTH_REQUIRED", "message": "Please sign in to continue."},

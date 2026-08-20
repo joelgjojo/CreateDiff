@@ -55,6 +55,8 @@ async def get_db() -> AsyncGenerator[Optional[AsyncSession], None]:
 
 async def init_db() -> None:
     """Initialize database tables safely if DATABASE_URL is configured."""
+    if not settings.DB_AUTO_CREATE:
+        return
     engine = get_engine()
     if engine is None:
         return
@@ -64,4 +66,6 @@ async def init_db() -> None:
             await connection.run_sync(Base.metadata.create_all)
         logger.info("Database schema initialized successfully.")
     except Exception as e:
+        if settings.is_production:
+            raise
         logger.warning(f"Database initialization warning (schema may be managed by migrations): {e}")

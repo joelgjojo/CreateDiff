@@ -17,8 +17,8 @@ void main() {
 
   group('AppConfig Production Architecture', () {
     test('Defaults to production HTTPS endpoint without hardcoded local IPs', () {
-      expect(AppConfig.defaultProductionUrl, equals('https://api.creatediff.com'));
-      expect(AppConfig.apiBaseUrl, equals('https://api.creatediff.com'));
+      expect(AppConfig.defaultProductionUrl, equals('https://creatediff-api.onrender.com'));
+      expect(AppConfig.apiBaseUrl, equals('https://creatediff-api.onrender.com'));
       expect(AppConfig.isConfigured, isTrue);
       expect(AppConfig.providerName, equals('CreateDiff Cloud AI'));
       expect(AppConfig.model, equals('openai/gpt-oss-120b'));
@@ -37,7 +37,7 @@ void main() {
       expect(AppConfig.model, equals('custom-fast-model'));
 
       AppConfig.resetOverrides();
-      expect(AppConfig.apiBaseUrl, equals('https://api.creatediff.com'));
+      expect(AppConfig.apiBaseUrl, equals('https://creatediff-api.onrender.com'));
       expect(AppConfig.model, equals('openai/gpt-oss-120b'));
     });
 
@@ -53,7 +53,7 @@ void main() {
       expect(AppConfig.apiBaseUrl, equals('https://test.api.com'));
 
       ApiConfig.resetOverrides();
-      expect(ApiConfig.backendBaseUrl, equals('https://api.creatediff.com'));
+      expect(ApiConfig.backendBaseUrl, equals('https://creatediff-api.onrender.com'));
     });
   });
 

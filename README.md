@@ -48,40 +48,43 @@
 
 ---
 
-## 🚀 Running the App
+## 🚀 Running & Building the Application
 
-### Launching the Application
-Flutter configuration is compile-time JSON consumed by `--dart-define-from-file`. The root `.env` contains the local public Supabase URL/key and backend URL; it is ignored by git. Never put a Supabase service-role key in this file.
+### 1. Environment Setup
+Create a `.env` file at the root (JSON format for Flutter):
+```json
+{
+  "API_BASE_URL": "https://creatediff-api.onrender.com",
+  "SUPABASE_URL": "https://YOUR_PROJECT_REF.supabase.co",
+  "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY"
+}
+```
 
+### 2. Backend Startup (FastAPI)
 ```bash
-# Development: backend and Supabase cloud auth
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 3. Flutter Mobile App
+```bash
+# Development: run against backend and Supabase
 flutter run --dart-define-from-file=.env
 
-# Release APK: use the same configuration source
-flutter build apk --release --dart-define-from-file=.env
-```
-
-VS Code's debug and release launch profiles use the same `--dart-define-from-file=.env` argument. Run configuration tests with the same defines:
-
-```bash
-flutter test --dart-define-from-file=.env
-```
-
-If either Supabase value is missing or contains a placeholder, initialization fails with a developer configuration error. Only a genuinely absent configuration activates offline guest mode.
-
----
-
-## 🧪 Testing & Verification
-
-```bash
-# Run static analysis (0 warnings / 0 errors)
+# Static analysis (0 warnings / 0 errors)
 flutter analyze
 
-# Run full automated test suite (including end-to-end Grok observability & screen rendering tests)
+# Run full automated test suite (183 tests)
 flutter test
 
 # Build debug APK
-flutter build apk --debug
+flutter build apk --debug --dart-define-from-file=.env
+
+# Build production release APK
+flutter build apk --release --dart-define-from-file=.env
 ```
 
 ---
@@ -89,25 +92,20 @@ flutter build apk --debug
 ## 📁 Architecture Overview
 
 ```
-Flutter Mobile App (UI / State)
+Flutter Mobile Client (UI / State / Local-First Store)
+         ↓ (Bearer Token)
+FastAPI Backend (/api/v1 - Auth Middleware, Rate Limiting, RLS)
          ↓
-AppState (Reactive State Manager) + UsageGuard (Rate Limiting & Cost Protection)
-         ↓
-AIService (Exponential Backoff Retry & Sanitize Layer)
-         ↓
-ApiConfig (compile-time non-secret backend URL)
-         ↓
-Groq / xAI Responses API (/chat/completions)
+Groq AI Engine (openai/gpt-oss-120b) + Supabase PostgreSQL (Profiles, Feedback, Usage)
 ```
 
 ---
 
-## 🔒 Security & Backend Proxy Roadmap
+## 🔒 Security & Secrets Architecture
 
-> [!IMPORTANT]
-> **API Key Architecture Notice**:
-> - Provider API keys and Supabase JWT secrets are backend-only.
-> - Flutter receives only a non-secret backend URL through `--dart-define` and sends authenticated bearer tokens.
+- **Mobile App**: Zero secret keys, JWT secrets, or Groq API keys are stored in the Flutter binary. Only public Supabase anon key and API Base URL are provided at build time.
+- **Backend API**: All upstream AI keys, database credentials, and service role keys are managed strictly server-side.
+- **Database**: Strict Row Level Security (RLS) policies enforce user isolation across all tables.
 
 ---
 

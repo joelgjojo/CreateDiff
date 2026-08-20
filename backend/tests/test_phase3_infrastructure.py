@@ -93,16 +93,16 @@ async def test_configurable_usage_limit_and_rolling_reset(db_session, monkeypatc
 
 
 @pytest.mark.asyncio
-async def test_guest_mode_in_production_allows_generation_when_auth_not_required(db_session, monkeypatch):
+async def test_production_requires_authentication_even_when_auth_flag_is_misconfigured(db_session, monkeypatch):
     monkeypatch.setattr(settings, "ENVIRONMENT", "production")
     monkeypatch.setattr(settings, "AUTH_REQUIRED", False)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         health_resp = await client.get("/api/v1/health")
         assert health_resp.status_code == 200
-        # Profile without auth header should succeed with guest session
+        # Production must never fall back to a shared guest identity.
         profile_resp = await client.get("/api/v1/profile")
-        assert profile_resp.status_code == 200
-        assert profile_resp.json()["synced"] is False
+        assert profile_resp.status_code == 401
+        assert profile_resp.json()["error"]["code"] == "AUTH_REQUIRED"
 
 
 @pytest.mark.asyncio

@@ -15,8 +15,11 @@ enum GrokGenerationStatus {
   retrying,
   success,
   apiKeyMissing,
+  invalidApiUrl,
   invalidKey,
   rateLimited,
+  timeout,
+  backendUnavailable,
   networkError,
   serverError,
   invalidResponse,
@@ -220,6 +223,13 @@ class GrokService {
     return rawStr.replaceAll(RegExp(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?\b'), '[server]');
   }
 
+  static String _messageForStatusCode(int statusCode, String serverErrorMsg) {
+    if (statusCode == 401) return 'Authentication failed. Please sign in again.';
+    if (statusCode == 429) return serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Too many requests. Please try again shortly.';
+    if (statusCode >= 500) return 'CreateDiff AI Studio is temporarily unavailable. Please try again shortly.';
+    return serverErrorMsg;
+  }
+
   static String _extractServerErrorMessage(String responseBody, int statusCode) {
     try {
       final parsed = jsonDecode(responseBody);
@@ -263,6 +273,13 @@ class GrokService {
     final endpoint = '$backendBaseUrl/api/v1/generate';
     final provider = AppConfig.providerName;
     final model = AppConfig.model;
+
+    if (!AppConfig.hasValidApiBaseUrl) {
+      throw const GrokServiceException(
+        status: GrokGenerationStatus.invalidApiUrl,
+        message: 'CreateDiff AI Studio has an invalid API URL. Please update the app configuration.',
+      );
+    }
 
     if (!AppConfig.hasApiKey || !AppConfig.isConfigured || backendBaseUrl.isEmpty) {
       _lastDebugLog = GrokDebugLog(
@@ -320,6 +337,7 @@ class GrokService {
         if (kDebugMode) {
           debugPrint('==================== [CreateDiff Backend AI Request (Attempt $attempt/$maxAttempts)] ====================');
           debugPrint('[CreateDiff Client] Endpoint: $endpoint');
+          debugPrint('[CreateDiff Client] API host: ${Uri.parse(endpoint).host} | Path: ${Uri.parse(endpoint).path}');
           debugPrint('[CreateDiff Client] Platform: $platform | Format: $contentType');
           debugPrint('=========================================================================');
         }
@@ -381,8 +399,8 @@ class GrokService {
 
           if (statusCode == 401) {
             throw GrokServiceException(
-              status: GrokGenerationStatus.serverError,
-              message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Please sign in to continue.',
+              status: GrokGenerationStatus.invalidKey,
+              message: _messageForStatusCode(statusCode, serverErrorMsg),
               statusCode: statusCode,
               rawResponse: responseBody,
               requestId: requestId,
@@ -402,7 +420,7 @@ class GrokService {
           if (statusCode == 429) {
             throw GrokServiceException(
               status: GrokGenerationStatus.rateLimited,
-              message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'Daily studio limit reached. Resets tomorrow.',
+              message: _messageForStatusCode(statusCode, serverErrorMsg),
               statusCode: statusCode,
               rawResponse: responseBody,
               requestId: requestId,
@@ -417,8 +435,10 @@ class GrokService {
           }
 
           final ex = GrokServiceException(
-            status: statusCode == 504 ? GrokGenerationStatus.networkError : GrokGenerationStatus.serverError,
-            message: serverErrorMsg.isNotEmpty ? serverErrorMsg : 'AI service is temporarily unavailable. Please retry shortly.',
+            status: statusCode == 502 || statusCode == 503
+                ? GrokGenerationStatus.backendUnavailable
+                : GrokGenerationStatus.serverError,
+            message: _messageForStatusCode(statusCode, serverErrorMsg),
             statusCode: statusCode,
             rawResponse: responseBody,
             requestId: requestId,
@@ -452,10 +472,16 @@ class GrokService {
           continue;
         }
 
+        if (kDebugMode) {
+          debugPrint('[CreateDiff Client] Connection exception: ${e.runtimeType}');
+        }
+
         final sanitizedMessage = sanitizeNetworkErrorMessage(e);
-        final status = (e is SocketException || e is TimeoutException || e is HandshakeException)
-            ? GrokGenerationStatus.networkError
-            : GrokGenerationStatus.unknownError;
+        final status = e is TimeoutException
+            ? GrokGenerationStatus.timeout
+            : (e is SocketException || e is HandshakeException)
+                ? GrokGenerationStatus.backendUnavailable
+                : GrokGenerationStatus.unknownError;
 
         _lastDebugLog = GrokDebugLog(
           provider: provider,

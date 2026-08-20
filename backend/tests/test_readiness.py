@@ -12,4 +12,8 @@ async def test_readiness_endpoint():
         assert data["service"] == "creatediff-api"
         assert "ai_configured" in data
         assert isinstance(data["ai_configured"], bool)
+        assert "auth_configured" in data
+        assert isinstance(data["auth_configured"], bool)
+        assert "database_configured" in data
+        assert isinstance(data["database_configured"], bool)
         assert data["status"] in ("ready", "degraded")

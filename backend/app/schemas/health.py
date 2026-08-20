@@ -12,3 +12,5 @@ class ReadinessResponse(BaseModel):
     service: str = Field(default="creatediff-api", description="Service identifier")
     version: str = Field(default="1.0.0", description="API version")
     ai_configured: bool = Field(..., description="Whether server-side AI provider is configured")
+    auth_configured: bool = Field(..., description="Whether production authentication is configured")
+    database_configured: bool = Field(..., description="Whether the backend database is configured")
