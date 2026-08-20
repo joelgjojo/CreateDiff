@@ -6,8 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Security Boundary:
 /// - Only accepts public `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
 /// - Never accepts or exposes `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_JWT_SECRET`.
-/// - Supports offline / unconfigured mode: if Supabase credentials are not
-///   provided, the app gracefully falls back to local guest creator mode.
+/// - Supports offline / unconfigured mode only when credentials are absent.
 class SupabaseConfig {
   SupabaseConfig._();
 
@@ -26,43 +25,22 @@ class SupabaseConfig {
     return clean;
   }
 
-  /// Supabase project URL.
-  /// Canonical: SUPABASE_URL (with fallback alias SUPABASE_PROJECT_URL)
+  /// Supabase project URL supplied through the Flutter build environment.
   static String get url {
-    if (_overrideUrl != null && _overrideUrl!.isNotEmpty) {
+    if (_overrideUrl != null) {
       return sanitize(_overrideUrl);
     }
     const envUrl = String.fromEnvironment('SUPABASE_URL');
-    if (envUrl.isNotEmpty) return sanitize(envUrl);
-
-    const projectUrl = String.fromEnvironment('SUPABASE_PROJECT_URL');
-    if (projectUrl.isNotEmpty) return sanitize(projectUrl);
-
-    const legacyUrl = String.fromEnvironment('CREATE_DIFF_SUPABASE_URL');
-    if (legacyUrl.isNotEmpty) return sanitize(legacyUrl);
-
-    return '';
+    return sanitize(envUrl);
   }
 
-  /// Supabase Anonymous Public Key.
-  /// Canonical: SUPABASE_ANON_KEY (with fallback aliases SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLIC_ANON_KEY)
+  /// Supabase anonymous public key supplied through the Flutter build environment.
   static String get anonKey {
-    if (_overrideAnonKey != null && _overrideAnonKey!.isNotEmpty) {
+    if (_overrideAnonKey != null) {
       return sanitize(_overrideAnonKey);
     }
     const envKey = String.fromEnvironment('SUPABASE_ANON_KEY');
-    if (envKey.isNotEmpty) return sanitize(envKey);
-
-    const pubKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
-    if (pubKey.isNotEmpty) return sanitize(pubKey);
-
-    const pubAnonKey = String.fromEnvironment('SUPABASE_PUBLIC_ANON_KEY');
-    if (pubAnonKey.isNotEmpty) return sanitize(pubAnonKey);
-
-    const legacyKey = String.fromEnvironment('CREATE_DIFF_SUPABASE_ANON_KEY');
-    if (legacyKey.isNotEmpty) return sanitize(legacyKey);
-
-    return '';
+    return sanitize(envKey);
   }
 
   /// Checks if a configuration string contains placeholder markers.
@@ -75,6 +53,7 @@ class SupabaseConfig {
         lower.contains('%3e') ||
         lower.contains('project-ref') ||
         lower.contains('project_ref') ||
+        lower.contains('example.supabase.co') ||
         lower.contains('your_') ||
         lower.contains('your-') ||
         lower.contains('your_supabase') ||
@@ -107,6 +86,14 @@ class SupabaseConfig {
   /// Returns true if valid, non-placeholder Supabase connection parameters are present.
   static bool get isConfigured => isUrlValid(url) && isKeyValid(anonKey);
 
+  /// Describes a configuration problem without returning credentials.
+  static String? get configurationError {
+    if (url.isEmpty && anonKey.isEmpty) return null;
+    if (!isUrlValid(url)) return 'SUPABASE_URL is missing or invalid.';
+    if (!isKeyValid(anonKey)) return 'SUPABASE_ANON_KEY is missing or invalid.';
+    return null;
+  }
+
   /// Safe diagnostic status object showing only non-secret boolean status and host.
   static Map<String, dynamic> get diagnosticStatus => {
     'supabaseConfigured': isConfigured,
@@ -134,13 +121,12 @@ class SupabaseConfig {
   /// application to operate in offline-first guest mode without crashing.
   static Future<bool> init() async {
     if (!isConfigured) {
-      if (kDebugMode) {
-        if (isPlaceholder(url) || isPlaceholder(anonKey)) {
-          debugPrint('[SupabaseConfig] Placeholder credentials detected in SUPABASE_URL / SUPABASE_ANON_KEY — operating in local guest mode.');
-        } else {
-          debugPrint('[SupabaseConfig] Supabase is unconfigured — operating in local guest mode.');
-        }
+      final error = configurationError;
+      if (error != null) {
+        debugPrint('[SupabaseConfig] Configuration error: $error');
+        throw StateError(error);
       }
+      debugPrint('[SupabaseConfig] Supabase configured: false; host: none');
       _isInitialized = false;
       return false;
     }
@@ -153,15 +139,12 @@ class SupabaseConfig {
         debug: kDebugMode,
       );
       _isInitialized = true;
-      if (kDebugMode) {
-        debugPrint('[SupabaseConfig] Supabase client initialized successfully.');
-      }
+      debugPrint('[SupabaseConfig] Supabase configured: true; host: ${diagnosticStatus['host']}');
       return true;
     } catch (e) {
       _isInitialized = false;
-      if (kDebugMode) {
-        debugPrint('[SupabaseConfig] Warning: Supabase initialization failed ($e). Falling back to guest mode.');
-      }
+      if (e is StateError) rethrow;
+      debugPrint('[SupabaseConfig] Initialization failed: $e');
       return false;
     }
   }

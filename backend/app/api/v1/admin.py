@@ -60,4 +60,7 @@ async def get_system_stats(
         "total_users": user_count,
         "total_generations": gen_count,
         "total_campaigns": camp_count,
+        "failed_generations": 0,
+        "app_version": "3.5.0",
+        "backend_status": "operational",
     }

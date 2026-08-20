@@ -165,6 +165,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> signOut() async {
     await _sessionManager.logout();
+    _sessionManager = LocalSessionManager();
     notifyListeners();
   }
 

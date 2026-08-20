@@ -193,25 +193,46 @@ class _AuthScreenState extends State<AuthScreen> {
                         children: [
                           if (!SupabaseConfig.isConfigured) ...[
                             Container(
-                              padding: const EdgeInsets.all(CDSpacing.sm),
+                              padding: const EdgeInsets.all(CDSpacing.md),
                               decoration: BoxDecoration(
-                                color: CDColors.brand.withValues(alpha: isDark ? 0.15 : 0.08),
-                                borderRadius: BorderRadius.circular(CDRadius.small),
-                                border: Border.all(color: CDColors.brand.withValues(alpha: 0.3)),
+                                color: CDColors.surfaceElevated(context),
+                                borderRadius: BorderRadius.circular(CDRadius.medium),
+                                border: Border.all(color: CDColors.brand.withValues(alpha: 0.4), width: 1.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(Icons.info_outline_rounded, size: 16, color: CDColors.brand),
-                                  const SizedBox(width: 8),
+                                  const Icon(Icons.cloud_off_rounded, size: 20, color: CDColors.brand),
+                                  const SizedBox(width: 10),
                                   Expanded(
-                                    child: Text(
-                                      'Offline Studio Mode Active — Cloud auth is unconfigured in this build. All creation & AI generation remains available in local guest mode.',
-                                      style: TextStyle(
-                                        color: CDColors.textSecondary(context),
-                                        fontSize: 11.5,
-                                        height: 1.35,
-                                      ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Offline Studio Mode Active',
+                                          style: TextStyle(
+                                            color: CDColors.textPrimary(context),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          'Cloud authentication is unconfigured in this build. Local Creator Memory, saved drafts, and AI generation remain fully operational.',
+                                          style: TextStyle(
+                                            color: CDColors.textSecondary(context),
+                                            fontSize: 12,
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -246,24 +267,46 @@ class _AuthScreenState extends State<AuthScreen> {
                           if (_errorMessage != null) ...[
                             const SizedBox(height: CDSpacing.md),
                             Container(
-                              padding: const EdgeInsets.all(CDSpacing.sm),
+                              padding: const EdgeInsets.all(CDSpacing.md),
                               decoration: BoxDecoration(
-                                color: CDColors.error.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(CDRadius.small),
-                                border: Border.all(color: CDColors.error.withValues(alpha: 0.35)),
+                                color: CDColors.surfaceElevated(context),
+                                borderRadius: BorderRadius.circular(CDRadius.medium),
+                                border: Border.all(color: CDColors.error.withValues(alpha: 0.5), width: 1.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CDColors.error.withValues(alpha: isDark ? 0.25 : 0.08),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(Icons.error_outline_rounded, size: 16, color: CDColors.error),
-                                  const SizedBox(width: 8),
+                                  const Icon(Icons.error_outline_rounded, size: 20, color: CDColors.error),
+                                  const SizedBox(width: 10),
                                   Expanded(
-                                    child: Text(
-                                      _errorMessage!,
-                                      style: const TextStyle(
-                                        color: CDColors.error,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Authentication Notice',
+                                          style: TextStyle(
+                                            color: CDColors.error,
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          _errorMessage!,
+                                          style: TextStyle(
+                                            color: CDColors.textPrimary(context),
+                                            fontSize: 12,
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],

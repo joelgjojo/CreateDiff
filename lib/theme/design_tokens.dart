@@ -146,6 +146,8 @@ class CDColors {
   static Color elevated(BuildContext context) =>
       isDark(context) ? darkSurfaceElevated : lightSurfaceElevated;
 
+  static Color surfaceElevated(BuildContext context) => elevated(context);
+
   static Color borderSubtle(BuildContext context) =>
       isDark(context) ? darkBorderSubtle : lightBorderSubtle;
 

@@ -12,6 +12,7 @@ import 'creator_profile_screen.dart';
 import 'onboarding_screen.dart';
 import 'debug_panel_screen.dart';
 import 'auth_screen.dart';
+import 'admin_screen.dart';
 
 /// The profile and studio settings screen featuring Brand Memory progressive disclosure,
 /// appearance mode selection, data reset, and studio info.
@@ -254,6 +255,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
             ),
             actions: [
+              if (appState.currentUser?.isAdmin == true)
+                IconButton(
+                  icon: const Icon(Icons.shield_outlined, size: 20, color: CDColors.primary),
+                  tooltip: 'Admin Console',
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const AdminScreen()),
+                    );
+                  },
+                ),
               if (kDebugMode)
                 IconButton(
                   icon: const Icon(Icons.bug_report_outlined, size: 20),
@@ -441,6 +452,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
+          if (currentUser?.isAdmin == true) ...[
+            const SizedBox(height: CDSpacing.md),
+            InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AdminScreen()),
+                );
+              },
+              borderRadius: BorderRadius.circular(CDRadius.medium),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: CDSpacing.md, vertical: CDSpacing.sm + 2),
+                decoration: BoxDecoration(
+                  color: CDColors.primary.withValues(alpha: isDark ? 0.20 : 0.08),
+                  borderRadius: BorderRadius.circular(CDRadius.medium),
+                  border: Border.all(color: CDColors.primary.withValues(alpha: 0.35)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.shield_outlined, size: 16, color: CDColors.primary),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Open Admin Console',
+                        style: TextStyle(
+                          color: CDColors.primary,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded, size: 18, color: CDColors.primary),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: CDSpacing.md),
           Divider(height: 1, color: CDColors.borderSubtle(context)),
           const SizedBox(height: CDSpacing.sm),

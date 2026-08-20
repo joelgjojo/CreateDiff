@@ -61,6 +61,7 @@ void main() {
   test('SupabaseConfig validates URL structure and schemes', () {
     expect(SupabaseConfig.isUrlValid(''), isFalse);
     expect(SupabaseConfig.isUrlValid('not-a-url'), isFalse);
+    expect(SupabaseConfig.isUrlValid('https://example.supabase.co'), isFalse);
     expect(SupabaseConfig.isUrlValid('ftp://example.supabase.co'), isFalse);
     expect(SupabaseConfig.isUrlValid('https://%3Cproject-ref%3E.supabase.co'), isFalse);
     expect(SupabaseConfig.isUrlValid('https://projectref123.supabase.co'), isTrue);
@@ -72,5 +73,26 @@ void main() {
     expect(result, isFalse);
     expect(SupabaseConfig.isInitialized, isFalse);
     SupabaseConfig.resetOverrides();
+  });
+
+  test('SupabaseConfig rejects empty keys and reports partial configuration', () {
+    expect(SupabaseConfig.isKeyValid(''), isFalse);
+
+    SupabaseConfig.setOverrides(
+      url: 'https://abcdefghijklmno.supabase.co',
+      anonKey: '',
+    );
+    expect(SupabaseConfig.isConfigured, isFalse);
+    expect(SupabaseConfig.configurationError, 'SUPABASE_ANON_KEY is missing or invalid.');
+  });
+
+  test('Flutter dart defines provide the canonical Supabase values', () {
+    const hasUrl = bool.hasEnvironment('SUPABASE_URL');
+    const hasKey = bool.hasEnvironment('SUPABASE_ANON_KEY');
+    if (!hasUrl && !hasKey) return;
+
+    expect(hasUrl, isTrue, reason: 'SUPABASE_URL must be passed with --dart-define-from-file=.env');
+    expect(hasKey, isTrue, reason: 'SUPABASE_ANON_KEY must be passed with --dart-define-from-file=.env');
+    expect(SupabaseConfig.isConfigured, isTrue);
   });
 }

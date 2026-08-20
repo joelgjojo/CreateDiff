@@ -51,31 +51,23 @@
 ## 🚀 Running the App
 
 ### Launching the Application
-By default, CreateDiff connects securely to the production HTTPS backend (`https://api.creatediff.com`) with local offline guest mode:
+Flutter configuration is compile-time JSON consumed by `--dart-define-from-file`. The root `.env` contains the local public Supabase URL/key and backend URL; it is ignored by git. Never put a Supabase service-role key in this file.
 
 ```bash
-# Run with .env configuration (recommended for local development & cloud auth)
+# Development: backend and Supabase cloud auth
 flutter run --dart-define-from-file=.env
 
-# Run with explicit Supabase cloud authentication credentials
-flutter run --dart-define=SUPABASE_URL=https://<project-ref>.supabase.co \
-            --dart-define=SUPABASE_ANON_KEY=<your_supabase_anon_key>
-
-# Run pointing to your custom backend / Render instance
-flutter run --dart-define=API_BASE_URL=https://your-backend.onrender.com
-
-# Build release APK with .env configuration
+# Release APK: use the same configuration source
 flutter build apk --release --dart-define-from-file=.env
-
-# Build release APK with explicit credentials
-flutter build apk --release \
-  --dart-define=API_BASE_URL=https://api.creatediff.com \
-  --dart-define=SUPABASE_URL=https://<project-ref>.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=<your_supabase_anon_key>
 ```
 
-> [!TIP]
-> You can also test and configure connection endpoints at runtime inside the **Developer Debug Panel** (accessible via the bug icon in the Top App Bar).
+VS Code's debug and release launch profiles use the same `--dart-define-from-file=.env` argument. Run configuration tests with the same defines:
+
+```bash
+flutter test --dart-define-from-file=.env
+```
+
+If either Supabase value is missing or contains a placeholder, initialization fails with a developer configuration error. Only a genuinely absent configuration activates offline guest mode.
 
 ---
 
