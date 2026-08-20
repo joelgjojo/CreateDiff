@@ -23,6 +23,7 @@ class AuthenticatedUser:
     subject: str
     email: str | None = None
     display_name: str | None = None
+    role: str = "user"
     db_user_id: str | None = None
 
 
@@ -62,7 +63,7 @@ async def get_current_user(
     
     Behavior:
     - If a Bearer token is supplied: Validates JWT signature & audience, extracts subject,
-      and provisions/finds user in the database.
+      and provisions/finds user in the database with role.
     - If no Bearer token is supplied and AUTH_REQUIRED=true: Rejects with HTTP 401.
     - If no Bearer token is supplied and AUTH_REQUIRED=false: Provisions a guest creator
       session allowing frictionless testing in pre-launch / guest mode.
@@ -78,8 +79,11 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
         raw_meta = decoded.get("user_metadata") if isinstance(decoded.get("user_metadata"), dict) else {}
+        app_meta = decoded.get("app_metadata") if isinstance(decoded.get("app_metadata"), dict) else {}
         display_name = raw_meta.get("display_name") or raw_meta.get("name")
+        role = app_meta.get("role") or raw_meta.get("role") or "user"
         db_user_id = None
+
         if db is not None:
             try:
                 user = await db.scalar(select(User).where(User.auth_subject == subject))
@@ -88,9 +92,12 @@ async def get_current_user(
                         auth_subject=subject,
                         email=decoded.get("email"),
                         display_name=display_name,
+                        role=role,
                     )
                     db.add(user)
                     await db.flush()
+                else:
+                    role = user.role or role
                 db_user_id = user.id
             except Exception as e:
                 logger.warning(f"Database user provisioning warning: {e}")
@@ -100,6 +107,7 @@ async def get_current_user(
             subject=subject,
             email=decoded.get("email"),
             display_name=display_name,
+            role=role,
             db_user_id=db_user_id,
         )
 
@@ -118,7 +126,7 @@ async def get_current_user(
         try:
             user = await db.scalar(select(User).where(User.auth_subject == subject))
             if user is None:
-                user = User(auth_subject=subject, display_name="Guest Creator")
+                user = User(auth_subject=subject, display_name="Guest Creator", role="user")
                 db.add(user)
                 await db.flush()
             db_user_id = user.id
@@ -130,5 +138,18 @@ async def get_current_user(
         subject=subject,
         email=None,
         display_name="Guest Creator",
+        role="user",
         db_user_id=db_user_id,
     )
+
+
+async def require_admin(
+    user: AuthenticatedUser = Depends(get_current_user),
+) -> AuthenticatedUser:
+    """Dependency that enforces server-side administrator role authorization."""
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"code": "FORBIDDEN", "message": "Administrator privileges required."},
+        )
+    return user

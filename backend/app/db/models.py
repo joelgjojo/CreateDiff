@@ -20,6 +20,7 @@ class User(Base):
     auth_subject: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     email: Mapped[Optional[str]] = mapped_column(String(320), nullable=True)
     display_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    role: Mapped[str] = mapped_column(String(50), default="user")
     plan: Mapped[str] = mapped_column(String(50), default="free")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

@@ -5,6 +5,8 @@ abstract class UserIdentity {
   String get id;
   String? get email;
   String? get displayName;
+  String get role;
+  bool get isAdmin => role == 'admin';
   bool get isAnonymous;
   DateTime get createdAt;
 }
@@ -32,12 +34,14 @@ class AuthSession {
   final String userId;
   final String? email;
   final String? displayName;
+  final String? role;
 
   const AuthSession({
     required this.accessToken,
     required this.userId,
     this.email,
     this.displayName,
+    this.role,
   });
 }
 
@@ -80,6 +84,7 @@ class SupabaseSessionManager implements SessionManager, PermissionLayer {
         id: session.userId,
         email: session.email,
         displayName: session.displayName,
+        role: session.role ?? 'user',
       );
     }
     onAuthChanged?.call(_currentUser);
@@ -138,6 +143,8 @@ class _SessionUserIdentity implements UserIdentity {
   @override
   final String? displayName;
   @override
+  final String role;
+  @override
   final bool isAnonymous = false;
   @override
   final DateTime createdAt = DateTime.now();
@@ -146,7 +153,11 @@ class _SessionUserIdentity implements UserIdentity {
     required this.id,
     this.email,
     this.displayName,
+    this.role = 'user',
   });
+
+  @override
+  bool get isAdmin => role == 'admin';
 }
 
 /// Default Local Session Manager for Pre-Launch and Offline Guest Mode.
@@ -189,9 +200,14 @@ class _LocalUserIdentity implements UserIdentity {
   @override
   final String? displayName = 'Local Creator';
   @override
+  final String role = 'user';
+  @override
   final bool isAnonymous = true;
   @override
   final DateTime createdAt;
 
   _LocalUserIdentity({required this.id}) : createdAt = DateTime(2026, 1, 1);
+
+  @override
+  bool get isAdmin => false;
 }

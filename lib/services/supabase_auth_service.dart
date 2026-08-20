@@ -98,19 +98,27 @@ class SupabaseAuthService implements SupabaseAuthGateway {
         final name = (user?.userMetadata?['display_name'] as String?) ??
             (user?.userMetadata?['name'] as String?) ??
             displayName;
+        final role = (user?.appMetadata['role'] as String?) ??
+            (user?.userMetadata?['role'] as String?) ??
+            'user';
         return AuthSession(
           accessToken: session.accessToken,
           userId: session.user.id,
           email: session.user.email,
           displayName: name,
+          role: role,
         );
       } else if (user != null) {
         // When email confirmation is enabled, session may be null initially.
+        final role = (user.appMetadata['role'] as String?) ??
+            (user.userMetadata?['role'] as String?) ??
+            'user';
         return AuthSession(
           accessToken: '',
           userId: user.id,
           email: user.email,
           displayName: displayName,
+          role: role,
         );
       }
 
@@ -141,12 +149,16 @@ class SupabaseAuthService implements SupabaseAuthGateway {
       final user = session.user;
       final name = (user.userMetadata?['display_name'] as String?) ??
           (user.userMetadata?['name'] as String?);
+      final role = (user.appMetadata['role'] as String?) ??
+          (user.userMetadata?['role'] as String?) ??
+          'user';
 
       return AuthSession(
         accessToken: session.accessToken,
         userId: user.id,
         email: user.email,
         displayName: name,
+        role: role,
       );
     } catch (e) {
       if (e is AuthServiceException) rethrow;
@@ -176,12 +188,16 @@ class SupabaseAuthService implements SupabaseAuthGateway {
       final user = session.user;
       final name = (user.userMetadata?['display_name'] as String?) ??
           (user.userMetadata?['name'] as String?);
+      final role = (user.appMetadata['role'] as String?) ??
+          (user.userMetadata?['role'] as String?) ??
+          'user';
 
       return AuthSession(
         accessToken: session.accessToken,
         userId: user.id,
         email: user.email,
         displayName: name,
+        role: role,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -202,11 +218,15 @@ class SupabaseAuthService implements SupabaseAuthGateway {
       final user = session.user;
       final name = (user.userMetadata?['display_name'] as String?) ??
           (user.userMetadata?['name'] as String?);
+      final role = (user.appMetadata['role'] as String?) ??
+          (user.userMetadata?['role'] as String?) ??
+          'user';
       return AuthSession(
         accessToken: session.accessToken,
         userId: user.id,
         email: user.email,
         displayName: name,
+        role: role,
       );
     });
   }

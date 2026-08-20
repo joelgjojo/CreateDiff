@@ -166,3 +166,54 @@ async def test_jwt_validation_invalid_and_expired_tokens(db_session, monkeypatch
         assert resp_valid.json()["synced"] is True
 
 
+@pytest.mark.asyncio
+async def test_admin_authorization_and_role_security(db_session, monkeypatch):
+    secret = "phase3-test-secret-32-bytes-minimum!!"
+    monkeypatch.setattr(settings, "SUPABASE_JWT_SECRET", secret)
+    monkeypatch.setattr(settings, "SUPABASE_JWT_AUDIENCE", "authenticated")
+    monkeypatch.setattr(settings, "AUTH_REQUIRED", True)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        # 1. Normal User (role = user) -> 403 Forbidden on /api/v1/admin/users
+        normal_token = jwt.encode(
+            {
+                "sub": "user-normal",
+                "email": "normal@example.com",
+                "aud": "authenticated",
+                "app_metadata": {"role": "user"},
+                "exp": datetime.now(timezone.utc).timestamp() + 3600,
+            },
+            secret,
+            algorithm="HS256",
+        )
+        resp_normal = await client.get("/api/v1/admin/users", headers={"Authorization": f"Bearer {normal_token}"})
+        assert resp_normal.status_code == 403
+        assert resp_normal.json()["error"]["code"] == "FORBIDDEN"
+
+        # Normal User on stats -> 403 Forbidden
+        resp_normal_stats = await client.get("/api/v1/admin/stats", headers={"Authorization": f"Bearer {normal_token}"})
+        assert resp_normal_stats.status_code == 403
+
+        # 2. Admin User (role = admin) -> 200 OK
+        admin_token = jwt.encode(
+            {
+                "sub": "user-admin",
+                "email": "admin@example.com",
+                "aud": "authenticated",
+                "app_metadata": {"role": "admin"},
+                "exp": datetime.now(timezone.utc).timestamp() + 3600,
+            },
+            secret,
+            algorithm="HS256",
+        )
+        resp_admin = await client.get("/api/v1/admin/users", headers={"Authorization": f"Bearer {admin_token}"})
+        assert resp_admin.status_code == 200
+        assert "users" in resp_admin.json()
+
+        # Admin stats -> 200 OK
+        resp_admin_stats = await client.get("/api/v1/admin/stats", headers={"Authorization": f"Bearer {admin_token}"})
+        assert resp_admin_stats.status_code == 200
+        assert "total_users" in resp_admin_stats.json()
+
+
+

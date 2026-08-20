@@ -389,29 +389,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: isAuthenticated
-                      ? CDColors.success.withValues(alpha: isDark ? 0.20 : 0.12)
-                      : CDColors.brand.withValues(alpha: isDark ? 0.18 : 0.10),
-                  borderRadius: BorderRadius.circular(CDRadius.pill),
-                  border: Border.all(
-                    color: isAuthenticated
-                        ? CDColors.success.withValues(alpha: 0.35)
-                        : CDColors.brand.withValues(alpha: 0.30),
-                    width: 0.8,
+              Wrap(
+                spacing: 6,
+                children: [
+                  if (currentUser?.isAdmin == true)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: CDColors.primary.withValues(alpha: isDark ? 0.25 : 0.15),
+                        borderRadius: BorderRadius.circular(CDRadius.pill),
+                        border: Border.all(
+                          color: CDColors.primary.withValues(alpha: 0.5),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: const Text(
+                        'ADMIN',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: CDColors.primary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isAuthenticated
+                          ? CDColors.success.withValues(alpha: isDark ? 0.20 : 0.12)
+                          : CDColors.brand.withValues(alpha: isDark ? 0.18 : 0.10),
+                      borderRadius: BorderRadius.circular(CDRadius.pill),
+                      border: Border.all(
+                        color: isAuthenticated
+                            ? CDColors.success.withValues(alpha: 0.35)
+                            : CDColors.brand.withValues(alpha: 0.30),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Text(
+                      isAuthenticated ? 'AUTHENTICATED' : 'GUEST MODE',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: isAuthenticated ? CDColors.success : CDColors.brand,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                   ),
-                ),
-                child: Text(
-                  isAuthenticated ? 'AUTHENTICATED' : 'GUEST MODE',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    color: isAuthenticated ? CDColors.success : CDColors.brand,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+                ],
               ),
             ],
           ),
