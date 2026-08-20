@@ -49,6 +49,18 @@ class PromptBuilder:
                 f"• Brand rules: {', '.join(memory.brand_rules) or 'None yet'}",
             ])
             
+        if ctx.brand_dna:
+            dna = ctx.brand_dna
+            lines.extend([
+                f"• Brand Writing Style: {dna.writing_style}",
+                f"• Visual Identity Style: {dna.visual_identity}",
+                f"• Creator Personality: {dna.creator_personality}",
+                f"• Audience Profile: {dna.audience_profile}",
+                f"• Preferred Brand Colors: {', '.join(dna.preferred_colors)}",
+                f"• Successful Patterns: {', '.join(dna.successful_content_patterns) or 'Continuous learning'}",
+                f"• Cultural & Regional Ecosystem: {dna.cultural_context}",
+            ])
+            
         lines.extend([
             f"• Preferred CTA Style: {ctx.preferred_cta_style if ctx.preferred_cta_style else 'Direct'}",
             f"• Emoji Density: {ctx.emoji_usage if ctx.emoji_usage else 'moderate'}",

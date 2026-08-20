@@ -46,3 +46,66 @@ class CreatorMemory {
   );
   static List<String> _list(dynamic value) => value is List ? value.map((e) => e.toString()).toList() : const [];
 }
+
+/// Brand DNA captures deep creator identity, visual aesthetics, audience psychology, and regional context.
+class BrandDNA {
+  final String writingStyle;
+  final String visualIdentity;
+  final String creatorPersonality;
+  final String audienceProfile;
+  final List<String> preferredColors;
+  final List<String> successfulContentPatterns;
+  final String culturalContext;
+
+  const BrandDNA({
+    this.writingStyle = 'Actionable, clear, authentic',
+    this.visualIdentity = 'Modern minimalist, clean typography, high contrast',
+    this.creatorPersonality = 'Educator & Creative Strategist',
+    this.audienceProfile = 'Ambitious students & digital creators',
+    this.preferredColors = const ['#4F43F9', '#7066FF'],
+    this.successfulContentPatterns = const [],
+    this.culturalContext = 'Pan-India & Regional Creator Ecosystem',
+  });
+
+  BrandDNA copyWith({
+    String? writingStyle,
+    String? visualIdentity,
+    String? creatorPersonality,
+    String? audienceProfile,
+    List<String>? preferredColors,
+    List<String>? successfulContentPatterns,
+    String? culturalContext,
+  }) {
+    return BrandDNA(
+      writingStyle: writingStyle ?? this.writingStyle,
+      visualIdentity: visualIdentity ?? this.visualIdentity,
+      creatorPersonality: creatorPersonality ?? this.creatorPersonality,
+      audienceProfile: audienceProfile ?? this.audienceProfile,
+      preferredColors: preferredColors ?? this.preferredColors,
+      successfulContentPatterns: successfulContentPatterns ?? this.successfulContentPatterns,
+      culturalContext: culturalContext ?? this.culturalContext,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'writingStyle': writingStyle,
+        'visualIdentity': visualIdentity,
+        'creatorPersonality': creatorPersonality,
+        'audienceProfile': audienceProfile,
+        'preferredColors': preferredColors,
+        'successfulContentPatterns': successfulContentPatterns,
+        'culturalContext': culturalContext,
+      };
+
+  factory BrandDNA.fromJson(Map<String, dynamic> json) => BrandDNA(
+        writingStyle: json['writingStyle'] as String? ?? 'Actionable, clear, authentic',
+        visualIdentity: json['visualIdentity'] as String? ?? 'Modern minimalist, clean typography, high contrast',
+        creatorPersonality: json['creatorPersonality'] as String? ?? 'Educator & Creative Strategist',
+        audienceProfile: json['audienceProfile'] as String? ?? 'Ambitious students & digital creators',
+        preferredColors: CreatorMemory._list(json['preferredColors']).isNotEmpty
+            ? CreatorMemory._list(json['preferredColors'])
+            : const ['#4F43F9', '#7066FF'],
+        successfulContentPatterns: CreatorMemory._list(json['successfulContentPatterns']),
+        culturalContext: json['culturalContext'] as String? ?? 'Pan-India & Regional Creator Ecosystem',
+      );
+}

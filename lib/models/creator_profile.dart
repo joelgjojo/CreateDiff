@@ -25,6 +25,7 @@ class CreatorProfile {
   final String youtubeHandle;
   final LanguageProfile languageProfile;
   final CreatorMemory creatorMemory;
+  final BrandDNA brandDNA;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -52,6 +53,7 @@ class CreatorProfile {
     this.youtubeHandle = '',
     this.languageProfile = const LanguageProfile(),
     this.creatorMemory = const CreatorMemory(),
+    this.brandDNA = const BrandDNA(),
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? const _DefaultDateTime(),
@@ -83,6 +85,7 @@ class CreatorProfile {
     String? youtubeHandle,
     LanguageProfile? languageProfile,
     CreatorMemory? creatorMemory,
+    BrandDNA? brandDNA,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -110,6 +113,7 @@ class CreatorProfile {
       youtubeHandle: youtubeHandle ?? this.youtubeHandle,
       languageProfile: languageProfile ?? this.languageProfile,
       creatorMemory: creatorMemory ?? this.creatorMemory,
+      brandDNA: brandDNA ?? this.brandDNA,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
     );
@@ -140,6 +144,7 @@ class CreatorProfile {
       'youtubeHandle': youtubeHandle,
       'languageProfile': languageProfile.toJson(),
       'creatorMemory': creatorMemory.toJson(),
+      'brandDNA': brandDNA.toJson(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -194,6 +199,7 @@ class CreatorProfile {
       youtubeHandle: json['youtubeHandle'] as String? ?? '',
       languageProfile: json['languageProfile'] is Map<String, dynamic> ? LanguageProfile.fromJson(json['languageProfile'] as Map<String, dynamic>) : LanguageProfile(language: json['primaryLanguage'] as String? ?? 'English'),
       creatorMemory: json['creatorMemory'] is Map<String, dynamic> ? CreatorMemory.fromJson(json['creatorMemory'] as Map<String, dynamic>) : const CreatorMemory(),
+      brandDNA: json['brandDNA'] is Map<String, dynamic> ? BrandDNA.fromJson(json['brandDNA'] as Map<String, dynamic>) : const BrandDNA(),
       createdAt: created,
       updatedAt: updated,
     );

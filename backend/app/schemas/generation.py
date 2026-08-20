@@ -20,6 +20,19 @@ class CreatorContext(BaseModel):
     emoji_usage: Optional[str] = Field(default="moderate", max_length=50)
     language_profile: Optional["LanguageProfile"] = Field(default=None, alias="languageProfile")
     creator_memory: Optional["CreatorMemory"] = Field(default=None, alias="creatorMemory")
+    brand_dna: Optional["BrandDNA"] = Field(default=None, alias="brandDNA")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class BrandDNA(BaseModel):
+    writing_style: str = Field(default="Actionable, clear, authentic", max_length=200, alias="writingStyle")
+    visual_identity: str = Field(default="Modern minimalist, clean typography, high contrast", max_length=200, alias="visualIdentity")
+    creator_personality: str = Field(default="Educator & Creative Strategist", max_length=200, alias="creatorPersonality")
+    audience_profile: str = Field(default="Ambitious students & digital creators", max_length=200, alias="audienceProfile")
+    preferred_colors: List[str] = Field(default_factory=lambda: ["#4F43F9", "#7066FF"], alias="preferredColors")
+    successful_content_patterns: List[str] = Field(default_factory=list, alias="successfulContentPatterns")
+    cultural_context: str = Field(default="Pan-India & Regional Creator Ecosystem", max_length=200, alias="culturalContext")
 
     model_config = ConfigDict(populate_by_name=True)
 

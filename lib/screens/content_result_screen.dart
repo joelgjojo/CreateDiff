@@ -16,6 +16,7 @@ import '../components/cd_quality_score_card.dart';
 import '../components/cd_creator_intelligence_cards.dart';
 import '../components/cd_visual_intelligence_card.dart';
 import '../components/cd_platform_content_cards.dart';
+import '../components/cd_smart_creator_actions_card.dart';
 import 'design_selection_screen.dart';
 
 /// The editorial studio workspace displaying the complete generated content pack.
@@ -398,6 +399,10 @@ class _ContentResultScreenState extends State<ContentResultScreen> {
 
                           // --- Section 6: Visual Design Bridge Card ---
                           _buildTurnIntoDesignCard(accentColor, isDark),
+                          const SizedBox(height: CDSpacing.lg),
+
+                          // --- Section 7: Smart Creator Operating Actions ---
+                          CDSmartCreatorActionsCard(project: _currentProject),
                           const SizedBox(height: CDSpacing.xl),
                         ],
                       ),

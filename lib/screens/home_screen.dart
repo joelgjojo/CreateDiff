@@ -13,6 +13,8 @@ import 'create_screen.dart';
 import 'content_result_screen.dart';
 import 'creator_profile_screen.dart';
 import 'campaign_planner_screen.dart';
+import '../services/intent_understanding_service.dart';
+import '../services/creator_assistant_service.dart';
 
 /// The centerpiece Home screen featuring an editorial greeting, a frosted glass
 /// hero creation surface, horizontal platform shortcuts, and recent creation history.
@@ -80,8 +82,144 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    final profile = AppState.instance.profile;
+    final intent = IntentUnderstandingService.heuristicExtract(text, profile);
+
     _quickIdeaController.clear();
-    _openCreate(context, idea: text);
+    _openCreate(
+      context,
+      platform: intent.platform,
+      contentType: intent.contentType,
+      idea: intent.idea.isNotEmpty ? intent.idea : text,
+    );
+  }
+
+  void _openAssistantSheet(BuildContext context) async {
+    AppHaptics.light();
+    final profile = AppState.instance.profile;
+    final isDark = CDColors.isDark(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return FutureBuilder<AssistantSuggestionResult>(
+          future: CreatorAssistantService.fetchWeeklySuggestions(profile: profile),
+          builder: (context, snapshot) {
+            final isLoading = snapshot.connectionState == ConnectionState.waiting;
+            final data = snapshot.data ?? CreatorAssistantService.heuristicSuggestions(profile);
+
+            return Container(
+              padding: const EdgeInsets.all(CDSpacing.xl),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0D1017) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(CDRadius.large)),
+                border: Border.all(color: isDark ? CDColors.darkBorderHighlight : CDColors.lightBorderSubtle),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.auto_awesome_rounded, color: CDColors.brand, size: 20),
+                            const SizedBox(width: 8),
+                            const Text('AI Creator Strategist', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 20),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: CDSpacing.xs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: CDColors.brand.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(CDRadius.pill),
+                      ),
+                      child: Text(
+                        data.sourceLabel,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: CDColors.brand),
+                      ),
+                    ),
+                    const SizedBox(height: CDSpacing.md),
+                    Text(
+                      data.strategySummary,
+                      style: TextStyle(fontSize: 13, color: CDColors.textSecondary(context), height: 1.4),
+                    ),
+                    const SizedBox(height: CDSpacing.lg),
+                    if (isLoading)
+                      const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()))
+                    else
+                      ...data.suggestions.map((s) => Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(CDSpacing.md),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+                              borderRadius: BorderRadius.circular(CDRadius.medium),
+                              border: Border.all(color: CDColors.borderSubtle(context)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: CDColors.brand.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        '${s.platform} • ${s.contentType}',
+                                        style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: CDColors.brand),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        _openCreate(
+                                          context,
+                                          platform: s.platform,
+                                          contentType: s.contentType,
+                                          idea: s.topic,
+                                        );
+                                      },
+                                      child: const Text('Launch in Canvas →', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(s.topic, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                                const SizedBox(height: 4),
+                                Text('Hook Idea: "${s.hookIdea}"', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: CDColors.textSecondary(context))),
+                                const SizedBox(height: 3),
+                                Text('Why it works: ${s.whyItWorks}', style: TextStyle(fontSize: 11.5, color: CDColors.textMuted(context))),
+                              ],
+                            ),
+                          )),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -377,6 +515,94 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF4F43F9)),
                         ],
 
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: CDSpacing.md),
+
+                  // AI Creator Strategist & Assistant Card
+                  InkWell(
+                    borderRadius: BorderRadius.circular(CDSpacing.radiusCard),
+                    onTap: () => _openAssistantSheet(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(CDSpacing.md),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [const Color(0xFF16132C), const Color(0xFF100F20)]
+                              : [const Color(0xFFF3EFFF), Colors.white],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(CDSpacing.radiusCard),
+                        border: Border.all(
+                          color: const Color(0xFF7066FF).withValues(alpha: isDark ? 0.40 : 0.25),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF7066FF),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: CDSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        'AI Creator Strategist',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: CDTypography.fontSizeMd,
+                                          fontWeight: CDTypography.bold,
+                                          color: isDark ? CDColors.darkTextPrimary : CDColors.lightTextPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF7066FF).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Text(
+                                        'ASSISTANT',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF7066FF),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Personalized weekly ideas & hooks tailored to your brand DNA.',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: CDTypography.fontSizeXs,
+                                    color: isDark ? CDColors.darkTextSecondary : CDColors.lightTextSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF7066FF)),
+                        ],
                       ),
                     ),
                   ),
